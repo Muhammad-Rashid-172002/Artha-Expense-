@@ -64,6 +64,10 @@ class _AddnewgoalState extends State<Addnewgoal> {
   }
 
   Future<void> saveGoal() async {
+    if (isLoading) return; // ✅ Prevent double-tap call
+
+    setState(() => isLoading = true);
+
     final title = titleController.text.trim();
     final currentText = currentController.text.trim();
     final targetText = targetController.text.trim();
@@ -75,10 +79,9 @@ class _AddnewgoalState extends State<Addnewgoal> {
           backgroundColor: Colors.redAccent,
         ),
       );
+      setState(() => isLoading = false);
       return;
     }
-
-    setState(() => isLoading = true);
 
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -100,7 +103,6 @@ class _AddnewgoalState extends State<Addnewgoal> {
           .collection('users_goals');
 
       if (widget.goalId != null) {
-        // Update goal (edit)
         await goalRef.doc(widget.goalId).update(goalData);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,10 +112,9 @@ class _AddnewgoalState extends State<Addnewgoal> {
           ),
         );
       } else {
-        // Add new goal
         await goalRef.add(goalData);
 
-        // Add Firestore notification with `shown: true`
+        // Write Firestore notification
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -122,10 +123,10 @@ class _AddnewgoalState extends State<Addnewgoal> {
               'title': 'New Goal Added',
               'message': 'You set a new goal: "$title".',
               'timestamp': FieldValue.serverTimestamp(),
-              'shown': false, // ✅ Prevent duplicate notification
+              'shown': false,
             });
 
-        // Show local notification once
+        // ✅ Show notification only after data is added
         await _showLocalNotification(
           'New Goal Added',
           'You set a new goal: "$title".',
@@ -182,10 +183,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
             elevation: 10,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: Colors.white,
-                width: 1.5,
-              ), // Full white border
+              side: BorderSide(color: Colors.white, width: 1.5),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -201,82 +199,25 @@ class _AddnewgoalState extends State<Addnewgoal> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  TextField(
+                  _buildTextField(
                     controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: "Goal Title",
-                      labelStyle: TextStyle(color: Colors.white70),
-
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber, width: 2),
-                      ),
-                      prefixIcon: Icon(Icons.flag, color: Colors.amber),
-                    ),
-                    style: TextStyle(color: Colors.white),
+                    label: "Goal Title",
+                    icon: Icons.flag,
                   ),
-
                   const SizedBox(height: 16),
-                  TextField(
+                  _buildTextField(
                     controller: currentController,
+                    label: "Current Savings",
+                    icon: Icons.savings,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: "Current Savings",
-                      labelStyle: TextStyle(color: Colors.white70),
-
-                      prefixIcon: Icon(Icons.savings, color: Colors.amber),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber, width: 2),
-                      ),
-                    ),
-                    style: TextStyle(color: Colors.white),
                   ),
-
                   const SizedBox(height: 16),
-                  TextField(
+                  _buildTextField(
                     controller: targetController,
+                    label: "Target Amount",
+                    icon: Icons.track_changes,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: "Target Amount",
-                      labelStyle: TextStyle(color: Colors.white70),
-
-                      prefixIcon: Icon(
-                        Icons.track_changes,
-                        color: Colors.amber,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.amber, width: 2),
-                      ),
-                    ),
-                    style: TextStyle(color: Colors.white),
                   ),
-
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
@@ -324,6 +265,36 @@ class _AddnewgoalState extends State<Addnewgoal> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.amber),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.amber),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.amber),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.amber, width: 2),
+        ),
+      ),
+      style: TextStyle(color: Colors.white),
     );
   }
 }

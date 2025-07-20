@@ -239,6 +239,8 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset:
+          true, // default is true, but set it just in case
       backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -257,272 +259,277 @@ class _HomePageState extends State<HomePage> {
           ? const Center(
               child: SpinKitFadingCircle(color: Colors.white, size: 40.0),
             )
-          : RefreshIndicator(
-              onRefresh: () async {
-                await _loadSalaryFromFirebase();
-                await _calculateTotalIncome();
-                await _calculateTotalExpense();
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        // Calendar Card
-                        Card(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          color: Colors.grey[850],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(
-                              color: Colors.white, // Border color
-                              width: 2, // Border width
+          : SafeArea(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await _loadSalaryFromFirebase();
+                  await _calculateTotalIncome();
+                  await _calculateTotalExpense();
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // Calendar Card
+                          Card(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            color: Colors.grey[850],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                color: Colors.white, // Border color
+                                width: 2, // Border width
+                              ),
+                            ),
+                            elevation: 4,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    DateFormat(
+                                      'MMMM yyyy',
+                                    ).format(DateTime.now()),
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: List.generate(7, (index) {
+                                      final today = DateTime.now();
+                                      final startOfWeek = today.subtract(
+                                        Duration(days: today.weekday - 1),
+                                      );
+                                      final currentDay = startOfWeek.add(
+                                        Duration(days: index),
+                                      );
+                                      final daysOfWeek = [
+                                        'Mon',
+                                        'Tue',
+                                        'Wed',
+                                        'Thu',
+                                        'Fri',
+                                        'Sat',
+                                        'Sun',
+                                      ];
+                                      final isToday =
+                                          today.day == currentDay.day &&
+                                          today.month == currentDay.month &&
+                                          today.year == currentDay.year;
+                                      return Column(
+                                        children: [
+                                          Text(
+                                            daysOfWeek[index],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          CircleAvatar(
+                                            radius: 16,
+                                            backgroundColor: isToday
+                                                ? Colors.white
+                                                : Colors.transparent,
+                                            child: Text(
+                                              '${currentDay.day}',
+                                              style: TextStyle(
+                                                color: isToday
+                                                    ? Colors.amber
+                                                    : Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          elevation: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  DateFormat(
-                                    'MMMM yyyy',
-                                  ).format(DateTime.now()),
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: List.generate(7, (index) {
-                                    final today = DateTime.now();
-                                    final startOfWeek = today.subtract(
-                                      Duration(days: today.weekday - 1),
-                                    );
-                                    final currentDay = startOfWeek.add(
-                                      Duration(days: index),
-                                    );
-                                    final daysOfWeek = [
-                                      'Mon',
-                                      'Tue',
-                                      'Wed',
-                                      'Thu',
-                                      'Fri',
-                                      'Sat',
-                                      'Sun',
-                                    ];
-                                    final isToday =
-                                        today.day == currentDay.day &&
-                                        today.month == currentDay.month &&
-                                        today.year == currentDay.year;
-                                    return Column(
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: mainCards.map((card) {
+                              return Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (card["title"] == "Total Income") {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const IncomeScreen(),
+                                        ),
+                                      );
+                                    } else {
+                                      _navigateToScreen(card["title"]);
+                                    }
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                    ),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[850],
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.white,
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
                                       children: [
+                                        Icon(
+                                          card["icon"],
+                                          size: 30,
+                                          color: Colors.white,
+                                        ),
                                         Text(
-                                          daysOfWeek[index],
+                                          card["title"],
                                           style: const TextStyle(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        const SizedBox(height: 6),
-                                        CircleAvatar(
-                                          radius: 16,
-                                          backgroundColor: isToday
-                                              ? Colors.white
-                                              : Colors.transparent,
-                                          child: Text(
-                                            '${currentDay.day}',
-                                            style: TextStyle(
-                                              color: isToday
-                                                  ? Colors.amber
-                                                  : Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          card["amount"],
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
                                           ),
                                         ),
                                       ],
-                                    );
-                                  }),
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
+                              );
+                            }).toList(),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: mainCards.map((card) {
-                            return Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  if (card["title"] == "Total Income") {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const IncomeScreen(),
-                                      ),
-                                    );
-                                  } else {
-                                    _navigateToScreen(card["title"]);
-                                  }
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[850],
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
+                          const SizedBox(height: 20),
+                          Row(
+                            children: List.generate(smallCards.length, (index) {
+                              final card = smallCards[index];
+                              final isSelected =
+                                  selectedSmallCardIndex == index;
+                              return Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedSmallCardIndex = index;
+                                    });
+                                    switch (card['title']) {
+                                      case 'Saving':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const TaskPage(),
+                                          ),
+                                        );
+                                        break;
+                                      case 'Reminder':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const Reminderscreen(),
+                                          ),
+                                        );
+                                        break;
+                                      case 'Loan':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const Loanscreen(),
+                                          ),
+                                        );
+                                        break;
+                                    }
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 6,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        card["icon"],
-                                        size: 30,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        card["title"],
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        card["amount"],
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: List.generate(smallCards.length, (index) {
-                            final card = smallCards[index];
-                            final isSelected = selectedSmallCardIndex == index;
-                            return Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedSmallCardIndex = index;
-                                  });
-                                  switch (card['title']) {
-                                    case 'Saving':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const TaskPage(),
-                                        ),
-                                      );
-                                      break;
-                                    case 'Reminder':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const Reminderscreen(),
-                                        ),
-                                      );
-                                      break;
-                                    case 'Loan':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const Loanscreen(),
-                                        ),
-                                      );
-                                      break;
-                                  }
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Colors.amber[850]
-                                        : Colors.grey[850],
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: isSelected
-                                          ? Colors.white
-                                          : Colors.amber,
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.shade300,
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        card["icon"],
-                                        size: 30,
+                                          ? Colors.amber[850]
+                                          : Colors.grey[850],
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
                                         color: isSelected
-                                            ? Colors.grey[850]
-                                            : Colors.white,
+                                            ? Colors.white
+                                            : Colors.amber,
+                                        width: 2,
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        card["title"],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.shade300,
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          card["icon"],
+                                          size: 30,
                                           color: isSelected
                                               ? Colors.grey[850]
                                               : Colors.white,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          card["title"],
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: isSelected
+                                                ? Colors.grey[850]
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SingleChildScrollView(
+                          child: buildLoanListTile(),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SingleChildScrollView(child: buildLoanListTile()),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
     );
