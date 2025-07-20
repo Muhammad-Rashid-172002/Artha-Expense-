@@ -169,6 +169,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         : ((totalSpent / budget) * 100).clamp(0, 100);
 
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text(
           "Total Expenses",
@@ -182,7 +183,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         foregroundColor: Colors.black,
         elevation: 0,
       ),
@@ -191,121 +192,146 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         child: Column(
           children: [
             const SizedBox(height: 10),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 12,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                margin: const EdgeInsets.only(bottom: 20),
+                color: Colors.grey[850],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Colors.white, // Border color
+                    width: 2, // Border width
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Month & Year
-                    Text(
-                      DateFormat('MMMM yyyy').format(DateTime.now()),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Month & Year
+                      Text(
+                        DateFormat('MMMM yyyy').format(DateTime.now()),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Weekday Calendar
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(7, (index) {
-                        final today = DateTime.now();
-                        final startOfWeek = today.subtract(
-                          Duration(days: today.weekday - 1),
-                        );
-                        final currentDay = startOfWeek.add(
-                          Duration(days: index),
-                        );
-                        final daysOfWeek = [
-                          'Mon',
-                          'Tue',
-                          'Wed',
-                          'Thu',
-                          'Fri',
-                          'Sat',
-                          'Sun',
-                        ];
-                        final isToday =
-                            today.day == currentDay.day &&
-                            today.month == currentDay.month &&
-                            today.year == currentDay.year;
+                      const SizedBox(height: 10),
+                      // Weekday Calendar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: List.generate(7, (index) {
+                          final today = DateTime.now();
+                          final startOfWeek = today.subtract(
+                            Duration(days: today.weekday - 1),
+                          );
+                          final currentDay = startOfWeek.add(
+                            Duration(days: index),
+                          );
+                          final daysOfWeek = [
+                            'Mon',
+                            'Tue',
+                            'Wed',
+                            'Thu',
+                            'Fri',
+                            'Sat',
+                            'Sun',
+                          ];
+                          final isToday =
+                              today.day == currentDay.day &&
+                              today.month == currentDay.month &&
+                              today.year == currentDay.year;
 
-                        return Column(
-                          children: [
-                            Text(
-                              daysOfWeek[index],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: isToday
-                                  ? Colors.white
-                                  : Colors.transparent,
-                              child: Text(
-                                '${currentDay.day}',
-                                style: TextStyle(
-                                  color: isToday ? Colors.blue : Colors.white,
-                                  fontWeight: FontWeight.bold,
+                          return Column(
+                            children: [
+                              Text(
+                                daysOfWeek[index],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ],
+                              const SizedBox(height: 6),
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: isToday
+                                    ? Colors.white
+                                    : Colors.transparent,
+                                child: Text(
+                                  '${currentDay.day}',
+                                  style: TextStyle(
+                                    color: isToday
+                                        ? Colors.amber
+                                        : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(
+                4,
+              ), // Space between border and avatar
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white, // Border color (witch line)
+                  width: 2, // Border width
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.grey[850],
+                child: Text(
+                  "${totalSpent.toStringAsFixed(0)}",
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.blue,
-              child: Text(
-                "${totalSpent.toStringAsFixed(0)}",
-                style: const TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
             const SizedBox(height: 8),
             const Text(
               "You have spent total",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.white),
             ),
             Text(
               "${percent.toStringAsFixed(0)}% of your budget",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Colors.grey[850],
                 borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: Colors.white, // Border color (witch line)
+                  width: 2, // Border width
+                ),
               ),
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.amber,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.grey,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.amber,
                 tabs: const [
                   Tab(text: "Spends"),
                   Tab(text: "Categories"),
@@ -343,21 +369,33 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                           ],
                         ),
                         child: Card(
+                          color: Colors.grey[850],
                           margin: const EdgeInsets.symmetric(vertical: 6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(
+                              color: Colors.white, // Witch line (white border)
+                              width: 1.5,
+                            ),
                           ),
                           child: ListTile(
                             leading: Icon(
                               categoryIcons[e['category']] ?? Icons.category,
-                              color: Colors.blue,
+                              color: Colors.amber,
                             ),
-                            title: Text(e['title'] ?? ''),
-                            subtitle: Text(e['date'] ?? ''),
+                            title: Text(
+                              e['title'] ?? '',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              e['date'] ?? '',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
                             trailing: Text(
                               "${amt.toStringAsFixed(2)}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -394,19 +432,34 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                         ),
                         child: Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),
+                          color: Colors.grey[850],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(
+                              color: Colors.white54,
+                              width: 1.2,
+                            ),
                           ),
-
                           child: ListTile(
                             leading: Icon(
                               categoryIcons[e['category']] ?? Icons.category,
-                              color: Colors.blue,
+                              color: Colors.amber,
                             ),
-
-                            title: Text(e['category'] ?? 'Other'),
-                            subtitle: Text(e['title'] ?? ''),
-                            trailing: Text("${amt.toStringAsFixed(2)}"),
+                            title: Text(
+                              e['category'] ?? 'Other',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              e['title'] ?? '',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            trailing: Text(
+                              "${amt.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -421,7 +474,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _onAddExpense,
         child: const Icon(Icons.add, color: Colors.white, size: 30),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
       ),
     );
   }

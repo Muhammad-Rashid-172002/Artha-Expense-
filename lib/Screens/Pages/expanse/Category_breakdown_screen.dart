@@ -94,12 +94,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: Text(
           "${widget.category} Expenses",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -112,7 +113,15 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           final expenses = snapshot.data ?? [];
 
           if (expenses.isEmpty) {
-            return const Center(child: Text("No expenses in this category."));
+            return const Center(
+              child: Text(
+                "No expenses in this category.",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
           }
 
           return ListView.builder(
@@ -141,36 +150,79 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                   ? ((amount / totalAllExpenses) * 100).toStringAsFixed(1)
                   : '0.0';
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  leading: Icon(
-                    categoryIcons[category] ?? Icons.category,
-                    color: Colors.blue,
+              return Center(
+                child: Card(
+                  color: Colors.grey[850],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    side: const BorderSide(color: Colors.teal, width: 1.2),
                   ),
-                  title: Text(title),
-                  subtitle: Text(formattedDate),
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        ' $amount',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      Text(
-                        '$percentage%',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
                   ),
-                  onTap: () => _editExpense(expense),
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(
+                            categoryIcons[category] ?? Icons.category,
+                            color: Colors.tealAccent,
+                          ),
+                          title: Text(
+                            title,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            formattedDate,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          trailing: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$amount',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.tealAccent,
+                                ),
+                              ),
+                              Text(
+                                '$percentage%',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _editExpense(expense),
+                            icon: const Icon(Icons.edit, size: 18),
+                            label: const Text("Edit"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },

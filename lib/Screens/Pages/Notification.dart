@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -15,8 +14,7 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  final String? userId = FirebaseAuth.instance.currentUser?.uid;
-  List<String> shownNotificationIds = [];
+  final List<String> shownNotificationIds = [];
 
   @override
   void initState() {
@@ -68,44 +66,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  Future<void> _deleteNotification(String docId) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('users_notifications')
-        .doc(docId)
-        .delete();
-  }
-
-  Future<void> _confirmDelete(BuildContext context, String docId) async {
-    final bool? confirmed = await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Notification'),
-        content: const Text(
-          'Are you sure you want to delete this notification?',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(false),
-          ),
-          TextButton(
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      _deleteNotification(docId);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text(
           'Notifications',
@@ -116,7 +82,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
       ),
       body: userId == null
           ? const Center(child: Text("User not logged in"))
@@ -138,7 +104,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                 final notifications = snapshot.data!.docs;
 
-                // Show notifications
+                // Show notifications locally
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _handleNewNotifications(notifications);
                 });
@@ -156,41 +122,72 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ).format(timestamp.toDate())
                         : 'Unknown time';
 
-                    return Slidable(
-                      key: ValueKey(doc.id),
-                      endActionPane: ActionPane(
-                        motion: const DrawerMotion(),
-                        extentRatio: 0.25,
-                        children: [
-                          SlidableAction(
-                            onPressed: (context) =>
-                                _confirmDelete(context, doc.id),
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: 'Delete',
-                          ),
-                        ],
-                      ),
+                    return Center(
                       child: Card(
+                        color: Colors.grey[850],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Colors.white, width: 1),
+                        ),
                         margin: const EdgeInsets.symmetric(
                           vertical: 6,
                           horizontal: 12,
                         ),
-                        elevation: 2,
-                        child: ListTile(
-                          leading: const Icon(Icons.notifications),
-                          title: Text(title),
-                          subtitle: Column(
+                        elevation: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                            vertical: 8,
+                          ),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(message),
-                              const SizedBox(height: 4),
-                              Text(
-                                formattedTime,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
+                              Container(
+                                width: 4,
+                                height: 80,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const Icon(
+                                        Icons.notifications,
+                                        color: Colors.amber,
+                                      ),
+                                      title: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            message,
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            formattedTime,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

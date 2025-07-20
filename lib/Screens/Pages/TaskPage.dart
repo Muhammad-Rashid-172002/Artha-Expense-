@@ -97,6 +97,7 @@ class _TaskPageState extends State<TaskPage> {
         .snapshots();
 
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text(
           'My Saving Goals',
@@ -108,10 +109,10 @@ class _TaskPageState extends State<TaskPage> {
         ),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
       ),
       body: isLoading
-          ? const Center(child: SpinKitCircle(color: Colors.blue, size: 50.0))
+          ? const Center(child: SpinKitCircle(color: Colors.white, size: 50.0))
           : Column(
               children: [
                 const SizedBox(height: 16),
@@ -119,10 +120,15 @@ class _TaskPageState extends State<TaskPage> {
                   child: Container(
                     width: 150,
                     height: 150,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 69, 68, 68),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white, // Full white border
+                        width: 1.5,
+                      ),
                     ),
+
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -134,7 +140,7 @@ class _TaskPageState extends State<TaskPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "\$ : ${monthlySavings.toStringAsFixed(0)}",
+                          " ${monthlySavings.toStringAsFixed(0)}",
                           style: const TextStyle(
                             fontSize: 20,
                             color: Colors.white,
@@ -150,21 +156,32 @@ class _TaskPageState extends State<TaskPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: Colors.grey[850],
                       borderRadius: BorderRadius.circular(12),
-                      border: const Border(
-                        left: BorderSide(color: Colors.blue, width: 6),
+                      border: Border.all(
+                        color: Colors.white, // Full white border
+                        width: 1.5,
                       ),
                     ),
                     child: ListTile(
-                      leading: const Icon(Icons.savings, color: Colors.blue),
-                      title: const Text("This month Savings"),
-                      subtitle: const Text("Based on all saved payments"),
+                      leading: const Icon(Icons.savings, color: Colors.white),
+                      title: const Text(
+                        "This month Savings",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        "Based on all saved payments",
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
                       trailing: Text(
-                        "\$ ${totalSavings.toStringAsFixed(0)}",
+                        "${totalSavings.toStringAsFixed(0)}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          color: Colors.white,
                           fontSize: 16,
                         ),
                       ),
@@ -243,18 +260,48 @@ class _TaskPageState extends State<TaskPage> {
                                       final confirm = await showDialog(
                                         context: context,
                                         builder: (_) => AlertDialog(
-                                          title: const Text("Delete Goal"),
-                                          content: const Text("Are you sure?"),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            side: BorderSide(
+                                              color: Colors.white,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          backgroundColor: Colors.grey[850],
+                                          title: const Text(
+                                            "Delete Goal",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          content: const Text(
+                                            "Are you sure you want to delete this goal?",
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                            ),
+                                          ),
                                           actions: [
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.pop(context, false),
-                                              child: const Text("Cancel"),
+                                              child: const Text(
+                                                "Cancel",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.pop(context, true),
-                                              child: const Text("Delete"),
+                                              child: const Text(
+                                                "Delete",
+                                                style: TextStyle(
+                                                  color: Colors.redAccent,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -276,8 +323,12 @@ class _TaskPageState extends State<TaskPage> {
                               ),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Colors.grey[850],
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white, // Border color
+                                    width: 1.5, // Border width
+                                  ),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: Colors.black12,
@@ -294,7 +345,7 @@ class _TaskPageState extends State<TaskPage> {
                                       children: [
                                         Icon(
                                           getGoalIcon(title),
-                                          color: Colors.blue,
+                                          color: Colors.white,
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(
@@ -303,6 +354,7 @@ class _TaskPageState extends State<TaskPage> {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
+                                              color: Colors.white,
                                             ),
                                           ),
                                         ),
@@ -312,12 +364,13 @@ class _TaskPageState extends State<TaskPage> {
                                     LinearProgressIndicator(
                                       value: progress,
                                       backgroundColor: Colors.grey[300],
-                                      color: Colors.blue,
+                                      color: Colors.amber,
                                       minHeight: 8,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      "\$ ${current.toStringAsFixed(0)} / \$ ${target.toStringAsFixed(0)}",
+                                      " ${current.toStringAsFixed(0)} /  ${target.toStringAsFixed(0)}",
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                     if (createdAt != null) ...[
                                       const SizedBox(height: 4),
@@ -325,7 +378,7 @@ class _TaskPageState extends State<TaskPage> {
                                         "Saved on: ${formatDateTime(createdAt)}",
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -342,7 +395,7 @@ class _TaskPageState extends State<TaskPage> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
         onPressed: () async {
           setState(() => isFabLoading = true);
           await Navigator.push(
@@ -354,7 +407,7 @@ class _TaskPageState extends State<TaskPage> {
         },
         child: isFabLoading
             ? const SpinKitFadingCircle(color: Colors.white, size: 25)
-            : const Icon(Icons.add),
+            : const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

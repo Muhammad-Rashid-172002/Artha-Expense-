@@ -44,16 +44,24 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout?"),
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text("Logout", style: TextStyle(color: Colors.white)),
+        content: const Text(
+          "Are you sure you want to logout?",
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amber,
+              foregroundColor: Colors.blueGrey[900],
+            ),
             child: const Text("Logout"),
           ),
         ],
@@ -82,21 +90,27 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Account"),
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          "Delete Account",
+          style: TextStyle(color: Colors.white),
+        ),
         content: const Text(
           "Are you sure you want to delete your account? This action is permanent.",
+          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OnboardingScreen()),
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
             ),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text("Delete"),
           ),
         ],
@@ -109,7 +123,7 @@ class _SettingsPageState extends State<SettingsPage> {
         await user!.delete();
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const SigninScreen()),
+          MaterialPageRoute(builder: (context) => OnboardingScreen()),
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -138,6 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -149,15 +164,18 @@ class _SettingsPageState extends State<SettingsPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
       ),
       body: Center(
         child: Card(
           margin: const EdgeInsets.all(20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Colors.white, width: 2),
           ),
-          elevation: 8,
+          elevation: 6,
+          color: Colors.grey[850],
+          shadowColor: Colors.blueGrey.withOpacity(0.2),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 25),
             child: Column(
@@ -165,31 +183,47 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 const CircleAvatar(
                   radius: 40,
-                  child: Icon(Icons.person, size: 40),
+                  backgroundColor: Color.fromARGB(255, 203, 157, 19),
+                  child: Icon(Icons.person, size: 40, color: Colors.white),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   userName,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 Text(
                   userEmail,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: const TextStyle(fontSize: 16, color: Colors.white70),
                 ),
                 const SizedBox(height: 30),
-                Divider(thickness: 1),
+                const Divider(thickness: 1.2, color: Colors.white),
                 ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text("Logout"),
+                  leading: const Icon(Icons.logout, color: Colors.redAccent),
+                  title: const Text(
+                    "Logout",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   onTap: _logout,
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_forever, color: Colors.red),
-                  title: const Text("Delete Account"),
+                  leading: const Icon(
+                    Icons.delete_forever,
+                    color: Colors.redAccent,
+                  ),
+                  title: const Text(
+                    "Delete Account",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   onTap: _deleteAccount,
                 ),
               ],

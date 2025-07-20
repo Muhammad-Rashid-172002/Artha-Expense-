@@ -236,7 +236,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         validator: (value) => value != null && value.length >= 6
                             ? null
                             : 'Password must be at least 6 characters',
-                        style: TextStyle(color: Colors.amber),
+                        style: TextStyle(color: Colors.white),
                       ),
                       const SizedBox(height: 15),
                       TextFormField(

@@ -1,4 +1,5 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
+import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,7 +46,7 @@ class _SplashscreenState extends State<Splashscreen> {
       // Not signed in - go to sign-in screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SigninScreen()),
+        MaterialPageRoute(builder: (_) => const SignupScreen()),
       );
     }
   }
@@ -72,8 +73,8 @@ class _SplashscreenState extends State<Splashscreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 10),
-            const SpinKitCircle(color: Colors.blue, size: 50.0),
+            SizedBox(height: 20),
+            const SpinKitCircle(color: Colors.white, size: 50.0),
           ],
         ),
       ),

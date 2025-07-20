@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         bottomNavigationBar: BottomAppBar(
           shape: const CircularNotchedRectangle(),
           notchMargin: 8,
-          color: Colors.white,
+          color: Colors.blueGrey,
           elevation: 10,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -81,14 +81,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: Icon(
                         Icons.home_outlined,
-                        color: _currentIndex == 0 ? Colors.blue : Colors.grey,
+                        color: _currentIndex == 0 ? Colors.amber : Colors.grey,
                       ),
                       onPressed: () => _onTabTapped(0),
                     ),
                     IconButton(
                       icon: Icon(
                         Icons.check_box_outlined,
-                        color: _currentIndex == 1 ? Colors.blue : Colors.grey,
+                        color: _currentIndex == 1 ? Colors.amber : Colors.white,
                       ),
                       onPressed: () => _onTabTapped(1),
                     ),
@@ -99,14 +99,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: Icon(
                         Icons.notifications_outlined,
-                        color: _currentIndex == 2 ? Colors.blue : Colors.grey,
+                        color: _currentIndex == 2 ? Colors.amber : Colors.white,
                       ),
                       onPressed: () => _onTabTapped(2),
                     ),
                     IconButton(
                       icon: Icon(
                         Icons.settings_outlined,
-                        color: _currentIndex == 3 ? Colors.blue : Colors.grey,
+                        color: _currentIndex == 3 ? Colors.amber : Colors.white,
                       ),
                       onPressed: () => _onTabTapped(3),
                     ),

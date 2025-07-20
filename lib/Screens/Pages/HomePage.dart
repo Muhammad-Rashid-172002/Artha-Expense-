@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: SpinKitFadingCircle(color: Colors.blue, size: 40.0),
+            child: SpinKitFadingCircle(color: Colors.white, size: 40.0),
           );
         }
 
@@ -140,7 +140,11 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
                 "Your Loans",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
             ...loans.map((doc) {
@@ -155,12 +159,31 @@ class _HomePageState extends State<HomePage> {
               ).format(date);
 
               return Card(
+                color: Colors.grey[850], // Card background color
                 elevation: 2,
-                margin: const EdgeInsets.symmetric(vertical: 6),
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(
+                    color: Colors.white, // Border color
+                    width: 2,
+                  ),
+                ),
                 child: ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(name),
-                  subtitle: Text("Amount: $amount\nDate: $formattedDate"),
+                  leading: const Icon(Icons.person, color: Colors.white),
+                  title: Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white, // Text color
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Amount: $amount\nDate: $formattedDate",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ), // Subtitle text color
+                  ),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -216,6 +239,7 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text(
@@ -227,11 +251,11 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
       ),
       body: _isLoading
           ? const Center(
-              child: SpinKitFadingCircle(color: Colors.blue, size: 40.0),
+              child: SpinKitFadingCircle(color: Colors.white, size: 40.0),
             )
           : RefreshIndicator(
               onRefresh: () async {
@@ -247,9 +271,14 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         // Calendar Card
                         Card(
-                          color: Colors.blue,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          color: Colors.grey[850],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: Colors.white, // Border color
+                              width: 2, // Border width
+                            ),
                           ),
                           elevation: 4,
                           child: Padding(
@@ -311,7 +340,7 @@ class _HomePageState extends State<HomePage> {
                                             '${currentDay.day}',
                                             style: TextStyle(
                                               color: isToday
-                                                  ? Colors.blue
+                                                  ? Colors.amber
                                                   : Colors.white,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -350,11 +379,15 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade100,
+                                    color: Colors.grey[850],
                                     borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.blue.shade200,
+                                        color: Colors.white,
                                         blurRadius: 6,
                                         offset: const Offset(0, 4),
                                       ),
@@ -365,11 +398,12 @@ class _HomePageState extends State<HomePage> {
                                       Icon(
                                         card["icon"],
                                         size: 30,
-                                        color: Colors.blue,
+                                        color: Colors.white,
                                       ),
                                       Text(
                                         card["title"],
                                         style: const TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -378,7 +412,7 @@ class _HomePageState extends State<HomePage> {
                                         card["amount"],
                                         style: const TextStyle(
                                           fontSize: 16,
-                                          color: Colors.black87,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -436,9 +470,15 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Colors.blue
-                                        : Colors.white,
+                                        ? Colors.amber[850]
+                                        : Colors.grey[850],
                                     borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.amber,
+                                      width: 2,
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.grey.shade300,
@@ -453,8 +493,8 @@ class _HomePageState extends State<HomePage> {
                                         card["icon"],
                                         size: 30,
                                         color: isSelected
-                                            ? Colors.white
-                                            : Colors.blue,
+                                            ? Colors.grey[850]
+                                            : Colors.white,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
@@ -462,8 +502,8 @@ class _HomePageState extends State<HomePage> {
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: isSelected
-                                              ? Colors.white
-                                              : Colors.black,
+                                              ? Colors.grey[850]
+                                              : Colors.white,
                                         ),
                                       ),
                                     ],

@@ -89,12 +89,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final hasData = categoryTotals.isNotEmpty;
 
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text(
           "Monthly Budget Overview",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -120,49 +121,94 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 const SizedBox(height: 20),
                 const Text(
                   "Category Breakdown",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 Expanded(
                   child: ListView.builder(
                     itemCount: categoryTotals.length,
                     itemBuilder: (context, index) {
                       final entry = categoryTotals.entries.elementAt(index);
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        child: ListTile(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    CategoryDetailsScreen(category: entry.key),
-                              ),
-                            );
-                          },
-                          leading: Icon(
-                            Icons.label,
-                            color: getColor(entry.key),
+                      final total = categoryTotals.values.fold(
+                        0.0,
+                        (a, b) => a + b,
+                      );
+                      final percentage = (entry.value / total) * 100;
+
+                      return Center(
+                        child: Card(
+                          color: Colors.grey[850],
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
                           ),
-                          title: Text(entry.key),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(
-                                '${((entry.value / categoryTotals.values.fold(0.0, (a, b) => a + b)) * 100).toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: getColor(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: const BorderSide(
+                              color: Colors.white24,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.label,
+                                    color: getColor(entry.key),
+                                  ),
+                                  title: Text(
                                     entry.key,
-                                  ), // ✅ Now this works
-                                  fontWeight: FontWeight.bold,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  trailing: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '${percentage.toStringAsFixed(1)}%',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: getColor(entry.key),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CategoryDetailsScreen(
+                                              category: entry.key,
+                                            ),
+                                      ),
+                                    );
+                                    // You can add your logic here
+                                    print("Button pressed for ${entry.key}");
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blueGrey[700],
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text("View Details"),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );

@@ -54,6 +54,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/Adobe Express - file.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -79,6 +85,8 @@ flutter:
     - assets/images/Adobe Express - file (3).png
     - assets/images/Adobe Express - file (2).png
     - assets/images/Adobe Express - file (1).png
+    - assets/images/Adobe Express - file.png
+    - assets/Icon_image/WhatsApp Image 2025-07-19 at 12.49.34 PM.jpeg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

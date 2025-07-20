@@ -66,6 +66,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -75,7 +76,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
           'Income',
           style: TextStyle(color: Colors.white, fontSize: 22),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -108,8 +109,12 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: const Color.fromARGB(255, 69, 68, 68),
                   borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                    color: Colors.white, // Border color
+                    width: 1.5, // Border width
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -171,11 +176,37 @@ class _IncomeScreenState extends State<IncomeScreen> {
                                 horizontal: 16,
                                 vertical: 8,
                               ),
+                              color: Colors.grey[850], // Card background color
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ), // Border color and width
+                              ),
                               child: ListTile(
-                                leading: const Icon(Icons.attach_money),
-                                title: Text(title),
-                                subtitle: Text(formattedDate),
-                                trailing: Text(' $amount'),
+                                leading: const Icon(
+                                  Icons.attach_money,
+                                  color: Colors.amber,
+                                ), // Optional: icon color
+                                title: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ), // Text color
+                                ),
+                                subtitle: Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                  ), // Subtitle text
+                                ),
+                                trailing: Text(
+                                  ' $amount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ), // Amount text
+                                ),
                                 onTap: () => _editIncome(doc),
                               ),
                             ),
@@ -188,7 +219,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
         tooltip: 'Add Income',
         onPressed: () {
           Navigator.push(
@@ -196,7 +227,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
             MaterialPageRoute(builder: (context) => const AddIncomeScreen()),
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

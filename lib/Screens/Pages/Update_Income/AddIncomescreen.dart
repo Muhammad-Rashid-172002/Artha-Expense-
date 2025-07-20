@@ -37,12 +37,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.title != null) {
-      _selectedSource = widget.title;
-    }
-    if (widget.amount != null) {
-      _amountController.text = widget.amount!;
-    }
+    if (widget.title != null) _selectedSource = widget.title;
+    if (widget.amount != null) _amountController.text = widget.amount!;
   }
 
   Future<void> _saveIncome() async {
@@ -50,12 +46,18 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
     if (_selectedSource == null || amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter valid source and amount.')),
+        const SnackBar(
+          content: Text(
+            '⚠️ Please select a valid income source and enter a positive amount.',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
 
     setState(() => _isLoading = true);
+
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final incomeData = {
       'title': _selectedSource,
@@ -70,17 +72,31 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
     try {
       if (widget.docId != null) {
-        // Update existing income
         await incomeRef.doc(widget.docId).update(incomeData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Income updated successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
-        // Add new income
         await incomeRef.add(incomeData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Income added successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
-      Navigator.pop(context); // Close the screen after saving
+
+      Navigator.pop(context); // Close screen after success
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to save income: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Failed to save income: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
 
     setState(() => _isLoading = false);
@@ -89,21 +105,24 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: Text(
           widget.docId == null ? 'Add Income' : 'Edit Income',
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         centerTitle: true,
       ),
       body: Center(
         child: Card(
-          margin: const EdgeInsets.all(16),
-          elevation: 6,
+          color: Colors.grey[850],
+          elevation: 10,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Colors.white, width: 1.5),
           ),
+          margin: const EdgeInsets.all(16),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -111,9 +130,15 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
               children: [
                 const Text(
                   'Income Details',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 20),
+
+                // Dropdown
                 DropdownButtonFormField<String>(
                   value: _selectedSource,
                   items: _incomeSources.map((source) {
@@ -121,37 +146,78 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       value: source['label'],
                       child: Row(
                         children: [
-                          Icon(source['icon'], color: Colors.blue),
+                          Icon(source['icon'], color: Colors.amber),
                           const SizedBox(width: 10),
-                          Text(source['label']),
+                          Text(
+                            source['label'],
+                            style: const TextStyle(color: Colors.black),
+                          ),
                         ],
                       ),
                     );
                   }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedSource = value;
-                    });
-                  },
-                  decoration: const InputDecoration(
+                  onChanged: (value) => setState(() => _selectedSource = value),
+                  decoration: InputDecoration(
                     labelText: 'Select Income Source',
-                    border: OutlineInputBorder(),
+                    labelStyle: const TextStyle(color: Colors.white),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.amber,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
+                  dropdownColor: Colors.white,
                 ),
+
                 const SizedBox(height: 16),
+
+                // Amount
                 TextField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
+                  style: const TextStyle(color: Colors.white),
+
+                  decoration: InputDecoration(
                     labelText: 'Enter Amount',
-                    border: OutlineInputBorder(),
+                    labelStyle: const TextStyle(color: Colors.white),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.amber,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 _isLoading
                     ? const Center(
                         child: SpinKitFadingCircle(
-                          color: Colors.blue,
+                          color: Colors.amber,
                           size: 40.0,
                         ),
                       )
@@ -164,8 +230,15 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                               : 'Update Income',
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.amber,
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
               ],

@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Pages/TaskPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -155,19 +156,36 @@ class _AddnewgoalState extends State<Addnewgoal> {
     final isEditing = widget.goalId != null;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 138, 205, 238),
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
-        title: Text(isEditing ? "Edit Goal" : "Add New Goal"),
-        backgroundColor: const Color.fromARGB(255, 3, 130, 234),
+        title: Text(
+          isEditing ? "Edit Goal" : "Add New Goal",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.black,
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TaskPage()),
+            );
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Card(
+            color: Colors.grey[850],
             elevation: 10,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: Colors.white,
+                width: 1.5,
+              ), // Full white border
             ),
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -179,48 +197,100 @@ class _AddnewgoalState extends State<Addnewgoal> {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 20),
                   TextField(
                     controller: titleController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "Goal Title",
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.flag),
+                      labelStyle: TextStyle(color: Colors.white70),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.flag, color: Colors.amber),
                     ),
+                    style: TextStyle(color: Colors.white),
                   ),
+
                   const SizedBox(height: 16),
                   TextField(
                     controller: currentController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "Current Savings",
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.savings),
+                      labelStyle: TextStyle(color: Colors.white70),
+
+                      prefixIcon: Icon(Icons.savings, color: Colors.amber),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber, width: 2),
+                      ),
                     ),
+                    style: TextStyle(color: Colors.white),
                   ),
+
                   const SizedBox(height: 16),
                   TextField(
                     controller: targetController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "Target Amount",
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.track_changes),
+                      labelStyle: TextStyle(color: Colors.white70),
+
+                      prefixIcon: Icon(
+                        Icons.track_changes,
+                        color: Colors.amber,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.amber, width: 2),
+                      ),
                     ),
+                    style: TextStyle(color: Colors.white),
                   ),
+
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: isLoading ? null : saveGoal,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.blueGrey[900],
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Colors.white,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       child: isLoading

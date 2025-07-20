@@ -1,4 +1,5 @@
-// All your imports
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -93,17 +94,23 @@ class _LoanscreenState extends State<Loanscreen> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Confirm Delete"),
-        content: const Text("Are you sure you want to delete this loan?"),
+        backgroundColor: Colors.grey[900],
+        title: const Text("Delete Loan", style: TextStyle(color: Colors.amber)),
+        content: const Text(
+          "Are you sure you want to delete this loan?",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Delete"),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -136,21 +143,59 @@ class _LoanscreenState extends State<Loanscreen> {
       builder: (_) {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
-            title: Text(existingLoan == null ? "Add Loan" : "Edit Loan"),
+            backgroundColor: Colors.grey[900],
+            title: Text(
+              existingLoan == null ? "Add Loan" : "Edit Loan",
+              style: const TextStyle(color: Colors.amber),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.amber),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
                 ),
+                const SizedBox(height: 10),
                 TextField(
                   controller: amountController,
-                  decoration: const InputDecoration(labelText: 'Amount'),
+                  decoration: const InputDecoration(
+                    labelText: 'Amount',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.amber),
+                    ),
+                  ),
                   keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
                 ),
+                const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: status,
+                  dropdownColor: Colors.grey[900],
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Status',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.amber),
+                    ),
+                  ),
                   items: ['Pending', 'Paid'].map((value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -158,14 +203,16 @@ class _LoanscreenState extends State<Loanscreen> {
                     );
                   }).toList(),
                   onChanged: (val) => setState(() => status = val!),
-                  decoration: const InputDecoration(labelText: 'Status'),
                 ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.white70),
+                ),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -216,7 +263,11 @@ class _LoanscreenState extends State<Loanscreen> {
 
                   Navigator.pop(context);
                 },
-                child: const Text("Save"),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                child: const Text(
+                  "Save",
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ],
           ),
@@ -228,11 +279,11 @@ class _LoanscreenState extends State<Loanscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text("Loan List"),
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
       body: StreamBuilder(
@@ -245,7 +296,12 @@ class _LoanscreenState extends State<Loanscreen> {
           final loans = snapshot.data!.docs;
 
           if (loans.isEmpty) {
-            return const Center(child: Text("No loans added yet."));
+            return const Center(
+              child: Text(
+                "No loans added yet.",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
           return Padding(
@@ -257,7 +313,11 @@ class _LoanscreenState extends State<Loanscreen> {
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Text(
                     "Your Loans",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Expanded(
@@ -284,6 +344,7 @@ class _LoanscreenState extends State<Loanscreen> {
 
                       return Card(
                         elevation: 3,
+                        color: Colors.grey[850],
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         child: Slidable(
                           endActionPane: ActionPane(
@@ -296,6 +357,7 @@ class _LoanscreenState extends State<Loanscreen> {
                                 icon: Icons.edit,
                                 label: 'Edit',
                                 backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
                               ),
                               SlidableAction(
                                 onPressed: (_) async {
@@ -304,14 +366,22 @@ class _LoanscreenState extends State<Loanscreen> {
                                 icon: Icons.delete,
                                 label: 'Delete',
                                 backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
                               ),
                             ],
                           ),
                           child: ListTile(
-                            leading: const Icon(Icons.person),
-                            title: Text(name),
+                            leading: const Icon(
+                              Icons.person,
+                              color: Colors.amber,
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(color: Colors.white),
+                            ),
                             subtitle: Text(
                               "Amount: $amount\nDate: $formattedDate",
+                              style: const TextStyle(color: Colors.white70),
                             ),
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
@@ -351,7 +421,7 @@ class _LoanscreenState extends State<Loanscreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showLoanDialog(),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.amber,
         child: const Icon(Icons.add),
       ),
     );
