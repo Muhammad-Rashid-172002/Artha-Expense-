@@ -118,16 +118,24 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     if (await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text("Confirm"),
-            content: const Text("Delete this expense?"),
+            backgroundColor: Colors.grey[850],
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: Colors.white),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text("Confirm", style: TextStyle(color: Colors.white)),
+            content: const Text(
+              "Delete this expense?",
+              style: TextStyle(color: Colors.white),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text("No"),
+                child: const Text("No", style: TextStyle(color: Colors.white)),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text("Yes"),
+                child: const Text("Yes", style: TextStyle(color: Colors.red)),
               ),
             ],
           ),

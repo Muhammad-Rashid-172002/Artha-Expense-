@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
+import 'package:currency_picker/currency_picker.dart'; // ✅ NEW
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -66,6 +67,46 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  Future<void> _selectAndSaveCurrency() async {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true,
+      showCurrencyName: true,
+      showCurrencyCode: true,
+      onSelect: (Currency currency) async {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid == null) return;
+
+        try {
+          await FirebaseFirestore.instance.collection('users').doc(uid).update({
+            'currencyCode': currency.code,
+            'currencyFlag': currency.flag,
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Currency updated to ${currency.flag} ${currency.code}",
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Failed to update currency: $e"),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -83,6 +124,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            onPressed: _selectAndSaveCurrency,
+            icon: const Icon(Icons.attach_money),
+            tooltip: 'Select Currency',
+            color: Colors.amber,
+          ),
+        ],
       ),
       body: userId == null
           ? const Center(child: Text("User not logged in"))
@@ -99,7 +148,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No Notifications yet.'));
+                  return const Center(
+                    child: Text(
+                      'No Notifications yet.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
                 }
 
                 final notifications = snapshot.data!.docs;

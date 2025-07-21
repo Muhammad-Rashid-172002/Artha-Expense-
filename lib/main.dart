@@ -46,3 +46,88 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+//  Card(
+//                             margin: const EdgeInsets.only(bottom: 20),
+//                             color: Colors.grey[850],
+//                             shape: RoundedRectangleBorder(
+//                               borderRadius: BorderRadius.circular(16),
+//                               side: BorderSide(
+//                                 color: Colors.white, // Border color
+//                                 width: 2, // Border width
+//                               ),
+//                             ),
+//                             elevation: 4,
+//                             child: Padding(
+//                               padding: const EdgeInsets.all(16),
+//                               child: Column(
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 children: [
+//                                   Text(
+//                                     DateFormat(
+//                                       'MMMM yyyy',
+//                                     ).format(DateTime.now()),
+//                                     style: const TextStyle(
+//                                       fontSize: 20,
+//                                       fontWeight: FontWeight.bold,
+//                                       color: Colors.white,
+//                                     ),
+//                                   ),
+//                                   const SizedBox(height: 10),
+//                                   Row(
+//                                     mainAxisAlignment:
+//                                         MainAxisAlignment.spaceAround,
+//                                     children: List.generate(7, (index) {
+//                                       final today = DateTime.now();
+//                                       final startOfWeek = today.subtract(
+//                                         Duration(days: today.weekday - 1),
+//                                       );
+//                                       final currentDay = startOfWeek.add(
+//                                         Duration(days: index),
+//                                       );
+//                                       final daysOfWeek = [
+//                                         'Mon',
+//                                         'Tue',
+//                                         'Wed',
+//                                         'Thu',
+//                                         'Fri',
+//                                         'Sat',
+//                                         'Sun',
+//                                       ];
+//                                       final isToday =
+//                                           today.day == currentDay.day &&
+//                                           today.month == currentDay.month &&
+//                                           today.year == currentDay.year;
+//                                       return Column(
+//                                         children: [
+//                                           Text(
+//                                             daysOfWeek[index],
+//                                             style: const TextStyle(
+//                                               color: Colors.white,
+//                                               fontWeight: FontWeight.w500,
+//                                             ),
+//                                           ),
+//                                           const SizedBox(height: 6),
+//                                           CircleAvatar(
+//                                             radius: 16,
+//                                             backgroundColor: isToday
+//                                                 ? Colors.white
+//                                                 : Colors.transparent,
+//                                             child: Text(
+//                                               '${currentDay.day}',
+//                                               style: TextStyle(
+//                                                 color: isToday
+//                                                     ? Colors.amber
+//                                                     : Colors.white,
+//                                                 fontWeight: FontWeight.bold,
+//                                               ),
+//                                             ),
+//                                           ),
+//                                         ],
+//                                       );
+//                                     }),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           ),
+                       

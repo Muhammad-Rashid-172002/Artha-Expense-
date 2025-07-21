@@ -1,9 +1,10 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
-import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
+import 'package:expanse_tracker_app/Screens/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:currency_picker/currency_picker.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -14,8 +15,12 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final user = FirebaseAuth.instance.currentUser;
+
   String userName = '';
   String userEmail = '';
+  String selectedCurrency = 'USD';
+  String currencySymbol = '';
+  String currencyFlag = '';
 
   @override
   void initState() {
@@ -34,10 +39,35 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         userName = snapshot['name'] ?? 'No Name';
         userEmail = snapshot['email'] ?? user!.email ?? 'No Email';
+        selectedCurrency = snapshot['currency'] ?? 'USD';
+        currencySymbol = snapshot['currencySymbol'] ?? '';
+        currencyFlag = snapshot['currencyFlag'] ?? '';
       });
     } catch (e) {
       print("Error loading user info: $e");
     }
+  }
+
+  Future<void> _updateCurrency(String currencyCode) async {
+    if (user == null) return;
+
+    final currency = CurrencyService().findByCode(currencyCode);
+
+    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+      'currency': currencyCode,
+      'currencySymbol': currency?.symbol ?? '',
+      'currencyFlag': currency?.flag ?? '',
+    });
+
+    setState(() {
+      selectedCurrency = currencyCode;
+      currencySymbol = currency?.symbol ?? '';
+      currencyFlag = currency?.flag ?? '';
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Currency updated to $currencyCode')),
+    );
   }
 
   void _logout() async {
@@ -59,10 +89,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
+              backgroundColor: Colors.red,
               foregroundColor: Colors.blueGrey[900],
             ),
-            child: const Text("Logout"),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -149,6 +179,30 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  void _showCurrencyPicker() {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true,
+      showSearchField: true,
+      theme: CurrencyPickerThemeData(
+        backgroundColor: Colors.grey[900],
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
+        subtitleTextStyle: const TextStyle(color: Colors.white70),
+      ),
+      onSelect: (Currency currency) {
+        _updateCurrency(currency.code);
+      },
+    );
+  }
+
+  /// Optional: Navigate manually to HomePage (used only if you're NOT using BottomNavigationBar)
+  void _goToHomePage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,8 +253,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   userEmail,
                   style: const TextStyle(fontSize: 16, color: Colors.white70),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 const Divider(thickness: 1.2, color: Colors.white),
+                ListTile(
+                  leading: const Icon(Icons.attach_money, color: Colors.amber),
+                  title: const Text(
+                    "Preferred Currency",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '$currencyFlag $selectedCurrency',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  onTap: _showCurrencyPicker,
+                ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.redAccent),
                   title: const Text(
@@ -225,6 +294,22 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   onTap: _deleteAccount,
+                ),
+                const SizedBox(height: 20),
+
+                /// You can remove this button if you're using BottomNavigationBar
+                ElevatedButton.icon(
+                  onPressed: _goToHomePage,
+                  icon: const Icon(Icons.home),
+                  label: const Text("Go to Home"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                  ),
                 ),
               ],
             ),

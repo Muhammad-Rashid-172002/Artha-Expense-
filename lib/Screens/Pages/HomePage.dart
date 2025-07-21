@@ -26,12 +26,32 @@ class _HomePageState extends State<HomePage> {
   final currentUser = FirebaseAuth.instance.currentUser;
   bool _isLoading = false;
 
+  String currencySymbol = "";
+  String currencyFlag = "";
   @override
   void initState() {
     super.initState();
     _loadSalaryFromFirebase();
     _calculateTotalIncome();
     _calculateTotalExpense();
+  }
+
+  Future<void> _loadCurrencySymbol() async {
+    if (currentUser == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
+      if (doc.exists) {
+        setState(() {
+          currencySymbol = doc.data()?['currencySymbol'] ?? '';
+          currencyFlag = doc.data()?['currencyFlag'] ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading currency: $e");
+    }
   }
 
   Future<void> _loadSalaryFromFirebase() async {
@@ -214,21 +234,36 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isOverspending = totalExpense >= totalIncome;
+    final bool isHighSpending = totalExpense >= (totalIncome * 0.75);
+
     final List<Map<String, dynamic>> mainCards = [
       {
         "title": "Total Income",
-        "amount": " ${totalIncome.toStringAsFixed(2)}",
-        "icon": Icons.attach_money,
+        "amount":
+            "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${totalIncome.toStringAsFixed(2)}",
+        "icon": Icons.arrow_upward,
+        "iconColor": Colors.green,
       },
       {
         "title": "Total Expense",
-        "amount": " ${totalExpense.toStringAsFixed(2)}",
-        "icon": Icons.money_off,
+        "amount":
+            "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${totalExpense.toStringAsFixed(2)}",
+        "icon": isOverspending || isHighSpending
+            ? Icons.arrow_downward
+            : Icons.arrow_upward,
+        "iconColor": isOverspending
+            ? Colors.red
+            : isHighSpending
+            ? Colors.red
+            : Colors.green,
       },
       {
         "title": "Monthly Budget",
-        "amount": " ${monthlyBudget.toStringAsFixed(2)}",
+        "amount":
+            "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${monthlyBudget.toStringAsFixed(2)}",
         "icon": Icons.pie_chart,
+        "iconColor": Colors.white,
       },
     ];
 
@@ -401,8 +436,10 @@ class _HomePageState extends State<HomePage> {
                                         Icon(
                                           card["icon"],
                                           size: 30,
-                                          color: Colors.white,
+                                          color:
+                                              card["iconColor"] ?? Colors.white,
                                         ),
+
                                         Text(
                                           card["title"],
                                           style: const TextStyle(
