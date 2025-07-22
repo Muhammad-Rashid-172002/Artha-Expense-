@@ -204,7 +204,7 @@ class _TaskPageState extends State<TaskPage> {
                           child: Text(
                             'No savings goals yet.\nTap the + button to add one.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                         );
                       }

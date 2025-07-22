@@ -290,7 +290,7 @@ class _LoanscreenState extends State<Loanscreen> {
         stream: getUserLoans(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: SpinKitCircle(color: Colors.blue));
+            return const Center(child: SpinKitCircle(color: Colors.white));
           }
 
           final loans = snapshot.data!.docs;

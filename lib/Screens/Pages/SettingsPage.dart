@@ -220,98 +220,103 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         backgroundColor: Colors.black,
       ),
-      body: Center(
-        child: Card(
-          margin: const EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Colors.white, width: 2),
-          ),
-          elevation: 6,
-          color: Colors.grey[850],
-          shadowColor: Colors.blueGrey.withOpacity(0.2),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 25),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Color.fromARGB(255, 203, 157, 19),
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  userName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Card(
+            margin: const EdgeInsets.all(20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Colors.white, width: 2),
+            ),
+            elevation: 6,
+            color: Colors.grey[850],
+            shadowColor: Colors.blueGrey.withOpacity(0.2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 25),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Color.fromARGB(255, 203, 157, 19),
+                    child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
-                ),
-                Text(
-                  userEmail,
-                  style: const TextStyle(fontSize: 16, color: Colors.white70),
-                ),
-                const SizedBox(height: 20),
-                const Divider(thickness: 1.2, color: Colors.white),
-                ListTile(
-                  leading: const Icon(Icons.attach_money, color: Colors.amber),
-                  title: const Text(
-                    "Preferred Currency",
-                    style: TextStyle(
+                  const SizedBox(height: 10),
+                  Text(
+                    userName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  subtitle: Text(
-                    '$currencyFlag $selectedCurrency',
-                    style: const TextStyle(color: Colors.white70),
+                  Text(
+                    userEmail,
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                   ),
-                  onTap: _showCurrencyPicker,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.redAccent),
-                  title: const Text(
-                    "Logout",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(height: 20),
+                  const Divider(thickness: 1.2, color: Colors.white),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.attach_money,
+                      color: Colors.amber,
                     ),
-                  ),
-                  onTap: _logout,
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.delete_forever,
-                    color: Colors.redAccent,
-                  ),
-                  title: const Text(
-                    "Delete Account",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                    title: const Text(
+                      "Preferred Currency",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
+                    subtitle: Text(
+                      '$currencyFlag $selectedCurrency',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    onTap: _showCurrencyPicker,
                   ),
-                  onTap: _deleteAccount,
-                ),
-                const SizedBox(height: 20),
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.redAccent),
+                    title: const Text(
+                      "Logout",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onTap: _logout,
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_forever,
+                      color: Colors.redAccent,
+                    ),
+                    title: const Text(
+                      "Delete Account",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onTap: _deleteAccount,
+                  ),
+                  const SizedBox(height: 20),
 
-                /// You can remove this button if you're using BottomNavigationBar
-                ElevatedButton.icon(
-                  onPressed: _goToHomePage,
-                  icon: const Icon(Icons.home),
-                  label: const Text("Go to Home"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 12,
+                  /// You can remove this button if you're using BottomNavigationBar
+                  ElevatedButton.icon(
+                    onPressed: _goToHomePage,
+                    icon: const Icon(Icons.home),
+                    label: const Text("Go to Home"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 12,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

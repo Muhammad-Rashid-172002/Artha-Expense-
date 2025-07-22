@@ -1,9 +1,9 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:currency_picker/currency_picker.dart'; // ✅ NEW
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -15,12 +15,12 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  final List<String> shownNotificationIds = [];
 
   @override
   void initState() {
     super.initState();
     _initializeNotifications();
+    checkRemainingIncome(); // ✅ Check remaining income on init
   }
 
   Future<void> _initializeNotifications() async {
@@ -34,7 +34,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _showLocalNotification(String title, String message) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'your_channel_id',
           'Notification Channel',
@@ -43,68 +43,101 @@ class _NotificationsPageState extends State<NotificationsPage> {
           playSound: true,
         );
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
     );
 
     await flutterLocalNotificationsPlugin.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title,
       message,
-      platformChannelSpecifics,
+      notificationDetails,
     );
   }
 
-  void _handleNewNotifications(List<QueryDocumentSnapshot> docs) {
-    for (final doc in docs) {
-      if (!shownNotificationIds.contains(doc.id)) {
-        final title = doc['title'] ?? 'No Title';
-        final message = doc['message'] ?? 'No Message';
+  // ✅ NEW FUNCTION: Check income vs expenses
+  Future<void> checkRemainingIncome() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
 
-        shownNotificationIds.add(doc.id);
-        _showLocalNotification(title, message);
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+    final data = userDoc.data();
+    if (data == null) return;
+
+    final income = (data['income'] ?? 0).toDouble();
+    final expenses = (data['expenses'] ?? 0).toDouble();
+    final remaining = income - expenses;
+
+    if (remaining <= 100) {
+      await _showLocalNotification(
+        "Low Remaining Income",
+        "Your remaining income is only \$${remaining.toStringAsFixed(2)}",
+      );
+    }
+  }
+
+  Future<void> _handleNewNotifications(List<QueryDocumentSnapshot> docs) async {
+    for (final doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final isShown = data['isShown'] ?? false;
+
+      if (!isShown) {
+        final title = data['title'] ?? 'No Title';
+        final message = data['message'] ?? 'No Message';
+
+        await _showLocalNotification(title, message);
+        await doc.reference.update({'isShown': true});
       }
     }
   }
 
-  Future<void> _selectAndSaveCurrency() async {
-    showCurrencyPicker(
+  Future<void> _confirmDelete(DocumentReference docRef) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      showFlag: true,
-      showCurrencyName: true,
-      showCurrencyCode: true,
-      onSelect: (Currency currency) async {
-        final uid = FirebaseAuth.instance.currentUser?.uid;
-        if (uid == null) return;
-
-        try {
-          await FirebaseFirestore.instance.collection('users').doc(uid).update({
-            'currencyCode': currency.code,
-            'currencyFlag': currency.flag,
-          });
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "Currency updated to ${currency.flag} ${currency.code}",
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        } catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Failed to update currency: $e"),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      },
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.blueGrey.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: const BorderSide(color: Colors.white, width: 2),
+        ),
+        title: const Text(
+          "Delete Notification",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "Are you sure you want to delete this notification?",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          TextButton(
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.redAccent),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed == true) {
+      await docRef.delete();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Notification deleted"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -124,17 +157,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            onPressed: _selectAndSaveCurrency,
-            icon: const Icon(Icons.attach_money),
-            tooltip: 'Select Currency',
-            color: Colors.amber,
-          ),
-        ],
       ),
       body: userId == null
-          ? const Center(child: Text("User not logged in"))
+          ? const Center(
+              child: Text(
+                "User not logged in",
+                style: TextStyle(color: Colors.white),
+              ),
+            )
           : StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
@@ -158,7 +188,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                 final notifications = snapshot.data!.docs;
 
-                // Show notifications locally
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _handleNewNotifications(notifications);
                 });
@@ -167,84 +196,96 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   itemCount: notifications.length,
                   itemBuilder: (context, index) {
                     final doc = notifications[index];
-                    final title = doc['title'] ?? 'No Title';
-                    final message = doc['message'] ?? 'No Message';
-                    final timestamp = doc['timestamp'] as Timestamp?;
+                    final data = doc.data() as Map<String, dynamic>;
+                    final title = data['title'] ?? 'No Title';
+                    final message = data['message'] ?? 'No Message';
+                    final timestamp = data['timestamp'] as Timestamp?;
                     final formattedTime = timestamp != null
                         ? DateFormat(
                             'dd MMM yyyy, hh:mm a',
                           ).format(timestamp.toDate())
                         : 'Unknown time';
 
-                    return Center(
-                      child: Card(
-                        color: Colors.grey[850],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Colors.white, width: 1),
-                        ),
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 12,
-                        ),
-                        elevation: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                            vertical: 8,
+                    return Dismissible(
+                      key: Key(doc.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        color: Colors.red,
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      confirmDismiss: (_) async {
+                        await _confirmDelete(doc.reference);
+                        return false;
+                      },
+                      child: Center(
+                        child: Card(
+                          color: Colors.grey[850],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(
+                              color: Colors.white,
+                              width: 1,
+                            ),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 4,
-                                height: 80,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      leading: const Icon(
-                                        Icons.notifications,
-                                        color: Colors.amber,
-                                      ),
-                                      title: Text(
-                                        title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            message,
-                                            style: const TextStyle(
-                                              color: Colors.white70,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            formattedTime,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ],
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
+                          elevation: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 80,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.notifications,
+                                      color: Colors.amber,
+                                    ),
+                                    title: Text(
+                                      title,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ],
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          message,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          formattedTime,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
