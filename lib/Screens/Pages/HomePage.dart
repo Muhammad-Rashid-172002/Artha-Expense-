@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expanse_tracker_app/Screens/Pages/TaskPage.dart';
 import 'package:expanse_tracker_app/Screens/Pages/Update_Income/Incomescreen.dart';
 import 'package:expanse_tracker_app/Screens/Pages/smallCard/Loanscreen.dart';
 import 'package:expanse_tracker_app/Screens/Pages/smallCard/reminder.dart';
+import 'package:expanse_tracker_app/Screens/Pages/smallCard/saving.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:expanse_tracker_app/Screens/Pages/expanse/montlybudget.dart';
@@ -164,12 +164,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _navigateToScreen(String title) {
-    if (title == "Total Expense") {
+    if (title == "Expense") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => ExpenseScreen()),
       );
-    } else if (title == "Monthly Budget") {
+    } else if (title == "Budget") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => BudgetScreen()),
@@ -283,14 +283,14 @@ class _HomePageState extends State<HomePage> {
 
     final List<Map<String, dynamic>> mainCards = [
       {
-        "title": "Total Income",
+        "title": "Income",
         "amount":
             "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${totalIncome.toStringAsFixed(2)}",
         "icon": Icons.arrow_upward,
         "iconColor": Colors.green,
       },
       {
-        "title": "Total Expense",
+        "title": "Expense",
         "amount":
             "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${totalExpense.toStringAsFixed(2)}",
         "icon": isOverspending || isHighSpending
@@ -303,7 +303,7 @@ class _HomePageState extends State<HomePage> {
             : Colors.green,
       },
       {
-        "title": "Monthly Budget",
+        "title": "Budget",
         "amount":
             "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}${currencySymbol}${monthlyBudget.toStringAsFixed(2)}",
         "icon": Icons.pie_chart,
@@ -368,9 +368,9 @@ class _HomePageState extends State<HomePage> {
                                       color: Colors.grey[850],
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(16),
-                                        side: BorderSide(
-                                          color: Colors.white, // Border color
-                                          width: 2, // Border width
+                                        side: const BorderSide(
+                                          color: Colors.white,
+                                          width: 2,
                                         ),
                                       ),
                                       elevation: 4,
@@ -422,41 +422,84 @@ class _HomePageState extends State<HomePage> {
                                                         currentDay.month &&
                                                     today.year ==
                                                         currentDay.year;
-                                                return Column(
-                                                  children: [
-                                                    Text(
-                                                      daysOfWeek[index],
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
+
+                                                if (isToday) {
+                                                  // Highlight entire container for today
+                                                  return Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 10,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.amber,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
                                                     ),
-                                                    const SizedBox(height: 6),
-                                                    CircleAvatar(
-                                                      radius: 16,
-                                                      backgroundColor: isToday
-                                                          ? Colors.white
-                                                          : Colors.transparent,
-                                                      child: Text(
-                                                        '${currentDay.day}',
-                                                        style: TextStyle(
-                                                          color: isToday
-                                                              ? Colors.amber
-                                                              : Colors.white,
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          daysOfWeek[index],
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 6,
+                                                        ),
+                                                        Text(
+                                                          '${currentDay.day}',
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 16,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                } else {
+                                                  // Default style for other days
+                                                  return Column(
+                                                    children: [
+                                                      Text(
+                                                        daysOfWeek[index],
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w500,
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                );
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        '${currentDay.day}',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
                                               }),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
+
                                     const SizedBox(height: 20),
                                     Row(
                                       mainAxisAlignment:
@@ -465,8 +508,7 @@ class _HomePageState extends State<HomePage> {
                                         return Expanded(
                                           child: GestureDetector(
                                             onTap: () {
-                                              if (card["title"] ==
-                                                  "Total Income") {
+                                              if (card["title"] == "Income") {
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -554,8 +596,7 @@ class _HomePageState extends State<HomePage> {
                                                   Navigator.push(
                                                     context,
                                                     MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          const TaskPage(),
+                                                      builder: (_) => Savings(),
                                                     ),
                                                   );
                                                   break;

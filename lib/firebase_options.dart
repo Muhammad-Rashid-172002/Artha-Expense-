@@ -50,19 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDxQzd36H8cGjQM_7Bb3fhXPCF8BHbEaaY',
-    appId: '1:480647790824:android:40e137210135d9a58e895d',
-    messagingSenderId: '480647790824',
-    projectId: 'expanse-tracker-app-2d7e4',
-    storageBucket: 'expanse-tracker-app-2d7e4.firebasestorage.app',
+    apiKey: 'AIzaSyC7jjqKrumOJtLh7ZifxzpjwEUK7mpqDHY',
+    appId: '1:155227403448:android:f6dca78be8fd40128ef04d',
+    messagingSenderId: '155227403448',
+    projectId: 'artha-b88ab',
+    storageBucket: 'artha-b88ab.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD3sSt-ojRR4r64jYJUfDLrhEgJaFnX2j0',
-    appId: '1:480647790824:ios:783606a2c50557218e895d',
-    messagingSenderId: '480647790824',
-    projectId: 'expanse-tracker-app-2d7e4',
-    storageBucket: 'expanse-tracker-app-2d7e4.firebasestorage.app',
+    apiKey: 'AIzaSyBOMIucnaTmDSQnlkINqMdxl_nADE_IhFk',
+    appId: '1:155227403448:ios:3389d7cbd3b6292e8ef04d',
+    messagingSenderId: '155227403448',
+    projectId: 'artha-b88ab',
+    storageBucket: 'artha-b88ab.firebasestorage.app',
+    iosClientId: '155227403448-e0hb453ehfsqbk74priqrgeg9m4lo7ju.apps.googleusercontent.com',
     iosBundleId: 'com.example.expanseTrackerApp',
   );
 }

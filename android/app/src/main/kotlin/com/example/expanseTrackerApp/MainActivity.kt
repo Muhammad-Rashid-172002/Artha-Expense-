@@ -1,4 +1,4 @@
-package com.example.expanse_tracker_app
+package com.example.expanseTrackerApp
 
 import io.flutter.embedding.android.FlutterActivity
 

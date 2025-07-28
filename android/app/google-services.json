@@ -1,26 +1,43 @@
 {
   "project_info": {
-    "project_number": "480647790824",
-    "project_id": "expanse-tracker-app-2d7e4",
-    "storage_bucket": "expanse-tracker-app-2d7e4.firebasestorage.app"
+    "project_number": "155227403448",
+    "project_id": "artha-b88ab",
+    "storage_bucket": "artha-b88ab.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:480647790824:android:40e137210135d9a58e895d",
+        "mobilesdk_app_id": "1:155227403448:android:f6dca78be8fd40128ef04d",
         "android_client_info": {
           "package_name": "com.example.expanse_tracker_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "155227403448-dnf4epdqr4cgfa9qrabkj02vl1ghjfon.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDxQzd36H8cGjQM_7Bb3fhXPCF8BHbEaaY"
+          "current_key": "AIzaSyC7jjqKrumOJtLh7ZifxzpjwEUK7mpqDHY"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "155227403448-dnf4epdqr4cgfa9qrabkj02vl1ghjfon.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "155227403448-e0hb453ehfsqbk74priqrgeg9m4lo7ju.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.expanseTrackerApp"
+              }
+            }
+          ]
         }
       }
     }
