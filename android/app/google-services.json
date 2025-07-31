@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:155227403448:android:f6dca78be8fd40128ef04d",
+        "mobilesdk_app_id": "1:155227403448:android:4087b156935d4cb28ef04d",
         "android_client_info": {
-          "package_name": "com.example.expanse_tracker_app"
+          "package_name": "com.example.expanseTrackerApp"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "155227403448-b4gq1n9nct3rk5497h3tg70f88h2fn9a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.expanseTrackerApp",
+            "certificate_hash": "d14a2528de49c36b8c88928b7872241cefea04c7"
+          }
+        },
         {
           "client_id": "155227403448-dnf4epdqr4cgfa9qrabkj02vl1ghjfon.apps.googleusercontent.com",
           "client_type": 3

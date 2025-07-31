@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"artha-b88ab","appId":"1:155227403448:android:f6dca78be8fd40128ef04d","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"artha-b88ab","configurations":{"android":"1:155227403448:android:f6dca78be8fd40128ef04d","ios":"1:155227403448:ios:3389d7cbd3b6292e8ef04d"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "artha-b88ab",
+          "appId": "1:155227403448:android:f6dca78be8fd40128ef04d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "artha-b88ab",
+          "configurations": {
+            "android": "1:155227403448:android:f6dca78be8fd40128ef04d",
+            "ios": "1:155227403448:ios:3389d7cbd3b6292e8ef04d"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
