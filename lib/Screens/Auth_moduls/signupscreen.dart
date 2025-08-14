@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expanse_tracker_app/Screens/Auth_moduls/ForgotPassword.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:flutter/material.dart';
@@ -58,36 +59,23 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
+      // 🔴 Force sign-out so account picker always appears
+      await GoogleSignIn().signOut();
+
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         setState(() => _isLoading = false);
-        return;
+        return; // User cancelled
       }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-
-      final userDoc = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid);
-
-      final docSnapshot = await userDoc.get();
-      if (!docSnapshot.exists) {
-        await userDoc.set({
-          'name': userCredential.user!.displayName ?? '',
-          'email': userCredential.user!.email ?? '',
-          'createdAt': Timestamp.now(),
-        });
-      }
-
+      await FirebaseAuth.instance.signInWithCredential(credential);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -95,7 +83,7 @@ class _SignupScreenState extends State<SignupScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Google Sign-In failed: $e')));
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In failed: $e")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -299,6 +287,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                       const SizedBox(height: 25),
                       const Divider(color: Colors.amber),
+
                       const SizedBox(height: 15),
 
                       GestureDetector(

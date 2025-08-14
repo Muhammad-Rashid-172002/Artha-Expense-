@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Auth_moduls/LoginRequriedPage.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -126,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => SignupScreen(),
+                              builder: (context) => LoginRequiredPage(),
                             ),
                           );
                         }

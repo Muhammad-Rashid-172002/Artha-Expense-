@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Auth_moduls/ForgotPassword.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -177,7 +178,28 @@ class _SigninScreenState extends State<SigninScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForgotPassword(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.amber),
+                    SizedBox(height: 20),
                     GestureDetector(
                       onTap: _isLoading ? null : _signInWithGoogle,
                       child: Container(

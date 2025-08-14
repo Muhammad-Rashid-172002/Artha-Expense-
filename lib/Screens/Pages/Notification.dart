@@ -16,11 +16,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  DateTime selectedDate = DateTime.now().add(const Duration(minutes: 1));
+
   @override
   void initState() {
     super.initState();
     _initializeNotifications();
-    checkRemainingIncome(); // ✅ Check remaining income on init
+    checkRemainingIncome();
   }
 
   Future<void> _initializeNotifications() async {
@@ -31,6 +35,68 @@ class _NotificationsPageState extends State<NotificationsPage> {
         InitializationSettings(android: initializationSettingsAndroid);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> _scheduleNotification(
+    DateTime scheduledTime,
+    String title,
+    String message,
+  ) async {
+    final androidDetails = AndroidNotificationDetails(
+      'reminder_channel_id',
+      'Reminders',
+      channelDescription: 'Reminder notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    final notificationDetails = NotificationDetails(android: androidDetails);
+  }
+
+  Future<void> _saveReminder() async {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (title.isEmpty ||
+        description.isEmpty ||
+        selectedDate.isBefore(DateTime.now())) {
+      _showSnackbar("Please fill all fields correctly");
+      return;
+    }
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final remindersRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('reminders');
+
+    final reminderData = {
+      'title': title,
+      'description': description,
+      'time': selectedDate,
+      'createdAt': Timestamp.now(),
+    };
+
+    await remindersRef.add(reminderData);
+
+    final notificationsRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('users_notifications');
+
+    await notificationsRef.add({
+      'title': 'Reminder: $title',
+      'message': description,
+      'timestamp': Timestamp.fromDate(selectedDate),
+      'isShown': false,
+    });
+
+    await _scheduleNotification(selectedDate, 'Reminder: $title', description);
+
+    _showSnackbar("Reminder saved and scheduled!");
+    Navigator.pop(context);
   }
 
   Future<void> _showLocalNotification(String title, String message) async {
@@ -55,7 +121,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  // ✅ NEW FUNCTION: Check income vs expenses
   Future<void> checkRemainingIncome() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
@@ -67,8 +132,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final data = userDoc.data();
     if (data == null) return;
 
-    final income = (data['income'] ?? 0).toDouble();
-    final expenses = (data['expenses'] ?? 0).toDouble();
+    final income = (data['income'] as num?)?.toDouble() ?? 0.0;
+    final expenses = (data['expenses'] as num?)?.toDouble() ?? 0.0;
     final remaining = income - expenses;
 
     if (remaining <= 100) {
@@ -140,6 +205,38 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (date == null) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(selectedDate),
+    );
+    if (time == null) return;
+
+    setState(() {
+      selectedDate = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -147,6 +244,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Notifications',
           style: TextStyle(

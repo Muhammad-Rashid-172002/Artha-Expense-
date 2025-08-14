@@ -7,18 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:155227403448:android:4087b156935d4cb28ef04d",
+        "mobilesdk_app_id": "1:155227403448:android:ac33a4c54519d5628ef04d",
         "android_client_info": {
-          "package_name": "com.example.expanseTrackerApp"
+          "package_name": "com.kesava.artha"
         }
       },
       "oauth_client": [
         {
-          "client_id": "155227403448-b4gq1n9nct3rk5497h3tg70f88h2fn9a.apps.googleusercontent.com",
+          "client_id": "155227403448-oc7gq4glp6qjhsu6p757sqns2nqpaj6v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.expanseTrackerApp",
-            "certificate_hash": "d14a2528de49c36b8c88928b7872241cefea04c7"
+            "package_name": "com.kesava.artha",
+            "certificate_hash": "6f8fc40c0c11ad96aab3b0f0420137b5c5106f7e"
           }
         },
         {
@@ -39,10 +39,10 @@
               "client_type": 3
             },
             {
-              "client_id": "155227403448-e0hb453ehfsqbk74priqrgeg9m4lo7ju.apps.googleusercontent.com",
+              "client_id": "155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.expanseTrackerApp"
+                "bundle_id": "com.kesava.artha"
               }
             }
           ]

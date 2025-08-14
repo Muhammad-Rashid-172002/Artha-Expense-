@@ -137,7 +137,12 @@ class _IncomeScreenState extends State<IncomeScreen> {
               const SizedBox(height: 16),
               Expanded(
                 child: incomeDocs.isEmpty
-                    ? const Center(child: Text('No income added yet.'))
+                    ? const Center(
+                        child: Text(
+                          'No income added yet.',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: incomeDocs.length,
                         itemBuilder: (context, index) {

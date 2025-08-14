@@ -6,6 +6,8 @@ import 'package:expanse_tracker_app/Screens/Pages/SettingsPage.dart';
 import 'package:expanse_tracker_app/Screens/Pages/TaskPage.dart';
 
 class HomeScreen extends StatefulWidget {
+  final int initialIndex;
+  const HomeScreen({Key? key, this.initialIndex = 0}) : super(key: key);
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
@@ -31,6 +32,9 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   DateTime? _selectedDateTime;
   bool _isLoading = false;
 
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   @override
   void initState() {
     super.initState();
@@ -39,61 +43,91 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       text: widget.initialDescription ?? '',
     );
     _selectedDateTime = widget.initialDateTime;
+
+    _initializeNotifications();
+  }
+
+  void _initializeNotifications() async {
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings settings = InitializationSettings(
+      android: androidSettings,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(settings);
+  }
+
+  void _showLocalNotification(String title, String body) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'reminder_channel',
+          'Reminder Notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+          color: Colors.amber,
+          icon: '@mipmap/ic_launcher',
+        );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      notificationDetails,
+    );
   }
 
   void _pickDateTime() async {
     final currentDate = DateTime.now();
 
-    // Date picker
     final pickedDate = await showDatePicker(
       context: context,
       initialDate:
           _selectedDateTime ?? currentDate.add(const Duration(days: 1)),
       firstDate: currentDate,
       lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: Colors.amber,
+            onPrimary: Colors.black,
+            surface: Colors.grey,
+            onSurface: Colors.white,
+          ),
+          dialogBackgroundColor: Colors.black,
+        ),
+        child: child!,
+      ),
+    );
+
+    if (pickedDate != null) {
+      final pickedTime = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 9, minute: 0),
+        builder: (context, child) => Theme(
           data: ThemeData.dark().copyWith(
+            timePickerTheme: const TimePickerThemeData(
+              backgroundColor: Colors.black,
+              hourMinuteTextColor: Colors.amber,
+              hourMinuteColor: Colors.white10,
+              dialHandColor: Colors.amber,
+              dialBackgroundColor: Colors.grey,
+              entryModeIconColor: Colors.amber,
+              dayPeriodTextColor: Colors.white,
+            ),
             colorScheme: const ColorScheme.dark(
               primary: Colors.amber,
               onPrimary: Colors.black,
               surface: Colors.grey,
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: Colors.black,
           ),
           child: child!,
-        );
-      },
-    );
-
-    if (pickedDate != null) {
-      // Time picker
-      final pickedTime = await showTimePicker(
-        context: context,
-        initialTime: const TimeOfDay(hour: 9, minute: 0),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData.dark().copyWith(
-              timePickerTheme: const TimePickerThemeData(
-                backgroundColor: Colors.black,
-                hourMinuteTextColor: Colors.amber,
-                hourMinuteColor: Colors.white10,
-                dialHandColor: Colors.amber,
-                dialBackgroundColor: Colors.grey,
-                entryModeIconColor: Colors.amber,
-                dayPeriodTextColor: Colors.white,
-              ),
-              colorScheme: const ColorScheme.dark(
-                primary: Colors.amber,
-                onPrimary: Colors.black,
-                surface: Colors.grey,
-                onSurface: Colors.white,
-              ),
-            ),
-            child: child!,
-          );
-        },
+        ),
       );
 
       if (pickedTime != null) {
@@ -127,6 +161,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
+
       final reminderData = {
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
@@ -144,6 +179,10 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         _showSnackbar("Reminder updated successfully");
       } else {
         await remindersRef.add(reminderData);
+        _showLocalNotification(
+          "Reminder Added!",
+          "You added a reminder: ${_titleController.text.trim()}",
+        );
         _showSnackbar("Reminder added successfully");
       }
 
@@ -208,7 +247,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                       hintStyle: const TextStyle(color: Colors.white38),
                       labelStyle: const TextStyle(color: Colors.white70),
                       prefixIcon: const Icon(Icons.title, color: Colors.amber),
-
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: Colors.white24),
                         borderRadius: BorderRadius.circular(12),
@@ -235,7 +273,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                     validator: (value) =>
                         value == null || value.isEmpty ? "Enter a title" : null,
                   ),
-
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _descriptionController,
@@ -250,8 +287,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                         Icons.description,
                         color: Colors.amber,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[850],
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: Colors.white24),
                         borderRadius: BorderRadius.circular(12),
@@ -279,7 +314,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                         ? "Enter a description"
                         : null,
                   ),
-
                   const SizedBox(height: 16),
                   ListTile(
                     tileColor: Colors.grey[700],

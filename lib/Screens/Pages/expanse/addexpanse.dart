@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final Map<String, dynamic>? existingData;
-  final String? docId; // 🔁 Add docId to identify the document being edited
+  final String? docId;
 
   const AddExpenseScreen({super.key, this.existingData, this.docId});
 
@@ -20,7 +21,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
 
-  // ✅ Updated: Clean, consistent category list
   final List<String> categories = [
     "Grocery",
     "Health",
@@ -68,11 +68,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     final title = titleController.text.trim();
     final amountText = amountController.text.trim();
+    final amount = double.tryParse(amountText) ?? 0;
 
-    if (title.isEmpty || amountText.isEmpty) {
+    if (title.isEmpty || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter an expense title and amount'),
+          content: Text('Please enter a valid title and amount'),
           backgroundColor: Colors.red,
         ),
       );
@@ -84,40 +85,75 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     setState(() => isLoading = true);
 
-    final newExpense = {
-      "title": title,
-      "date": DateFormat("dd MMM yyyy").format(selectedDate),
-      "amount": double.tryParse(amountText) ?? 0,
-      "vat": "Vat 0.5%",
-      "method": "Cash",
-      "icon": categoryIcons[selectedCategory]?.codePoint,
-      "iconFontFamily": categoryIcons[selectedCategory]?.fontFamily,
-      "category": selectedCategory,
-      "timestamp": Timestamp.now(),
-    };
-
     try {
-      final collectionRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('users_expenses');
+      final newExpense = {
+        "title": title,
+        "date": DateFormat("dd MMM yyyy").format(selectedDate),
+        "amount": amount,
+        "vat": "Vat 0.5%",
+        "method": "Cash",
+        "icon": categoryIcons[selectedCategory]?.codePoint,
+        "iconFontFamily": categoryIcons[selectedCategory]?.fontFamily,
+        "category": selectedCategory,
+        "timestamp": Timestamp.now(),
+      };
 
+      final userDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+
+      final expenseCollection = userDoc.collection('users_expenses');
+
+      // 🔍 Check and update category budget (only on new expense)
+      if (widget.docId == null) {
+        final budgetQuery = await userDoc
+            .collection('category_budgets')
+            .where('category', isEqualTo: selectedCategory)
+            .limit(1)
+            .get();
+
+        if (budgetQuery.docs.isNotEmpty) {
+          final doc = budgetQuery.docs.first;
+          final currentUsed = doc['used'] ?? 0.0;
+          final budget = doc['budget'] ?? 0.0;
+          final newUsed = currentUsed + amount;
+
+          if (newUsed > budget) {
+            final remaining = (budget - currentUsed).clamp(0, budget);
+            await showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('Budget Exceeded!'),
+                content: Text(
+                  'You exceeded your $selectedCategory budget.\nRemaining: \$${remaining.toStringAsFixed(2)}',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Continue'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // 🔁 Update category used amount
+          await doc.reference.update({'used': newUsed});
+        }
+      }
+
+      // ✅ Save or Update Expense
       if (widget.docId != null) {
-        // 📝 Update existing document
-        await collectionRef.doc(widget.docId).update(newExpense);
+        await expenseCollection.doc(widget.docId).update(newExpense);
       } else {
-        // ➕ Add new expense
-        await collectionRef.add(newExpense);
-        // ✅ SEND NOTIFICATION TO Firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('users_notifications')
-            .add({
-              'title': 'New Expense Added',
-              'message': 'You added ${amountText} for "$title".',
-              'timestamp': FieldValue.serverTimestamp(),
-            });
+        await expenseCollection.add(newExpense);
+
+        // Optional: Send notification to Firestore
+        await userDoc.collection('users_notifications').add({
+          'title': 'New Expense Added',
+          'message': 'You added \$${amount.toStringAsFixed(2)} for "$title".',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
       }
 
       Navigator.pop(context, newExpense);
@@ -223,9 +259,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     style: const TextStyle(color: Colors.white),
                     iconEnabledColor: Colors.white,
                     onChanged: (value) {
-                      if (value != null) {
+                      if (value != null)
                         setState(() => selectedCategory = value);
-                      }
                     },
                     items: categories.map((cat) {
                       return DropdownMenuItem(value: cat, child: Text(cat));
@@ -251,7 +286,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ),
                       onPressed: isLoading ? null : _submitExpense,
                       child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const SpinKitFadingCircle(color: Colors.white)
                           : Text(
                               widget.existingData != null
                                   ? "SAVE CHANGES"

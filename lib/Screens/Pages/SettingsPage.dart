@@ -1,4 +1,5 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
+import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
 import 'package:expanse_tracker_app/Screens/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
@@ -44,29 +45,43 @@ class _SettingsPageState extends State<SettingsPage> {
         currencyFlag = snapshot['currencyFlag'] ?? '';
       });
     } catch (e) {
-      print("Error loading user info: $e");
+      debugPrint("Error loading user info: $e");
     }
   }
 
-  Future<void> _updateCurrency(String currencyCode) async {
+  Future<void> _updateCurrency(Currency currency) async {
     if (user == null) return;
 
-    final currency = CurrencyService().findByCode(currencyCode);
-
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
-      'currency': currencyCode,
-      'currencySymbol': currency?.symbol ?? '',
-      'currencyFlag': currency?.flag ?? '',
+      'currency': currency.code,
+      'currencySymbol': currency.symbol,
+      'currencyFlag': currency.flag ?? '',
     });
 
     setState(() {
-      selectedCurrency = currencyCode;
-      currencySymbol = currency?.symbol ?? '';
-      currencyFlag = currency?.flag ?? '';
+      selectedCurrency = currency.code;
+      currencySymbol = currency.symbol;
+      currencyFlag = currency.flag ?? '';
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Currency updated to $currencyCode')),
+      SnackBar(content: Text('Currency updated to ${currency.code}')),
+    );
+  }
+
+  void _showCurrencyPicker() {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true,
+      showSearchField: true,
+      theme: CurrencyPickerThemeData(
+        backgroundColor: Colors.grey[900],
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
+        subtitleTextStyle: const TextStyle(color: Colors.white70),
+      ),
+      onSelect: (Currency currency) {
+        _updateCurrency(currency);
+      },
     );
   }
 
@@ -90,9 +105,9 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.blueGrey[900],
+              foregroundColor: Colors.white,
             ),
-            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+            child: const Text("Logout"),
           ),
         ],
       ),
@@ -177,30 +192,6 @@ class _SettingsPageState extends State<SettingsPage> {
         ).showSnackBar(SnackBar(content: Text("Unexpected error: $e")));
       }
     }
-  }
-
-  void _showCurrencyPicker() {
-    showCurrencyPicker(
-      context: context,
-      showFlag: true,
-      showSearchField: true,
-      theme: CurrencyPickerThemeData(
-        backgroundColor: Colors.grey[900],
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
-        subtitleTextStyle: const TextStyle(color: Colors.white70),
-      ),
-      onSelect: (Currency currency) {
-        _updateCurrency(currency.code);
-      },
-    );
-  }
-
-  /// Optional: Navigate manually to HomePage (used only if you're NOT using BottomNavigationBar)
-  void _goToHomePage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => HomePage()),
-    );
   }
 
   @override
@@ -300,10 +291,16 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: _deleteAccount,
                   ),
                   const SizedBox(height: 20),
-
-                  /// You can remove this button if you're using BottomNavigationBar
                   ElevatedButton.icon(
-                    onPressed: _goToHomePage,
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              HomeScreen(initialIndex: 0), // requires param
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.home),
                     label: const Text("Go to Home"),
                     style: ElevatedButton.styleFrom(
