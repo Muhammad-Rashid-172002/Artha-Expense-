@@ -22,7 +22,6 @@ void main() async {
   if (!kIsWeb) {
     // Android/iOS only - Not for Web
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -52,4 +51,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
