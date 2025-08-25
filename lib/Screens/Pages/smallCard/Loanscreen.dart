@@ -8,6 +8,51 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
+/// Temporary storage for guest reminders (in-memory)
+class GuestReminderStore {
+  static final List<Map<String, dynamic>> _gustLoan = [];
+
+  static List<Map<String, dynamic>> get reminders =>
+      List<Map<String, dynamic>>.from(_gustLoan)..sort(
+        (a, b) =>
+            (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime),
+      );
+
+  static void addReminder({
+    required String title,
+    required String description,
+    required DateTime dateTime,
+  }) {
+    _gustLoan.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'title': title,
+      'description': description,
+      'dateTime': dateTime,
+    });
+  }
+
+  static void editReminder({
+    required String id,
+    required String title,
+    required String description,
+    required DateTime dateTime,
+  }) {
+    final idx = _gustLoan.indexWhere((r) => r['id'] == id);
+    if (idx != -1) {
+      _gustLoan[idx] = {
+        'id': id,
+        'title': title,
+        'description': description,
+        'dateTime': dateTime,
+      };
+    }
+  }
+
+  static void deleteReminder(String id) {
+    _gustLoan.removeWhere((r) => r['id'] == id);
+  }
+}
+
 class Loanscreen extends StatefulWidget {
   const Loanscreen({super.key});
 
@@ -18,6 +63,9 @@ class Loanscreen extends StatefulWidget {
 class _LoanscreenState extends State<Loanscreen> {
   final user = FirebaseAuth.instance.currentUser;
   late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  // ✅ Local storage for guest loans
+  List<Map<String, dynamic>> guestLoans = [];
 
   @override
   void initState() {
@@ -51,7 +99,8 @@ class _LoanscreenState extends State<Loanscreen> {
     );
   }
 
-  Stream<QuerySnapshot> getUserLoans() {
+  Stream<QuerySnapshot>? getUserLoans() {
+    if (user == null) return null;
     return FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
@@ -60,12 +109,12 @@ class _LoanscreenState extends State<Loanscreen> {
         .snapshots();
   }
 
-  String formatDate(Timestamp timestamp) {
-    final date = timestamp.toDate();
+  String formatDate(DateTime date) {
     return DateFormat('dd MMM yyyy – hh:mm a').format(date);
   }
 
   Future<void> markOverdue(DocumentSnapshot doc) async {
+    if (user == null) return;
     final createdAt = (doc['createdAt'] as Timestamp).toDate();
     final status = doc['status'] ?? 'Pending';
 
@@ -81,16 +130,25 @@ class _LoanscreenState extends State<Loanscreen> {
     }
   }
 
-  Future<void> deleteLoan(String loanId) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user!.uid)
-        .collection('users_loans')
-        .doc(loanId)
-        .delete();
+  Future<void> deleteLoan(String loanId, {bool isGuest = false}) async {
+    if (isGuest) {
+      setState(() {
+        guestLoans.removeWhere((loan) => loan['id'] == loanId);
+      });
+    } else {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('users_loans')
+          .doc(loanId)
+          .delete();
+    }
   }
 
-  Future<void> showDeleteConfirmationDialog(String loanId) async {
+  Future<void> showDeleteConfirmationDialog(
+    String loanId, {
+    bool isGuest = false,
+  }) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -117,7 +175,7 @@ class _LoanscreenState extends State<Loanscreen> {
     );
 
     if (shouldDelete == true) {
-      await deleteLoan(loanId);
+      await deleteLoan(loanId, isGuest: isGuest);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("🗑️ Loan deleted."),
@@ -127,16 +185,29 @@ class _LoanscreenState extends State<Loanscreen> {
     }
   }
 
-  Future<void> showLoanDialog({DocumentSnapshot? existingLoan}) async {
+  Future<void> showLoanDialog({
+    DocumentSnapshot? existingLoan,
+    Map<String, dynamic>? guestLoan,
+  }) async {
     final nameController = TextEditingController(
-      text: existingLoan != null ? existingLoan['name'] : '',
+      text: existingLoan != null
+          ? existingLoan['name']
+          : guestLoan != null
+          ? guestLoan['name']
+          : '',
     );
     final amountController = TextEditingController(
       text: existingLoan != null
           ? (existingLoan['amount'] as num).toString()
+          : guestLoan != null
+          ? (guestLoan['amount'] as num).toString()
           : '',
     );
-    String status = existingLoan != null ? existingLoan['status'] : 'Pending';
+    String status = existingLoan != null
+        ? existingLoan['status']
+        : guestLoan != null
+        ? guestLoan['status']
+        : 'Pending';
 
     await showDialog(
       context: context,
@@ -145,7 +216,9 @@ class _LoanscreenState extends State<Loanscreen> {
           builder: (context, setState) => AlertDialog(
             backgroundColor: Colors.grey[900],
             title: Text(
-              existingLoan == null ? "Add Loan" : "Edit Loan",
+              existingLoan == null && guestLoan == null
+                  ? "Add Loan"
+                  : "Edit Loan",
               style: const TextStyle(color: Colors.amber),
             ),
             content: Column(
@@ -229,36 +302,68 @@ class _LoanscreenState extends State<Loanscreen> {
                     return;
                   }
 
-                  final loanRef = FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(user!.uid)
-                      .collection('users_loans');
-
-                  if (existingLoan == null) {
-                    await loanRef.add({
-                      'name': name,
-                      'amount': amount,
-                      'status': status,
-                      'createdAt': DateTime.now(),
+                  if (user == null) {
+                    // ✅ Guest mode save locally
+                    setState(() {
+                      if (guestLoan == null) {
+                        guestLoans.add({
+                          'id': DateTime.now().toString(),
+                          'name': name,
+                          'amount': amount,
+                          'status': status,
+                          'createdAt': DateTime.now(),
+                        });
+                      } else {
+                        guestLoan['name'] = name;
+                        guestLoan['amount'] = amount;
+                        guestLoan['status'] = status;
+                      }
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("✅ New loan added!"),
-                        backgroundColor: Colors.green,
+                      SnackBar(
+                        content: Text(
+                          guestLoan == null
+                              ? "✅ Loan added!"
+                              : "✏️ Loan updated!",
+                        ),
+                        backgroundColor: guestLoan == null
+                            ? Colors.green
+                            : Colors.blue,
                       ),
                     );
                   } else {
-                    await loanRef.doc(existingLoan.id).update({
-                      'name': name,
-                      'amount': amount,
-                      'status': status,
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("✏️ Loan updated successfully!"),
-                        backgroundColor: Colors.blue,
-                      ),
-                    );
+                    // ✅ Logged in save to Firestore
+                    final loanRef = FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user!.uid)
+                        .collection('users_loans');
+
+                    if (existingLoan == null) {
+                      await loanRef.add({
+                        'name': name,
+                        'amount': amount,
+                        'status': status,
+                        'createdAt': DateTime.now(),
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("✅ New loan added!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else {
+                      await loanRef.doc(existingLoan.id).update({
+                        'name': name,
+                        'amount': amount,
+                        'status': status,
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("✏️ Loan updated successfully!"),
+                          backgroundColor: Colors.blue,
+                        ),
+                      );
+                    }
                   }
 
                   Navigator.pop(context);
@@ -278,6 +383,8 @@ class _LoanscreenState extends State<Loanscreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loansStream = getUserLoans();
+
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
@@ -286,143 +393,162 @@ class _LoanscreenState extends State<Loanscreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
-      body: StreamBuilder(
-        stream: getUserLoans(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: SpinKitCircle(color: Colors.white));
-          }
-
-          final loans = snapshot.data!.docs;
-
-          if (loans.isEmpty) {
-            return const Center(
-              child: Text(
-                "No loans added yet.",
-                style: TextStyle(color: Colors.white),
-              ),
-            );
-          }
-
-          return Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Text(
-                    "Your Loans",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+      body: user == null
+          // ✅ Guest loans list
+          ? guestLoans.isEmpty
+                ? const Center(
+                    child: Text(
+                      "No loans added yet. (Guest Mode)",
+                      style: TextStyle(color: Colors.white70),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: loans.length,
-                    itemBuilder: (context, index) {
-                      final loan = loans[index];
-                      final name = loan['name'] ?? '';
-                      final amount =
-                          (loan['amount'] as num?)?.toStringAsFixed(2) ??
-                          '0.00';
-                      final timestamp = loan['createdAt'] as Timestamp;
-                      final createdAtDate = timestamp.toDate();
-                      final formattedDate = formatDate(timestamp);
-                      final status = loan.data().toString().contains('status')
-                          ? loan['status']
-                          : 'Pending';
-                      final isPaid = status == 'Paid';
-                      final isOverdue =
-                          !isPaid &&
-                          DateTime.now().difference(createdAtDate).inDays > 30;
+                  )
+                : buildLoanList(guestLoans, isGuest: true)
+          // ✅ Firestore loans list
+          : StreamBuilder<QuerySnapshot>(
+              stream: loansStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: SpinKitCircle(color: Colors.white),
+                  );
+                }
 
-                      markOverdue(loan);
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No loans added yet.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
 
-                      return Card(
-                        elevation: 3,
-                        color: Colors.grey[850],
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: Slidable(
-                          endActionPane: ActionPane(
-                            motion: const DrawerMotion(),
-                            children: [
-                              SlidableAction(
-                                onPressed: (_) async {
-                                  await showLoanDialog(existingLoan: loan);
-                                },
-                                icon: Icons.edit,
-                                label: 'Edit',
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                              ),
-                              SlidableAction(
-                                onPressed: (_) async {
-                                  await showDeleteConfirmationDialog(loan.id);
-                                },
-                                icon: Icons.delete,
-                                label: 'Delete',
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.person,
-                              color: Colors.amber,
-                            ),
-                            title: Text(
-                              name,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              "Amount: $amount\nDate: $formattedDate",
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isOverdue
-                                    ? Colors.red.shade100
-                                    : isPaid
-                                    ? Colors.green.shade100
-                                    : Colors.orange.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                isOverdue ? 'Overdue' : status,
-                                style: TextStyle(
-                                  color: isOverdue
-                                      ? Colors.red
-                                      : isPaid
-                                      ? Colors.green
-                                      : Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                return buildLoanList(snapshot.data!.docs, isGuest: false);
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showLoanDialog(),
         backgroundColor: Colors.amber,
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget buildLoanList(dynamic loans, {required bool isGuest}) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.0),
+            child: Text(
+              "Your Loans",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: loans.length,
+              itemBuilder: (context, index) {
+                final loan = loans[index];
+                final name = isGuest ? loan['name'] : loan['name'] ?? '';
+                final amount = isGuest
+                    ? (loan['amount'] as num).toStringAsFixed(2)
+                    : (loan['amount'] as num?)?.toStringAsFixed(2) ?? '0.00';
+                final createdAtDate = isGuest
+                    ? loan['createdAt'] as DateTime
+                    : (loan['createdAt'] as Timestamp).toDate();
+                final formattedDate = formatDate(createdAtDate);
+                final status = isGuest
+                    ? loan['status']
+                    : loan['status'] ?? 'Pending';
+                final isPaid = status == 'Paid';
+                final isOverdue =
+                    !isPaid &&
+                    DateTime.now().difference(createdAtDate).inDays > 30;
+
+                if (!isGuest) markOverdue(loan);
+
+                return Card(
+                  elevation: 3,
+                  color: Colors.grey[850],
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: Slidable(
+                    endActionPane: ActionPane(
+                      motion: const DrawerMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (_) async {
+                            await showLoanDialog(
+                              existingLoan: isGuest ? null : loan,
+                              guestLoan: isGuest ? loan : null,
+                            );
+                          },
+                          icon: Icons.edit,
+                          label: 'Edit',
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                        ),
+                        SlidableAction(
+                          onPressed: (_) async {
+                            await showDeleteConfirmationDialog(
+                              isGuest ? loan['id'] : loan.id,
+                              isGuest: isGuest,
+                            );
+                          },
+                          icon: Icons.delete,
+                          label: 'Delete',
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      leading: const Icon(Icons.person, color: Colors.amber),
+                      title: Text(
+                        name,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        "Amount: $amount\nDate: $formattedDate",
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isOverdue
+                              ? Colors.red.shade100
+                              : isPaid
+                              ? Colors.green.shade100
+                              : Colors.orange.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          isOverdue ? 'Overdue' : status,
+                          style: TextStyle(
+                            color: isOverdue
+                                ? Colors.red
+                                : isPaid
+                                ? Colors.green
+                                : Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

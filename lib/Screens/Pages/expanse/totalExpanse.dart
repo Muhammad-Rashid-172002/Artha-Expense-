@@ -5,6 +5,45 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'addexpanse.dart';
 
+/// Temporary storage for guest expenses
+class GuestExpenseStore {
+  static final List<Map<String, dynamic>> _expenses = [];
+
+  static List<Map<String, dynamic>> get expenses => _expenses;
+
+  static void addExpense(String title, String category, double amount) {
+    _expenses.add({
+      "id": DateTime.now().millisecondsSinceEpoch.toString(),
+      "title": title,
+      "category": category,
+      "amount": amount,
+      "date": DateFormat.yMMMd().format(DateTime.now()),
+    });
+  }
+
+  static void deleteExpense(String id) {
+    _expenses.removeWhere((exp) => exp["id"] == id);
+  }
+
+  static void editExpense(
+    String id,
+    String title,
+    String category,
+    double amount,
+  ) {
+    final index = _expenses.indexWhere((exp) => exp["id"] == id);
+    if (index != -1) {
+      _expenses[index] = {
+        "id": id,
+        "title": title,
+        "category": category,
+        "amount": amount,
+        "date": DateFormat.yMMMd().format(DateTime.now()),
+      };
+    }
+  }
+}
+
 class ExpenseScreen extends StatefulWidget {
   const ExpenseScreen({super.key});
 
@@ -17,10 +56,12 @@ class _ExpenseScreenState extends State<ExpenseScreen>
   late TabController _tabController;
   final today = DateTime.now();
   final double budget = 1600;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
+    userId = FirebaseAuth.instance.currentUser?.uid;
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -29,9 +70,21 @@ class _ExpenseScreenState extends State<ExpenseScreen>
       context,
       MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
     );
+    setState(() {}); // refresh UI after adding
   }
 
   Future<void> _editExpense(Map<String, dynamic> data, String id) async {
+    if (userId == null) {
+      // Guest mode: allow local edit
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AddExpenseScreen(existingData: data, docId: id),
+        ),
+      );
+      setState(() {});
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -68,14 +121,18 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     );
     if (confirmed != true) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('users_expenses')
-        .doc(id)
-        .delete();
+    if (userId == null) {
+      setState(() {
+        GuestExpenseStore.deleteExpense(id);
+      });
+    } else {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('users_expenses')
+          .doc(id)
+          .delete();
+    }
   }
 
   final Map<String, IconData> categoryIcons = {
@@ -93,7 +150,6 @@ class _ExpenseScreenState extends State<ExpenseScreen>
   @override
   Widget build(BuildContext context) {
     final startWeek = today.subtract(Duration(days: today.weekday - 1));
-    final uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
@@ -118,6 +174,8 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         child: Column(
           children: [
             const SizedBox(height: 10),
+
+            /// Calendar
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Card(
@@ -195,64 +253,10 @@ class _ExpenseScreenState extends State<ExpenseScreen>
               ),
             ),
 
-            ///  Real-time totalSpent widget
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(uid)
-                  .collection('users_expenses')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                double totalSpent = 0;
-                if (snapshot.hasData) {
-                  for (var doc in snapshot.data!.docs) {
-                    totalSpent +=
-                        double.tryParse((doc['amount'] ?? '0').toString()) ?? 0;
-                  }
-                }
+            /// Total spent
+            _buildTotalSpent(),
 
-                final percent = budget == 0
-                    ? 0
-                    : ((totalSpent / budget) * 100).clamp(0, 100);
-
-                return Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey[850],
-                        child: Text(
-                          "${totalSpent.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "You have spent total",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      "${percent.toStringAsFixed(0)}% of your budget",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                );
-              },
-            ),
-
+            /// Tabs
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -274,6 +278,8 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                 ],
               ),
             ),
+
+            /// Expense lists
             SizedBox(
               height: 500,
               child: TabBarView(
@@ -295,19 +301,101 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     );
   }
 
-  Widget _buildExpenseList({required bool showCategory}) {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+  /// Total Spent Widget
+  Widget _buildTotalSpent() {
+    if (userId == null) {
+      double totalSpent = GuestExpenseStore.expenses.fold(
+        0.0,
+        (sum, exp) => sum + (exp['amount'] ?? 0),
+      );
+      final percent = budget == 0
+          ? 0
+          : ((totalSpent / budget) * 100).clamp(0, 100);
+
+      return _buildTotalCard(totalSpent, percent.toDouble());
+    }
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
-          .doc(uid)
+          .doc(userId)
+          .collection('users_expenses')
+          .snapshots(),
+      builder: (context, snapshot) {
+        double totalSpent = 0;
+        if (snapshot.hasData) {
+          for (var doc in snapshot.data!.docs) {
+            totalSpent +=
+                double.tryParse((doc['amount'] ?? '0').toString()) ?? 0;
+          }
+        }
+        final percent = budget == 0
+            ? 0
+            : ((totalSpent / budget) * 100).clamp(0, 100);
+
+        return _buildTotalCard(totalSpent, percent.toDouble());
+      },
+    );
+  }
+
+  Widget _buildTotalCard(double totalSpent, double percent) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.grey[850],
+            child: Text(
+              "${totalSpent.toStringAsFixed(0)}",
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "You have spent total",
+          style: TextStyle(color: Colors.white),
+        ),
+        Text(
+          "${percent.toStringAsFixed(0)}% of your budget",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  /// Expense List
+  Widget _buildExpenseList({required bool showCategory}) {
+    if (userId == null) {
+      final docs = GuestExpenseStore.expenses;
+      if (docs.isEmpty) {
+        return const Center(
+          child: Text(
+            "No expenses yet.",
+            style: TextStyle(color: Colors.white),
+          ),
+        );
+      }
+      return _buildList(docs, showCategory);
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
           .collection('users_expenses')
           .orderBy('date', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
@@ -316,72 +404,78 @@ class _ExpenseScreenState extends State<ExpenseScreen>
             ),
           );
         }
+        final docs = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        return _buildList(docs, showCategory);
+      },
+    );
+  }
 
-        final docs = snapshot.data!.docs;
+  Widget _buildList(List<Map<String, dynamic>> docs, bool showCategory) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(12),
+      itemCount: docs.length,
+      itemBuilder: (ctx, i) {
+        final data = docs[i];
+        final amt = double.tryParse(data['amount'].toString()) ?? 0;
+        final id = data['id'];
 
-        return ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          padding: const EdgeInsets.all(12),
-          itemCount: docs.length,
-          itemBuilder: (ctx, i) {
-            final doc = docs[i];
-            final data = doc.data() as Map<String, dynamic>;
-            final amt = double.tryParse(data['amount'].toString()) ?? 0;
-            final id = doc.id;
-
-            return Slidable(
-              key: ValueKey(id),
-              endActionPane: ActionPane(
-                motion: const DrawerMotion(),
-                extentRatio: 0.4,
-                children: [
-                  SlidableAction(
-                    icon: Icons.edit,
-                    label: "Edit",
-                    onPressed: (_) => _editExpense(data, id),
-                  ),
-                  SlidableAction(
-                    icon: Icons.delete,
-                    label: "Delete",
-                    backgroundColor: Colors.red,
-                    onPressed: (_) => _deleteExpense(id),
-                  ),
-                ],
+        return Slidable(
+          key: ValueKey(id),
+          endActionPane: ActionPane(
+            motion: const DrawerMotion(),
+            extentRatio: 0.4,
+            children: [
+              SlidableAction(
+                icon: Icons.edit,
+                label: "Edit",
+                backgroundColor: Colors.blue,
+                onPressed: (_) => _editExpense(data, id),
               ),
-              child: Card(
-                color: Colors.grey[850],
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Colors.white, width: 1.5),
-                ),
-                child: ListTile(
-                  leading: Icon(
-                    categoryIcons[data['category']] ?? Icons.category,
-                    color: Colors.amber,
-                  ),
-                  title: Text(
-                    showCategory
-                        ? (data['category'] ?? 'Other')
-                        : (data['title'] ?? ''),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    showCategory ? (data['title'] ?? '') : (data['date'] ?? ''),
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  trailing: Text(
-                    amt.toStringAsFixed(2),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+              SlidableAction(
+                icon: Icons.delete,
+                label: "Delete",
+                backgroundColor: Colors.red,
+                onPressed: (_) => _deleteExpense(id),
+              ),
+            ],
+          ),
+          child: Card(
+            color: Colors.grey[850],
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Colors.white, width: 1.5),
+            ),
+            child: ListTile(
+              leading: Icon(
+                categoryIcons[data['category']] ?? Icons.category,
+                color: Colors.amber,
+              ),
+              title: Text(
+                showCategory
+                    ? (data['category'] ?? 'Other')
+                    : (data['title'] ?? ''),
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                showCategory ? (data['title'] ?? '') : (data['date'] ?? ''),
+                style: const TextStyle(color: Colors.white70),
+              ),
+              trailing: Text(
+                amt.toStringAsFixed(2),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );

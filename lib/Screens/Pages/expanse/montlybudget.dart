@@ -12,6 +12,7 @@ class BudgetScreen extends StatefulWidget {
 class _BudgetScreenState extends State<BudgetScreen> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
   Map<String, double> categoryTotals = {};
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -20,7 +21,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
   }
 
   Future<void> fetchCategoryData() async {
-    if (userId == null) return;
+    if (userId == null) {
+      // Guest mode → no Firestore fetch
+      setState(() {
+        categoryTotals = {};
+        isLoading = false;
+      });
+      return;
+    }
 
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -43,6 +51,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     setState(() {
       categoryTotals = totals;
+      isLoading = false;
     });
   }
 
@@ -101,123 +110,180 @@ class _BudgetScreenState extends State<BudgetScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: hasData
-          ? Column(
-              children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: PieChart(
-                      PieChartData(
-                        sections: getPieChartSections(),
-                        centerSpaceRadius: 40,
-                        sectionsSpace: 2,
-                      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : hasData
+          ? _buildBudgetOverview()
+          : _buildEmptyState(),
+    );
+  }
+
+  /// UI when budget data exists
+  Widget _buildBudgetOverview() {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Center(
+          child: SizedBox(
+            height: 200,
+            width: 200,
+            child: PieChart(
+              PieChartData(
+                sections: getPieChartSections(),
+                centerSpaceRadius: 40,
+                sectionsSpace: 2,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          "Category Breakdown",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: categoryTotals.length,
+            itemBuilder: (context, index) {
+              final entry = categoryTotals.entries.elementAt(index);
+              final total = categoryTotals.values.fold(0.0, (a, b) => a + b);
+              final percentage = (entry.value / total) * 100;
+
+              return Center(
+                child: Card(
+                  color: Colors.grey[850],
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: Colors.white24, width: 1.5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(
+                            Icons.label,
+                            color: getColor(entry.key),
+                          ),
+                          title: Text(
+                            entry.key,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${percentage.toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: getColor(entry.key),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    CategoryDetailsScreen(category: entry.key),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueGrey[700],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text("View Details"),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Category Breakdown",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: categoryTotals.length,
-                    itemBuilder: (context, index) {
-                      final entry = categoryTotals.entries.elementAt(index);
-                      final total = categoryTotals.values.fold(
-                        0.0,
-                        (a, b) => a + b,
-                      );
-                      final percentage = (entry.value / total) * 100;
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
-                      return Center(
-                        child: Card(
-                          color: Colors.grey[850],
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(
-                              color: Colors.white24,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: Icon(
-                                    Icons.label,
-                                    color: getColor(entry.key),
-                                  ),
-                                  title: Text(
-                                    entry.key,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '${percentage.toStringAsFixed(1)}%',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: getColor(entry.key),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CategoryDetailsScreen(
-                                              category: entry.key,
-                                            ),
-                                      ),
-                                    );
-                                    // You can add your logic here
-                                    print("Button pressed for ${entry.key}");
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blueGrey[700],
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text("View Details"),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+  /// Attractive empty state for guest & login users
+  Widget _buildEmptyState() {
+    final isGuest = userId == null;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              color: Colors.amber,
+              size: 100,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              isGuest ? "Welcome, Guest!" : "No Budget Data Yet!",
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              isGuest
+                  ? "Start adding your expenses to track where your money goes."
+                  : "Set up your budget and start tracking your expenses today.",
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, color: Colors.white70),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(
+                isGuest ? "Add Your First Expense" : "Set Up Budget",
+                style: const TextStyle(fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
                 ),
-              ],
-            )
-          : const Center(child: CircularProgressIndicator()),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

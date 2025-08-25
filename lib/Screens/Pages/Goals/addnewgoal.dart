@@ -8,8 +8,18 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 class Addnewgoal extends StatefulWidget {
   final String? goalId;
   final DocumentSnapshot? existingData;
+  final Map<String, dynamic>? guestGoal;
+  final Function(Map<String, dynamic>)? onSave;
+  final bool isGuest;
 
-  const Addnewgoal({this.goalId, this.existingData});
+  const Addnewgoal({
+    this.goalId,
+    this.existingData,
+    super.key,
+    this.guestGoal,
+    this.onSave,
+    this.isGuest = false,
+  });
 
   @override
   State<Addnewgoal> createState() => _AddnewgoalState();
@@ -33,6 +43,10 @@ class _AddnewgoalState extends State<Addnewgoal> {
       titleController.text = widget.existingData!['title'];
       currentController.text = widget.existingData!['current'].toString();
       targetController.text = widget.existingData!['target'].toString();
+    } else if (widget.guestGoal != null) {
+      titleController.text = widget.guestGoal!['title'];
+      currentController.text = widget.guestGoal!['current'].toString();
+      targetController.text = widget.guestGoal!['target'].toString();
     }
 
     _initializeNotifications();
@@ -64,7 +78,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
   }
 
   Future<void> saveGoal() async {
-    if (isLoading) return; // ✅ Prevent double-tap call
+    if (isLoading) return;
 
     setState(() => isLoading = true);
 
@@ -84,9 +98,6 @@ class _AddnewgoalState extends State<Addnewgoal> {
     }
 
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) throw Exception("User not authenticated.");
-
       final current = double.tryParse(currentText) ?? 0;
       final target = double.tryParse(targetText) ?? 0;
 
@@ -94,9 +105,24 @@ class _AddnewgoalState extends State<Addnewgoal> {
         'title': title,
         'current': current,
         'target': target,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': DateTime.now(),
       };
 
+      // ✅ Guest mode: save locally, not Firestore
+      if (widget.isGuest || FirebaseAuth.instance.currentUser == null) {
+        widget.onSave?.call(goalData);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Goal saved locally (Guest Mode)!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        return;
+      }
+
+      // ✅ Logged-in user: Save to Firestore
+      final userId = FirebaseAuth.instance.currentUser!.uid;
       final goalRef = FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -114,7 +140,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       } else {
         await goalRef.add(goalData);
 
-        // Write Firestore notification
+        // Firestore notification
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -126,7 +152,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
               'shown': false,
             });
 
-        // ✅ Show notification only after data is added
+        // Local notification
         await _showLocalNotification(
           'New Goal Added',
           'You set a new goal: "$title".',
@@ -166,12 +192,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
         backgroundColor: Colors.black,
         centerTitle: true,
         leading: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TaskPage()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),

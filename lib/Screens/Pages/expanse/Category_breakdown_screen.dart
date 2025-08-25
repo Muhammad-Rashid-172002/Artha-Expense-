@@ -40,11 +40,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           .get();
 
       totalIncome = incomeSnapshot.docs.fold(0, (sum, doc) {
-        final amount = (doc.data()['amount'] ?? 0) as num;
-        return sum + amount.toDouble();
+        final rawAmount = doc.data()['amount'];
+        final amount = (rawAmount is num)
+            ? rawAmount.toDouble()
+            : double.tryParse(rawAmount.toString()) ?? 0.0;
+        return sum + amount;
       });
     } catch (e) {
-      print("⚠️ Error fetching income: $e");
+      debugPrint("⚠️ Error fetching income: $e");
     }
   }
 
@@ -54,6 +57,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     try {
       await _fetchIncome();
 
+      // All expenses (to calculate total)
       final allSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -61,10 +65,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           .get();
 
       totalAllExpenses = allSnapshot.docs.fold(0, (sum, doc) {
-        final amount = (doc.data()['amount'] ?? 0) as num;
-        return sum + amount.toDouble();
+        final rawAmount = doc.data()['amount'];
+        final amount = (rawAmount is num)
+            ? rawAmount.toDouble()
+            : double.tryParse(rawAmount.toString()) ?? 0.0;
+        return sum + amount;
       });
 
+      // Expenses of this category
       final categorySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -77,12 +85,15 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
         return {
           'id': doc.id,
           'title': data['title'] ?? '',
-          'amount': (data['amount'] ?? 0) as num,
+          'amount': (data['amount'] is num)
+              ? (data['amount'] as num).toDouble()
+              : double.tryParse(data['amount'].toString()) ?? 0.0,
           'createdAt': data['createdAt'],
           'category': data['category'] ?? 'Other',
         };
       }).toList();
 
+      // Sort latest first
       expenses.sort((a, b) {
         final aTime = (a['createdAt'] as Timestamp?)?.toDate();
         final bTime = (b['createdAt'] as Timestamp?)?.toDate();
@@ -94,13 +105,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
       return expenses;
     } catch (e) {
-      print("🔥 Error fetching expenses: $e");
+      debugPrint("🔥 Error fetching expenses: $e");
       return [];
     }
   }
 
   void _editExpense(Map<String, dynamic> expense) async {
-    final updatedExpense = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
@@ -108,9 +119,8 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       ),
     );
 
-    if (updatedExpense != null) {
-      setState(() {});
-    }
+    // Refresh after edit
+    setState(() {});
   }
 
   @override
@@ -171,7 +181,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                               style: TextStyle(color: Colors.white70),
                             ),
                             Text(
-                              '${totalIncome.toStringAsFixed(2)}',
+                              totalIncome.toStringAsFixed(2),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.tealAccent,
@@ -188,7 +198,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                               style: TextStyle(color: Colors.white70),
                             ),
                             Text(
-                              '${totalAllExpenses.toStringAsFixed(2)}',
+                              totalAllExpenses.toStringAsFixed(2),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.redAccent,
@@ -241,13 +251,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                     itemCount: expenses.length,
                     itemBuilder: (context, index) {
                       final expense = expenses[index];
-                      final amount = expense['amount'] ?? 0;
+                      final amount = expense['amount'] ?? 0.0;
                       final title = expense['title'] ?? '';
                       final category = expense['category'] ?? 'Other';
 
-                      final createdAt = expense['createdAt'];
+                      // Format Date
                       String formattedDate = 'Unknown Date';
-
+                      final createdAt = expense['createdAt'];
                       if (createdAt != null && createdAt is Timestamp) {
                         try {
                           final date = createdAt.toDate();
@@ -255,10 +265,11 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                             'dd MMM yyyy – hh:mm a',
                           ).format(date);
                         } catch (e) {
-                          print("⚠️ Date parsing error: $e");
+                          debugPrint("⚠️ Date parsing error: $e");
                         }
                       }
 
+                      // % of total expenses
                       final percentage = totalAllExpenses > 0
                           ? ((amount / totalAllExpenses) * 100)
                           : 0.0;
@@ -301,7 +312,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        '$amount',
+                                        amount.toStringAsFixed(2),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.tealAccent,

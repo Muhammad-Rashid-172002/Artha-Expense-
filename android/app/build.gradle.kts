@@ -31,9 +31,9 @@ android {
 
     defaultConfig {
         applicationId = "com.kesava.artha"
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = 35
-        versionCode = 8
+        versionCode = 10
         versionName = "1.0.2"
     }
 
@@ -47,14 +47,14 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
-            isShrinkResources = true // Optional: enable only if you want to remove unused resources
-        proguardFiles(
-            getDefaultProguardFile("proguard-android-optimize.txt"),
-            "proguard-rules.pro"
-        )
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

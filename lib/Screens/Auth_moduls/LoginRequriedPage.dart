@@ -1,4 +1,3 @@
-import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:flutter/material.dart';

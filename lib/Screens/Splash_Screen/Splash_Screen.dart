@@ -1,5 +1,3 @@
-import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
-import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,7 +44,7 @@ class _SplashscreenState extends State<Splashscreen> {
       // Not signed in - go to sign-in screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SignupScreen()),
+        MaterialPageRoute(builder: (_) => OnboardingScreen()),
       );
     }
   }

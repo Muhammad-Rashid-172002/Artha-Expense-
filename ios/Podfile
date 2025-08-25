@@ -15,7 +15,7 @@ end
 require File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper')
 
 target 'Runner' do
-  use_frameworks! :linkage => :static
+  use_frameworks!      
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

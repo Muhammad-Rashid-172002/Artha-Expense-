@@ -456,7 +456,11 @@ class _TaskPageState extends State<TaskPage> {
         backgroundColor: Colors.amber,
         onPressed: () async {
           if (currentUser == null) {
-            _navigateToLoginRequired();
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const Addnewgoal()),
+            );
+            ();
             return;
           }
 

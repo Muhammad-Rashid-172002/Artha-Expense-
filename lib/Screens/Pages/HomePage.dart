@@ -108,19 +108,19 @@ class _HomePageState extends State<HomePage> {
       final List<Map<String, dynamic>> mainCards = [
         {
           "title": "Income",
-          "amount": "\$0.00",
+          "amount": "0.00",
           "icon": Icons.arrow_upward,
           "iconColor": Colors.green,
         },
         {
           "title": "Expense",
-          "amount": "\$0.00",
-          "icon": Icons.arrow_upward,
-          "iconColor": Colors.green,
+          "amount": "0.00",
+          "icon": Icons.arrow_downward,
+          "iconColor": Colors.red,
         },
         {
           "title": "Budget",
-          "amount": "\$0.00",
+          "amount": "0.00",
           "icon": Icons.pie_chart,
           "iconColor": Colors.white,
         },
@@ -132,10 +132,22 @@ class _HomePageState extends State<HomePage> {
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginRequiredPage()),
-                );
+                if (card["title"] == "Income") {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const IncomeScreen()),
+                  );
+                } else if (card["title"] == "Expense") {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ExpenseScreen()),
+                  );
+                } else if (card["title"] == "Budget") {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => BudgetScreen()),
+                  );
+                }
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 6),
@@ -561,7 +573,11 @@ class _HomePageState extends State<HomePage> {
                             selectedSmallCardIndex = index;
                           });
 
-                          if (currentUser == null) {
+                          // Allow guest users to access Saving, Reminder, Loan
+                          if (currentUser == null &&
+                              (card['title'] != 'Saving' &&
+                                  card['title'] != 'Reminder' &&
+                                  card['title'] != 'Loan')) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -571,6 +587,7 @@ class _HomePageState extends State<HomePage> {
                             return;
                           }
 
+                          // Navigate to the selected screen
                           switch (card['title']) {
                             case 'Saving':
                               Navigator.push(
@@ -594,8 +611,17 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               );
                               break;
+                            default:
+                              // Fallback (only goes here if another card is added in future)
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginRequiredPage(),
+                                ),
+                              );
                           }
                         },
+
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           padding: const EdgeInsets.symmetric(vertical: 20),

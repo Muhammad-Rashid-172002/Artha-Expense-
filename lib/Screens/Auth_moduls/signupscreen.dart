@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expanse_tracker_app/Screens/Auth_moduls/ForgotPassword.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:flutter/material.dart';
@@ -115,7 +114,7 @@ class _SignupScreenState extends State<SignupScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: const BorderSide(
-                  color: Colors.white, // ✅ amber border
+                  color: Colors.white, // ✅∆ amber border
                   width: 2,
                 ),
               ),

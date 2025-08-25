@@ -67,10 +67,6 @@
     <key>LSRequiresIPhoneOS</key>
     <true/>
 
-    <!-- Tracking -->
-    <key>NSUserTrackingUsageDescription</key>
-    <string>This identifier will be used to deliver personalized ads to you.</string>
-
     <!-- Input Events -->
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
