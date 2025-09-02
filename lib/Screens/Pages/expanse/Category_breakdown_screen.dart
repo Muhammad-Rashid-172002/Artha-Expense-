@@ -57,7 +57,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     try {
       await _fetchIncome();
 
-      // All expenses (to calculate total)
       final allSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -72,7 +71,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
         return sum + amount;
       });
 
-      // Expenses of this category
       final categorySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -93,7 +91,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
         };
       }).toList();
 
-      // Sort latest first
       expenses.sort((a, b) {
         final aTime = (a['createdAt'] as Timestamp?)?.toDate();
         final bTime = (b['createdAt'] as Timestamp?)?.toDate();
@@ -118,247 +115,325 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
             AddExpenseScreen(existingData: expense, docId: expense['id']),
       ),
     );
-
-    // Refresh after edit
     setState(() {});
+  }
+
+  Color getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return Colors.amber.shade600;
+      case 'transport':
+        return Colors.deepOrange.shade400;
+      case 'shopping':
+        return Colors.orangeAccent.shade200;
+      case 'home':
+        return Colors.amber.shade400;
+      case 'bills':
+        return Colors.deepOrange.shade600;
+      case 'health':
+        return Colors.orange.shade300;
+      case 'entertainment':
+        return Colors.amber.shade700;
+      default:
+        return Colors.orange.shade200;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-      appBar: AppBar(
-        title: Text(
-          "${widget.category} Expenses",
-          style: const TextStyle(fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchExpenses(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final expenses = snapshot.data ?? [];
-
-          double spendingRatio = (totalIncome > 0)
-              ? totalAllExpenses / totalIncome
-              : 0.0;
-
-          return Column(
+        child: SafeArea(
+          child: Column(
             children: [
-              // Income vs Expenses + Spending Overview Card
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Card(
-                  color: Colors.grey[850],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    side: const BorderSide(color: Colors.teal, width: 1.2),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Income vs Expenses",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Total Income:",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              totalIncome.toStringAsFixed(2),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.tealAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Total Expenses:",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              totalAllExpenses.toStringAsFixed(2),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Spending Overview",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: spendingRatio.clamp(0.0, 1.0),
-                          color: Colors.amber,
-                          backgroundColor: Colors.grey[700],
-                          minHeight: 10,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "${(spendingRatio * 100).toStringAsFixed(1)}% of income spent",
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
+              AppBar(
+                backgroundColor: Color(0xFFFFFFFF),
+                title: Text(
+                  "${widget.category} Expenses",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+
+                automaticallyImplyLeading: true,
               ),
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _fetchExpenses(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Colors.amber),
+                      );
+                    }
 
-              // Expense list
-              if (expenses.isEmpty)
-                const Center(
-                  child: Text(
-                    "No expenses in this category.",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: expenses.length,
-                    itemBuilder: (context, index) {
-                      final expense = expenses[index];
-                      final amount = expense['amount'] ?? 0.0;
-                      final title = expense['title'] ?? '';
-                      final category = expense['category'] ?? 'Other';
+                    final expenses = snapshot.data ?? [];
+                    double spendingRatio = (totalIncome > 0)
+                        ? totalAllExpenses / totalIncome
+                        : 0.0;
 
-                      // Format Date
-                      String formattedDate = 'Unknown Date';
-                      final createdAt = expense['createdAt'];
-                      if (createdAt != null && createdAt is Timestamp) {
-                        try {
-                          final date = createdAt.toDate();
-                          formattedDate = DateFormat(
-                            'dd MMM yyyy – hh:mm a',
-                          ).format(date);
-                        } catch (e) {
-                          debugPrint("⚠️ Date parsing error: $e");
-                        }
-                      }
-
-                      // % of total expenses
-                      final percentage = totalAllExpenses > 0
-                          ? ((amount / totalAllExpenses) * 100)
-                          : 0.0;
-
-                      return Center(
-                        child: Card(
-                          color: Colors.grey[850],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            side: const BorderSide(
-                              color: Colors.teal,
-                              width: 1.2,
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                          ),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          elevation: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ListTile(
-                                  leading: Icon(
-                                    categoryIcons[category] ?? Icons.category,
-                                    color: Colors.tealAccent,
+                            elevation: 6,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.amber.shade400,
+                                    Colors.deepOrange.shade200,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Income vs Expenses",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                  title: Text(
-                                    title,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    formattedDate,
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  trailing: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        amount.toStringAsFixed(2),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.tealAccent,
-                                        ),
+                                      const Text(
+                                        "Total Income:",
+                                        style: TextStyle(color: Colors.white70),
                                       ),
                                       Text(
-                                        '${percentage.toStringAsFixed(1)}%',
+                                        totalIncome.toStringAsFixed(2),
                                         style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.amberAccent,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _editExpense(expense),
-                                    icon: const Icon(Icons.edit, size: 18),
-                                    label: const Text("Edit"),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.teal,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Total Expenses:",
+                                        style: TextStyle(color: Colors.white70),
                                       ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                      Text(
+                                        totalAllExpenses.toStringAsFixed(2),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepOrangeAccent,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    "Spending Overview",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 8),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: spendingRatio.clamp(0.0, 1.0),
+                                      minHeight: 10,
+                                      color: Colors.amber.shade700,
+                                      backgroundColor: Colors.orange.shade100,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "${(spendingRatio * 100).toStringAsFixed(1)}% of income spent",
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+
+                        // Expenses list
+                        if (expenses.isEmpty)
+                          const Center(
+                            child: Text(
+                              "No expenses in this category.",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: expenses.length,
+                              itemBuilder: (context, index) {
+                                final expense = expenses[index];
+                                final amount = expense['amount'] ?? 0.0;
+                                final title = expense['title'] ?? '';
+                                final category = expense['category'] ?? 'Other';
+
+                                String formattedDate = 'Unknown Date';
+                                final createdAt = expense['createdAt'];
+                                if (createdAt != null &&
+                                    createdAt is Timestamp) {
+                                  try {
+                                    final date = createdAt.toDate();
+                                    formattedDate = DateFormat(
+                                      'dd MMM yyyy – hh:mm a',
+                                    ).format(date);
+                                  } catch (e) {
+                                    debugPrint("⚠️ Date parsing error: $e");
+                                  }
+                                }
+
+                                final percentage = totalAllExpenses > 0
+                                    ? ((amount / totalAllExpenses) * 100)
+                                    : 0.0;
+
+                                return Center(
+                                  child: Card(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    elevation: 5,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.amber.shade300,
+                                            Colors.deepOrange.shade200,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            ListTile(
+                                              leading: Icon(
+                                                categoryIcons[category] ??
+                                                    Icons.category,
+                                                color: getCategoryColor(
+                                                  category,
+                                                ),
+                                              ),
+                                              title: Text(
+                                                title,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                formattedDate,
+                                                style: const TextStyle(
+                                                  color: Colors.white70,
+                                                ),
+                                              ),
+                                              trailing: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    amount.toStringAsFixed(2),
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.amberAccent,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${percentage.toStringAsFixed(1)}%',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.white70,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: ElevatedButton.icon(
+                                                onPressed: () =>
+                                                    _editExpense(expense),
+                                                icon: const Icon(
+                                                  Icons.edit,
+                                                  size: 18,
+                                                ),
+                                                label: const Text("Edit"),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.amber.shade700,
+                                                  foregroundColor: Colors.white,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 8,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
+              ),
             ],
-          );
-        },
+          ),
+        ),
       ),
     );
   }

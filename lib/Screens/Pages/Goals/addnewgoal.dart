@@ -183,104 +183,121 @@ class _AddnewgoalState extends State<Addnewgoal> {
     final isEditing = widget.goalId != null;
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
+      backgroundColor: Colors.transparent, // use gradient container instead
       appBar: AppBar(
         title: Text(
           isEditing ? "Edit Goal" : "Add New Goal",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.orange.shade900,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.orange.shade100,
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.orange.shade900),
         ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Card(
-            color: Colors.grey[850],
-            elevation: 10,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.white, width: 1.5),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isEditing ? "Edit Your Goal" : "Set a New Goal",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Color.fromARGB(255, 254, 217, 96),
+            ], // light amber gradient
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Card(
+              color: Colors.amber.shade50, // card color to match the scaffold
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.orange.shade200, width: 1.5),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isEditing ? "Edit Your Goal" : "Set a New Goal",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: titleController,
-                    label: "Goal Title",
-                    icon: Icons.flag,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: currentController,
-                    label: "Current Savings",
-                    icon: Icons.savings,
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: targetController,
-                    label: "Target Amount",
-                    icon: Icons.track_changes,
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : saveGoal,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey[900],
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(
-                            color: Colors.white,
-                            width: 1.5,
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      controller: titleController,
+                      label: "Goal Title",
+                      icon: Icons.flag,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: currentController,
+                      label: "Current Savings",
+                      icon: Icons.savings,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: targetController,
+                      label: "Target Amount",
+                      icon: Icons.track_changes,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : saveGoal,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: Colors.orange.shade900,
+                              width: 1.5,
+                            ),
                           ),
                         ),
-                      ),
-                      child: isLoading
-                          ? const SpinKitThreeBounce(
-                              color: Colors.white,
-                              size: 20.0,
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  isEditing ? Icons.update : Icons.save,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  isEditing ? "Update Goal" : "Save Goal",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                        child: isLoading
+                            ? const SpinKitThreeBounce(
+                                color: Colors.white,
+                                size: 20.0,
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    isEditing ? Icons.update : Icons.save,
                                     color: Colors.white,
                                   ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    isEditing ? "Update Goal" : "Save Goal",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -300,7 +317,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: TextStyle(color: Colors.black54),
         prefixIcon: Icon(icon, color: Colors.amber),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -315,7 +332,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
           borderSide: BorderSide(color: Colors.amber, width: 2),
         ),
       ),
-      style: TextStyle(color: Colors.white),
+      style: TextStyle(color: Colors.black),
     );
   }
 }

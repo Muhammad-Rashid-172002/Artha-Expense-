@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -151,41 +152,79 @@ class _LoanscreenState extends State<Loanscreen> {
   }) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text("Delete Loan", style: TextStyle(color: Colors.amber)),
-        content: const Text(
-          "Are you sure you want to delete this loan?",
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: Colors.white70),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.amber.shade200, // light color at top
+                Colors.orange.shade400, // medium
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.circular(15),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Delete Loan",
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                "Are you sure you want to delete this loan?",
+                style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.amber.shade50),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      "Delete",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
 
     if (shouldDelete == true) {
-      await deleteLoan(loanId, isGuest: isGuest);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("🗑️ Loan deleted."),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (isGuest) {
+        guestLoans.removeWhere((loan) => loan['id'] == loanId);
+        setState(() {});
+      } else {
+        final loanRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .collection('users_loans');
+        await loanRef.doc(loanId).delete();
+      }
     }
   }
 
-  Future<void> showLoanDialog({
+  Future<void> showLoanBottomSheet({
     DocumentSnapshot? existingLoan,
     Map<String, dynamic>? guestLoan,
   }) async {
@@ -209,172 +248,197 @@ class _LoanscreenState extends State<Loanscreen> {
         ? guestLoan['status']
         : 'Pending';
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            backgroundColor: Colors.grey[900],
-            title: Text(
-              existingLoan == null && guestLoan == null
-                  ? "Add Loan"
-                  : "Edit Loan",
-              style: const TextStyle(color: Colors.amber),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent, // use transparent for gradient
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.orange.shade700, Colors.amber.shade400],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.amber),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: amountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.amber),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: status,
-                  dropdownColor: Colors.grey[900],
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: 'Status',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.amber),
-                    ),
-                  ),
-                  items: ['Pending', 'Paid'].map((value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (val) => setState(() => status = val!),
-                ),
-              ],
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              top: 20,
+              left: 20,
+              right: 20,
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final name = nameController.text.trim();
-                  final amount = double.tryParse(amountController.text.trim());
-
-                  if (name.isEmpty || amount == null || amount <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Please enter valid name and amount."),
-                        backgroundColor: Colors.red,
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        existingLoan == null && guestLoan == null
+                            ? "Add Loan"
+                            : "Edit Loan",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                    return;
-                  }
-
-                  if (user == null) {
-                    // ✅ Guest mode save locally
-                    setState(() {
-                      if (guestLoan == null) {
-                        guestLoans.add({
-                          'id': DateTime.now().toString(),
-                          'name': name,
-                          'amount': amount,
-                          'status': status,
-                          'createdAt': DateTime.now(),
-                        });
-                      } else {
-                        guestLoan['name'] = name;
-                        guestLoan['amount'] = amount;
-                        guestLoan['status'] = status;
-                      }
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          guestLoan == null
-                              ? "✅ Loan added!"
-                              : "✏️ Loan updated!",
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.amber.shade200,
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.orange),
+                          ),
                         ),
-                        backgroundColor: guestLoan == null
-                            ? Colors.green
-                            : Colors.blue,
+                        style: const TextStyle(color: Colors.white),
                       ),
-                    );
-                  } else {
-                    // ✅ Logged in save to Firestore
-                    final loanRef = FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user!.uid)
-                        .collection('users_loans');
-
-                    if (existingLoan == null) {
-                      await loanRef.add({
-                        'name': name,
-                        'amount': amount,
-                        'status': status,
-                        'createdAt': DateTime.now(),
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("✅ New loan added!"),
-                          backgroundColor: Colors.green,
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: amountController,
+                        decoration: InputDecoration(
+                          labelText: 'Amount',
+                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.amber.shade200,
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.orange),
+                          ),
                         ),
-                      );
-                    } else {
-                      await loanRef.doc(existingLoan.id).update({
-                        'name': name,
-                        'amount': amount,
-                        'status': status,
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("✏️ Loan updated successfully!"),
-                          backgroundColor: Colors.blue,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: status,
+                        dropdownColor: Colors.orange.shade700,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Status',
+                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.amber.shade200,
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.orange),
+                          ),
                         ),
-                      );
-                    }
-                  }
+                        items: ['Pending', 'Paid'].map((value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (val) => setState(() => status = val!),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.amber.shade100),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final name = nameController.text.trim();
+                              final amount = double.tryParse(
+                                amountController.text.trim(),
+                              );
 
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-                child: const Text(
-                  "Save",
-                  style: TextStyle(color: Colors.black),
-                ),
-              ),
-            ],
+                              if (name.isEmpty ||
+                                  amount == null ||
+                                  amount <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Please enter valid name and amount.",
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              if (user == null) {
+                                // Guest mode
+                                setState(() {
+                                  if (guestLoan == null) {
+                                    guestLoans.add({
+                                      'id': DateTime.now().toString(),
+                                      'name': name,
+                                      'amount': amount,
+                                      'status': status,
+                                      'createdAt': DateTime.now(),
+                                    });
+                                  } else {
+                                    guestLoan['name'] = name;
+                                    guestLoan['amount'] = amount;
+                                    guestLoan['status'] = status;
+                                  }
+                                });
+                              } else {
+                                // Logged in mode
+                                final loanRef = FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user!.uid)
+                                    .collection('users_loans');
+
+                                if (existingLoan == null) {
+                                  await loanRef.add({
+                                    'name': name,
+                                    'amount': amount,
+                                    'status': status,
+                                    'createdAt': DateTime.now(),
+                                  });
+                                } else {
+                                  await loanRef.doc(existingLoan.id).update({
+                                    'name': name,
+                                    'amount': amount,
+                                    'status': status,
+                                  });
+                                }
+                              }
+
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                            ),
+                            child: const Text(
+                              "Save",
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
@@ -386,49 +450,69 @@ class _LoanscreenState extends State<Loanscreen> {
     final loansStream = getUserLoans();
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
-        title: const Text("Loan List"),
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Loan List',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF37474F), //  BlueGrey
+            letterSpacing: 1.2,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.black,
+
         foregroundColor: Colors.white,
       ),
-      body: user == null
-          // ✅ Guest loans list
-          ? guestLoans.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No loans added yet. (Guest Mode)",
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  )
-                : buildLoanList(guestLoans, isGuest: true)
-          // ✅ Firestore loans list
-          : StreamBuilder<QuerySnapshot>(
-              stream: loansStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: SpinKitCircle(color: Colors.white),
-                  );
-                }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              const Color.fromARGB(255, 254, 217, 96), // light amber
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: user == null
+            // ✅ Guest loans list
+            ? guestLoans.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No loans added yet. (Guest Mode)",
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    )
+                  : buildLoanList(guestLoans, isGuest: true)
+            // ✅ Firestore loans list
+            : StreamBuilder<QuerySnapshot>(
+                stream: loansStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: SpinKitCircle(color: Colors.black),
+                    );
+                  }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "No loans added yet.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  );
-                }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No loans added yet.",
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    );
+                  }
 
-                return buildLoanList(snapshot.data!.docs, isGuest: false);
-              },
-            ),
+                  return buildLoanList(snapshot.data!.docs, isGuest: false);
+                },
+              ),
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showLoanDialog(),
+        onPressed: () => showLoanBottomSheet(),
         backgroundColor: Colors.amber,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
@@ -446,7 +530,7 @@ class _LoanscreenState extends State<Loanscreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
           ),
@@ -473,72 +557,97 @@ class _LoanscreenState extends State<Loanscreen> {
 
                 if (!isGuest) markOverdue(loan);
 
-                return Card(
-                  elevation: 3,
-                  color: Colors.grey[850],
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  child: Slidable(
-                    endActionPane: ActionPane(
-                      motion: const DrawerMotion(),
-                      children: [
-                        SlidableAction(
-                          onPressed: (_) async {
-                            await showLoanDialog(
-                              existingLoan: isGuest ? null : loan,
-                              guestLoan: isGuest ? loan : null,
-                            );
-                          },
-                          icon: Icons.edit,
-                          label: 'Edit',
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                        ),
-                        SlidableAction(
-                          onPressed: (_) async {
-                            await showDeleteConfirmationDialog(
-                              isGuest ? loan['id'] : loan.id,
-                              isGuest: isGuest,
-                            );
-                          },
-                          icon: Icons.delete,
-                          label: 'Delete',
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                        ),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.amber.shade100, // light top
+                        Colors.orange.shade200, // middle
                       ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: ListTile(
-                      leading: const Icon(Icons.person, color: Colors.amber),
-                      title: Text(
-                        name,
-                        style: const TextStyle(color: Colors.white),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.shade100.withOpacity(0.5),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
                       ),
-                      subtitle: Text(
-                        "Amount: $amount\nDate: $formattedDate",
-                        style: const TextStyle(color: Colors.white70),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Slidable(
+                      endActionPane: ActionPane(
+                        motion: const DrawerMotion(),
+                        children: [
+                          SlidableAction(
+                            onPressed: (_) async {
+                              await showLoanBottomSheet(
+                                existingLoan: isGuest ? null : loan,
+                                guestLoan: isGuest ? loan : null,
+                              );
+                            },
+                            icon: Icons.edit,
+                            label: 'Edit',
+                            backgroundColor: Colors.orange.shade400,
+                            foregroundColor: Colors.white,
+                          ),
+                          SlidableAction(
+                            onPressed: (_) async {
+                              await showDeleteConfirmationDialog(
+                                isGuest ? loan['id'] : loan.id,
+                                isGuest: isGuest,
+                              );
+                            },
+                            icon: Icons.delete,
+                            label: 'Delete',
+                            backgroundColor: Colors.red.shade400,
+                            foregroundColor: Colors.white,
+                          ),
+                        ],
                       ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.person,
+                          color: Colors.orangeAccent,
                         ),
-                        decoration: BoxDecoration(
-                          color: isOverdue
-                              ? Colors.red.shade100
-                              : isPaid
-                              ? Colors.green.shade100
-                              : Colors.orange.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                        title: Text(
+                          name,
+                          style: const TextStyle(color: Colors.black87),
                         ),
-                        child: Text(
-                          isOverdue ? 'Overdue' : status,
-                          style: TextStyle(
+                        subtitle: Text(
+                          "Amount: $amount\nDate: $formattedDate",
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
                             color: isOverdue
-                                ? Colors.red
+                                ? Colors.red.shade100
                                 : isPaid
-                                ? Colors.green
-                                : Colors.orange,
-                            fontWeight: FontWeight.bold,
+                                ? Colors.green.shade100
+                                : Colors.orange.shade200,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            isOverdue ? 'Overdue' : status,
+                            style: TextStyle(
+                              color: isOverdue
+                                  ? Colors.red
+                                  : isPaid
+                                  ? Colors.green.shade700
+                                  : Colors.orange.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),

@@ -21,9 +21,7 @@ class _SavingsState extends State<Savings> {
   Future<void> fetchData() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
       return;
     }
 
@@ -67,20 +65,46 @@ class _SavingsState extends State<Savings> {
     final savings = totalIncome - totalExpenses;
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-      appBar: AppBar(
-        title: const Text(
-          'Your Savings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      // ✅ Gradient Background
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Color.fromARGB(255, 254, 217, 96),
+            ], // Gradient background
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Colors.black,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text(
+                  'Your Savings',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                iconTheme: const IconThemeData(color: Colors.black),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: true,
+              ),
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (userId == null ||
+                          (totalIncome == 0 && totalExpenses == 0))
+                    ? _buildEmptyState(userId == null)
+                    : _buildSavingsCard(savings),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : (userId == null || (totalIncome == 0 && totalExpenses == 0))
-          ? _buildEmptyState(userId == null)
-          : _buildSavingsCard(savings),
     );
   }
 
@@ -90,68 +114,80 @@ class _SavingsState extends State<Savings> {
       padding: const EdgeInsets.all(16.0),
       child: Center(
         child: Card(
-          color: Colors.grey[850],
+          color: Colors.white,
           elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Colors.white, width: 2),
+            side: const BorderSide(color: Color(0xFFFFD700), width: 2),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.savings, size: 48, color: Colors.amber),
-                const SizedBox(height: 10),
-                const Text(
-                  'Total Savings',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.amber.shade400, Colors.deepOrange.shade200],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.savings, size: 48, color: Colors.deepOrange),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Total Savings',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  '${savings.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  const SizedBox(height: 10),
+                  Text(
+                    '${savings.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Progress bar
-                LinearProgressIndicator(
-                  value: totalIncome > 0
-                      ? (savings / totalIncome).clamp(0.0, 1.0)
-                      : 0,
-                  backgroundColor: Colors.white,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-                  minHeight: 8,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Savings: ${(totalIncome > 0 ? (savings / totalIncome * 100).clamp(0.0, 100.0) : 0).toStringAsFixed(1)}%',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                  // Progress bar
+                  LinearProgressIndicator(
+                    value: totalIncome > 0
+                        ? (savings / totalIncome).clamp(0.0, 1.0)
+                        : 0,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.deepOrange,
+                    ),
+                    minHeight: 8,
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Savings: ${(totalIncome > 0 ? (savings / totalIncome * 100).clamp(0.0, 100.0) : 0).toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
 
-                const SizedBox(height: 20),
-                const Divider(),
-                Text(
-                  'Income: ${totalIncome.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                Text(
-                  'Expenses: ${totalExpenses.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  Text(
+                    'Income: ${totalIncome.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  ),
+                  Text(
+                    'Expenses: ${totalExpenses.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -178,7 +214,7 @@ class _SavingsState extends State<Savings> {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 10),
@@ -187,7 +223,7 @@ class _SavingsState extends State<Savings> {
                   ? "Login and start adding your income & expenses to track savings."
                   : "Add income and expenses to see your savings grow.",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.white70),
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(

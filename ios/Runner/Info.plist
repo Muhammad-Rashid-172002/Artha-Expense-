@@ -95,5 +95,10 @@
     <!-- Notifications delegate -->
     <key>UNUserNotificationCenterDelegate</key>
     <string>YES</string>
+
+    <!-- Permissions for faceLook-->
+    <key>NSFaceIDUsageDescription</key>
+<string>We use Face ID to protect your password</string>
+
 </dict>
 </plist>

@@ -51,6 +51,9 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: 2.2.2
   currency_picker: ^2.0.21
+  flutter_animate: ^4.5.2
+  google_fonts: ^6.1.0
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +92,7 @@ flutter:
     - assets/images/Adobe Express - file (1).png
     - assets/images/Adobe Express - file.png
     - assets/Icon_image/WhatsApp Image 2025-07-19 at 12.49.34 PM.jpeg
+    - assets/images/splashScreen.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -152,145 +152,214 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     final startWeek = today.subtract(Duration(days: today.weekday - 1));
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: const Text(
           "Total Expenses",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xFFFFFFFF),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 80),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Color.fromARGB(255, 248, 222, 137),
+            ], // Gradient background
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
 
-            /// Calendar
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card(
-                margin: const EdgeInsets.only(bottom: 20),
-                color: Colors.grey[850],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: Colors.white, width: 2),
-                ),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        DateFormat('MMMM yyyy').format(DateTime.now()),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              /// Calendar
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Card(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(
+                      color: Color(0xFF80DEEA),
+                      width: 1.5,
+                    ), // Aqua border
+                  ),
+                  elevation: 6,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFFFD54F), // Soft Amber
+                          Color(0xFFFFB74D), // Light Orange
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.2),
+                          blurRadius: 12,
+                          offset: const Offset(4, 6),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: List.generate(7, (index) {
-                          final currentDay = startWeek.add(
-                            Duration(days: index),
-                          );
-                          final isToday =
-                              currentDay.day == today.day &&
-                              currentDay.month == today.month &&
-                              currentDay.year == today.year;
-                          return Column(
-                            children: [
-                              Text(
-                                [
-                                  "Mon",
-                                  "Tue",
-                                  "Wed",
-                                  "Thu",
-                                  "Fri",
-                                  "Sat",
-                                  "Sun",
-                                ][index],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('MMMM yyyy').format(DateTime.now()),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87, // readable on light bg
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: List.generate(7, (index) {
+                            final today = DateTime.now();
+                            final startOfWeek = today.subtract(
+                              Duration(days: today.weekday - 1),
+                            );
+                            final currentDay = startOfWeek.add(
+                              Duration(days: index),
+                            );
+                            final daysOfWeek = [
+                              'Mon',
+                              'Tue',
+                              'Wed',
+                              'Thu',
+                              'Fri',
+                              'Sat',
+                              'Sun',
+                            ];
+                            final isToday =
+                                today.day == currentDay.day &&
+                                today.month == currentDay.month &&
+                                today.year == currentDay.year;
+
+                            if (isToday) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: isToday
-                                    ? Colors.white
-                                    : Colors.transparent,
-                                child: Text(
-                                  '${currentDay.day}',
-                                  style: TextStyle(
-                                    color: isToday
-                                        ? Colors.amber
-                                        : Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                decoration: BoxDecoration(
+                                  color:
+                                      Colors.amber.shade700, // Teal highlight
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      daysOfWeek[index],
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '${currentDay.day}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              return Column(
+                                children: [
+                                  Text(
+                                    daysOfWeek[index],
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${currentDay.day}',
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                          }),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            /// Total spent
-            _buildTotalSpent(),
+              /// Total spent
+              _buildTotalSpent(),
 
-            /// Tabs
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[850],
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: Colors.amber,
+              /// Tabs
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xFFFFE0B2,
+                  ), // Soft Amber-Orange background
                   borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: Colors.deepOrange,
+                    width: 2,
+                  ), // Border to match
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.amber,
-                tabs: const [
-                  Tab(text: "Spends"),
-                  Tab(text: "Categories"),
-                ],
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: Colors.orange, // Active tab color
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  labelColor: Colors.white, // Text color for active tab
+                  unselectedLabelColor:
+                      Colors.deepOrange, // Inactive text color
+                  tabs: const [
+                    Tab(text: "Spends"),
+                    Tab(text: "Categories"),
+                  ],
+                ),
               ),
-            ),
 
-            /// Expense lists
-            SizedBox(
-              height: 500,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildExpenseList(showCategory: false),
-                  _buildExpenseList(showCategory: true),
-                ],
+              /// Expense lists
+              SizedBox(
+                height: 500,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildExpenseList(showCategory: false),
+                    _buildExpenseList(showCategory: true),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -349,23 +418,27 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           ),
           child: CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.grey[850],
+            backgroundColor: Colors.orange[200], // Light amber background
             child: Text(
               "${totalSpent.toStringAsFixed(0)}",
-              style: const TextStyle(color: Colors.white, fontSize: 20),
+              style: const TextStyle(
+                color: Colors.deepOrange, // Accent color for the text
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
         const SizedBox(height: 8),
         const Text(
           "You have spent total",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.black, fontSize: 16),
         ),
         Text(
           "${percent.toStringAsFixed(0)}% of your budget",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 20),
@@ -446,32 +519,40 @@ class _ExpenseScreenState extends State<ExpenseScreen>
             ],
           ),
           child: Card(
-            color: Colors.grey[850],
+            color: Colors.orange[50], // Light warm background for the card
             margin: const EdgeInsets.symmetric(vertical: 6),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Colors.white, width: 1.5),
+              side: const BorderSide(
+                color: Colors.amber, // Border matches theme
+                width: 1.5,
+              ),
             ),
             child: ListTile(
               leading: Icon(
                 categoryIcons[data['category']] ?? Icons.category,
-                color: Colors.amber,
+                color: Colors.deepOrange, // Strong accent color
               ),
               title: Text(
                 showCategory
                     ? (data['category'] ?? 'Other')
                     : (data['title'] ?? ''),
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                  color: Colors.black87, // Dark text for readability
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: Text(
                 showCategory ? (data['title'] ?? '') : (data['date'] ?? ''),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Colors.grey[700], // Subtle muted text
+                ),
               ),
               trailing: Text(
                 amt.toStringAsFixed(2),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.deepOrange, // Amount highlighted
                 ),
               ),
             ),

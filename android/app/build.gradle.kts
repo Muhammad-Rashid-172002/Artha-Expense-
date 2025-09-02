@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.example.expanseTrackerApp"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "25.1.8937393"
 
     compileOptions {
@@ -31,10 +31,10 @@ android {
 
     defaultConfig {
         applicationId = "com.kesava.artha"
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.0.2"
+        versionCode = 13
+        versionName = "1.2.1"
     }
 
     signingConfigs {

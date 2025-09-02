@@ -1,11 +1,11 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
-import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
-import 'package:expanse_tracker_app/Screens/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:currency_picker/currency_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:local_auth/local_auth.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -49,6 +49,121 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _updateField(String field, String value) async {
+    if (user == null) return;
+
+    try {
+      if (field == 'name') {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .update({'name': value});
+        setState(() {
+          userName = value;
+        });
+      } else if (field == 'email') {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .update({'email': value});
+        await user!.updateEmail(value);
+        setState(() {
+          userEmail = value;
+        });
+      } else if (field == 'password') {
+        await user!.updatePassword(value);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password updated successfully.')),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$field updated successfully.')));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Please log in again to update $field.")),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Unexpected error: $e")));
+    }
+  }
+
+  void _showEditDialog(
+    String title,
+    String currentValue,
+    String field, {
+    bool isPassword = false,
+  }) {
+    final controller = TextEditingController(text: currentValue);
+    final confirmController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.amber.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text("Edit $title", style: const TextStyle(color: Colors.black)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              obscureText: isPassword,
+              style: const TextStyle(color: Colors.black),
+              decoration: InputDecoration(
+                hintText: "Enter $title",
+                hintStyle: const TextStyle(color: Colors.black54),
+              ),
+            ),
+            if (isPassword) const SizedBox(height: 10),
+            if (isPassword)
+              TextField(
+                controller: confirmController,
+                obscureText: true,
+                style: const TextStyle(color: Colors.black),
+                decoration: const InputDecoration(
+                  hintText: "Confirm Password",
+                  hintStyle: TextStyle(color: Colors.black54),
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (isPassword && controller.text != confirmController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Passwords do not match!")),
+                );
+                return;
+              }
+              _updateField(field, controller.text.trim());
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade700,
+            ),
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _updateCurrency(Currency currency) async {
     if (user == null) return;
 
@@ -65,7 +180,11 @@ class _SettingsPageState extends State<SettingsPage> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Currency updated to ${currency.code}')),
+      SnackBar(
+        content: Text('Currency updated to ${currency.code}'),
+        backgroundColor: Colors.orange.shade700, // Matches Scaffold gradient
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -75,9 +194,10 @@ class _SettingsPageState extends State<SettingsPage> {
       showFlag: true,
       showSearchField: true,
       theme: CurrencyPickerThemeData(
-        backgroundColor: Colors.grey[900],
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
-        subtitleTextStyle: const TextStyle(color: Colors.white70),
+        backgroundColor: Colors.amber.shade50, // Matches light part of gradient
+        titleTextStyle: TextStyle(color: Colors.orange.shade900, fontSize: 18),
+        subtitleTextStyle: TextStyle(color: Colors.black54),
+        bottomSheetHeight: 400,
       ),
       onSelect: (Currency currency) {
         _updateCurrency(currency);
@@ -152,10 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             child: const Text("Delete"),
           ),
         ],
@@ -170,7 +287,6 @@ class _SettingsPageState extends State<SettingsPage> {
           context,
           MaterialPageRoute(builder: (context) => OnboardingScreen()),
         );
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Account successfully deleted.")),
         );
@@ -194,126 +310,170 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  final LocalAuthentication auth = LocalAuthentication();
+  final LocalAuthentication authentication = LocalAuthentication();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Text(
-          "Settings",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.black,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Card(
-            margin: const EdgeInsets.all(20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Colors.white, width: 2),
+      body: SafeArea(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, Color.fromARGB(255, 254, 217, 96)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            elevation: 6,
-            color: Colors.grey[850],
-            shadowColor: Colors.blueGrey.withOpacity(0.2),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 25),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Color.fromARGB(255, 203, 157, 19),
-                    child: Icon(Icons.person, size: 40, color: Colors.white),
+          ),
+          child: SingleChildScrollView(
+            // <-- Add this
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              children: [
+                Text(
+                  "Settings",
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF37474F), //  BlueGrey
+                    letterSpacing: 1.2,
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    userName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                ),
+                const SizedBox(height: 20),
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.orange.shade700,
+                  child: const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: Colors.white,
                   ),
-                  Text(
-                    userEmail,
-                    style: const TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(thickness: 1.2, color: Colors.white),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.attach_money,
-                      color: Colors.amber,
-                    ),
-                    title: const Text(
-                      "Preferred Currency",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '$currencyFlag $selectedCurrency',
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    onTap: _showCurrencyPicker,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.redAccent),
-                    title: const Text(
-                      "Logout",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    onTap: _logout,
-                  ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.delete_forever,
-                      color: Colors.redAccent,
-                    ),
-                    title: const Text(
-                      "Delete Account",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    onTap: _deleteAccount,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pushReplacement(
+                ),
+                const SizedBox(height: 20),
+                // Editable Name
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text("Name"),
+                  subtitle: Text(userName),
+                  onTap: () => _showEditDialog("Name", userName, "name"),
+                ),
+                // Editable Email
+                ListTile(
+                  leading: const Icon(Icons.email),
+                  title: const Text("Email"),
+                  subtitle: Text(userEmail),
+                  onTap: () => _showEditDialog("Email", userEmail, "email"),
+                ),
+                // Editable Password
+                ListTile(
+                  leading: const Icon(Icons.lock),
+                  title: const Text("Password"),
+                  subtitle: const Text("********"),
+                  onTap: () async {
+                    try {
+                      final bool canCheckBiometrics =
+                          await auth.canCheckBiometrics;
+                      final bool isDeviceSupported = await auth
+                          .isDeviceSupported();
+
+                      if (canCheckBiometrics && isDeviceSupported) {
+                        // Biometric OR device passcode authentication
+                        final bool authenticated = await auth.authenticate(
+                          localizedReason:
+                              'Please authenticate to edit your password',
+                          options: const AuthenticationOptions(
+                            biometricOnly:
+                                false, // allow PIN/Pattern/Password as fallback
+                            useErrorDialogs: true,
+                            stickyAuth: true,
+                          ),
+                        );
+
+                        if (authenticated) {
+                          _showEditDialog(
+                            "Password",
+                            '',
+                            "password",
+                            isPassword: true,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Authentication failed'),
+                            ),
+                          );
+                        }
+                      } else {
+                        // No biometrics available, go directly to password edit
+                        _showEditDialog(
+                          "Password",
+                          '',
+                          "password",
+                          isPassword: true,
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint("Fingerprint auth error: $e");
+                      ScaffoldMessenger.of(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              HomeScreen(initialIndex: 0), // requires param
-                        ),
+                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                      // fallback to password dialog
+                      _showEditDialog(
+                        "Password",
+                        '',
+                        "password",
+                        isPassword: true,
                       );
-                    },
-                    icon: const Icon(Icons.home),
-                    label: const Text("Go to Home"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 12,
-                      ),
-                    ),
+                    }
+                  },
+                ),
+                // Currency
+                ListTile(
+                  leading: Icon(
+                    Icons.attach_money,
+                    color: Colors.orange.shade700,
                   ),
-                ],
-              ),
+                  title: const Text("Preferred Currency"),
+                  subtitle: Text('$currencyFlag $selectedCurrency'),
+                  onTap: _showCurrencyPicker,
+                ),
+                const SizedBox(height: 30), // Spacer replacement for scroll
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _logout,
+                        icon: const Icon(Icons.logout),
+                        label: const Text("Logout"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton.icon(
+                        onPressed: _deleteAccount,
+                        icon: const Icon(Icons.delete_forever),
+                        label: const Text("Delete Account"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade700,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),

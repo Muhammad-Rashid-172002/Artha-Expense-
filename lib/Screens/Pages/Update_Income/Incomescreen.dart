@@ -3,6 +3,7 @@ import 'package:expanse_tracker_app/Screens/Pages/Update_Income/AddIncomescreen.
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class IncomeScreen extends StatefulWidget {
@@ -30,19 +31,32 @@ class _IncomeScreenState extends State<IncomeScreen> {
       return;
     }
 
-    final confirm = await showDialog(
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Income'),
-        content: const Text('Are you sure you want to delete this income?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Delete Income',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this income?',
+          style: TextStyle(color: Colors.black54),
+        ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700),
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -170,26 +184,41 @@ class _IncomeScreenState extends State<IncomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        title: const Text(
-          'Income',
-          style: TextStyle(color: Colors.white, fontSize: 22),
-        ),
-        backgroundColor: Colors.black,
-        centerTitle: true,
       ),
-      body: userId == null ? _buildGuestView() : _buildFirebaseView(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.amber,
-        tooltip: 'Add Income',
-        onPressed: _openAddIncome,
-        child: const Icon(Icons.add, color: Colors.white),
+      child: Scaffold(
+        backgroundColor:
+            Colors.transparent, // Make scaffold transparent to show gradient
+        appBar: AppBar(
+          backgroundColor: Colors.white, // AppBar color
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Income',
+            style: GoogleFonts.playfairDisplay(
+              color: Colors.black,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+          elevation: 0, // Remove shadow if needed
+        ),
+        body: userId == null ? _buildGuestView() : _buildFirebaseView(),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.amber,
+          tooltip: 'Add Income',
+          onPressed: _openAddIncome,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
@@ -211,7 +240,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
               ? const Center(
                   child: Text(
                     'No income added yet (Guest Mode)',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.black),
                   ),
                 )
               : ListView.builder(
@@ -241,30 +270,59 @@ class _IncomeScreenState extends State<IncomeScreen> {
                           horizontal: 16,
                           vertical: 8,
                         ),
-                        color: Colors.grey[850],
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: const BorderSide(
-                            color: Colors.white,
+                            color: Colors.orangeAccent,
                             width: 1.5,
                           ),
                         ),
-                        child: ListTile(
-                          leading: const Icon(
-                            Icons.attach_money,
-                            color: Colors.amber,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Colors.amber, Colors.orange],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          title: Text(
-                            income['title'],
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            formattedDate,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                          trailing: Text(
-                            '${income['amount']}',
-                            style: const TextStyle(color: Colors.white),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(
+                                  0.2,
+                                ), // subtle background for icon
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.attach_money,
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: Text(
+                              income['title'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              formattedDate,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 13,
+                              ),
+                            ),
+                            trailing: Text(
+                              '${income['amount']}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -309,7 +367,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                   ? const Center(
                       child: Text(
                         'No income added yet.',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.black),
                       ),
                     )
                   : ListView.builder(
@@ -346,11 +404,6 @@ class _IncomeScreenState extends State<IncomeScreen> {
                             ],
                           ),
                           child: Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            color: Colors.grey[850],
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                               side: const BorderSide(
@@ -358,24 +411,50 @@ class _IncomeScreenState extends State<IncomeScreen> {
                                 width: 1.5,
                               ),
                             ),
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.attach_money,
-                                color: Colors.amber,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 6,
+                                horizontal: 12,
                               ),
-                              title: Text(
-                                title,
-                                style: const TextStyle(color: Colors.white),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.amber,
+                                    Colors.deepOrange,
+                                  ], // Amber → Orange gradient
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(16),
+                                ),
                               ),
-                              subtitle: Text(
-                                formattedDate,
-                                style: const TextStyle(color: Colors.white70),
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.attach_money,
+                                  color: Colors
+                                      .white, // white so it pops on gradient
+                                ),
+                                title: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  formattedDate,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                trailing: Text(
+                                  ' $amount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onTap: () => _editIncome(doc),
                               ),
-                              trailing: Text(
-                                ' $amount',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              onTap: () => _editIncome(doc),
                             ),
                           ),
                         );
@@ -393,22 +472,39 @@ class _IncomeScreenState extends State<IncomeScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 69, 68, 68),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: Colors.white, width: 1.5),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFD54F), // Soft Amber
+            Color(0xFFFFB74D), // Light Orange
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(4, 6),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Total Income',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            style: TextStyle(
+              color: Colors.brown.shade800,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             totalIncome.toStringAsFixed(2),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
+            style: TextStyle(
+              color: Colors.brown.shade900,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
             ),
           ),

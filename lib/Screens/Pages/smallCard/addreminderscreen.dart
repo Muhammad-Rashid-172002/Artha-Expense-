@@ -65,7 +65,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           'Reminder Notifications',
           importance: Importance.max,
           priority: Priority.high,
-          color: Colors.amber,
+          color: Colors.deepOrange,
           icon: '@mipmap/ic_launcher',
         );
 
@@ -84,6 +84,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   void _pickDateTime() async {
     final currentDate = DateTime.now();
 
+    // Date picker
     final pickedDate = await showDatePicker(
       context: context,
       initialDate:
@@ -91,39 +92,42 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       firstDate: currentDate,
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.amber,
-            onPrimary: Colors.black,
-            surface: Colors.grey,
-            onSurface: Colors.white,
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.deepOrange, // Selected date
+            onPrimary: Colors.white, // Text on selected date
+            surface: Color(0xFFFFF3E0), // Light amber background for date cells
+            onSurface: Colors.black, // Text on date cells
           ),
-          dialogBackgroundColor: Colors.black,
+          dialogBackgroundColor: const Color(
+            0xFFFFF8E1,
+          ), // Very light amber background
         ),
         child: child!,
       ),
     );
 
     if (pickedDate != null) {
+      // Time picker
       final pickedTime = await showTimePicker(
         context: context,
         initialTime: const TimeOfDay(hour: 9, minute: 0),
         builder: (context, child) => Theme(
-          data: ThemeData.dark().copyWith(
+          data: ThemeData.light().copyWith(
             timePickerTheme: const TimePickerThemeData(
-              backgroundColor: Colors.black,
-              hourMinuteTextColor: Colors.amber,
-              hourMinuteColor: Colors.white10,
-              dialHandColor: Colors.amber,
-              dialBackgroundColor: Colors.grey,
-              entryModeIconColor: Colors.amber,
-              dayPeriodTextColor: Colors.white,
+              backgroundColor: Color(0xFFFFF8E1), // Very light amber
+              hourMinuteTextColor: Colors.deepOrange,
+              hourMinuteColor: Colors.orangeAccent,
+              dialHandColor: Colors.deepOrange,
+              dialBackgroundColor: Colors.orange,
+              entryModeIconColor: Colors.deepOrange,
+              dayPeriodTextColor: Colors.black,
             ),
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.amber,
-              onPrimary: Colors.black,
-              surface: Colors.grey,
-              onSurface: Colors.white,
+            colorScheme: const ColorScheme.light(
+              primary: Colors.deepOrange,
+              onPrimary: Colors.white,
+              surface: Colors.orangeAccent,
+              onSurface: Colors.black,
             ),
           ),
           child: child!,
@@ -146,7 +150,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
   Future<void> _saveReminder() async {
     final isValid = _formKey.currentState!.validate();
-
     if (!isValid) {
       _showSnackbar("Please fill all fields");
       return;
@@ -199,7 +202,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.black87,
+        backgroundColor: Colors.deepOrange,
       ),
     );
   }
@@ -211,154 +214,160 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         : "Pick Date & Time";
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         title: Text(
           widget.isEditing ? "Edit Reminder" : "Add Reminder",
           style: const TextStyle(
-            color: Colors.white,
+            color: Colors.deepOrange,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.amber[200],
+        iconTheme: const IconThemeData(color: Colors.deepOrange),
       ),
-      body: Center(
-        child: Card(
-          color: Colors.grey[850],
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.amber[100]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  TextFormField(
-                    controller: _titleController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: "Title",
-                      hintText: "Enter your reminder title",
-                      hintStyle: const TextStyle(color: Colors.white38),
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(Icons.title, color: Colors.amber),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white24),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
+        ),
+        child: Center(
+          child: Card(
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 8,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    TextFormField(
+                      controller: _titleController,
+                      style: const TextStyle(color: Colors.deepOrange),
+                      decoration: InputDecoration(
+                        labelText: "Title",
+                        hintText: "Enter your reminder title",
+                        hintStyle: const TextStyle(
+                          color: Colors.deepOrangeAccent,
+                        ),
+                        labelStyle: const TextStyle(color: Colors.deepOrange),
+                        prefixIcon: const Icon(
+                          Icons.title,
                           color: Colors.amber,
-                          width: 2,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 2,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.deepOrangeAccent,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? "Enter a title" : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _descriptionController,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: "Description",
-                      hintText: "Enter details about your reminder",
-                      hintStyle: const TextStyle(color: Colors.white38),
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(
-                        Icons.description,
-                        color: Colors.amber,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white24),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.amber,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) => value == null || value.isEmpty
-                        ? "Enter a description"
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    tileColor: Colors.grey[700],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    title: Text(
-                      formattedDate,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    trailing: const Icon(
-                      Icons.calendar_today,
-                      color: Colors.amber,
-                    ),
-                    onTap: _pickDateTime,
-                  ),
-                  const SizedBox(height: 24),
-                  _isLoading
-                      ? const Center(
-                          child: SpinKitFadingCircle(
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
                             color: Colors.amber,
-                            size: 40.0,
+                            width: 2,
                           ),
-                        )
-                      : ElevatedButton.icon(
-                          icon: const Icon(Icons.save, color: Colors.white),
-                          label: Text(
-                            widget.isEditing
-                                ? "Update Reminder"
-                                : "Save Reminder",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: _saveReminder,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                ],
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? "Enter a title"
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 3,
+                      style: const TextStyle(color: Colors.deepOrange),
+                      decoration: InputDecoration(
+                        labelText: "Description",
+                        hintText: "Enter details about your reminder",
+                        hintStyle: const TextStyle(
+                          color: Colors.deepOrangeAccent,
+                        ),
+                        labelStyle: const TextStyle(color: Colors.deepOrange),
+                        prefixIcon: const Icon(
+                          Icons.description,
+                          color: Colors.amber,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.deepOrangeAccent,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.amber,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? "Enter a description"
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      tileColor: Colors.amber[100],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: Text(
+                        formattedDate,
+                        style: const TextStyle(color: Colors.deepOrange),
+                      ),
+                      trailing: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.deepOrange,
+                      ),
+                      onTap: _pickDateTime,
+                    ),
+                    const SizedBox(height: 24),
+                    _isLoading
+                        ? const Center(
+                            child: SpinKitFadingCircle(
+                              color: Colors.deepOrange,
+                              size: 40.0,
+                            ),
+                          )
+                        : ElevatedButton.icon(
+                            icon: const Icon(Icons.save, color: Colors.white),
+                            label: Text(
+                              widget.isEditing
+                                  ? "Update Reminder"
+                                  : "Save Reminder",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepOrange,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _saveReminder,
+                          ),
+                  ],
+                ),
               ),
             ),
           ),

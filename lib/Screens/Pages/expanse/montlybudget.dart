@@ -22,7 +22,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   Future<void> fetchCategoryData() async {
     if (userId == null) {
-      // Guest mode → no Firestore fetch
       setState(() {
         categoryTotals = {};
         isLoading = false;
@@ -77,19 +76,19 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Color getColor(String category) {
     switch (category.toLowerCase()) {
       case 'food':
-        return Colors.blueAccent;
+        return Colors.amber.shade600;
       case 'transport':
-        return Colors.deepPurple;
+        return Colors.deepOrange.shade400;
       case 'shopping':
-        return Colors.orangeAccent;
+        return Colors.orangeAccent.shade200;
       case 'entertainment':
-        return Colors.green;
+        return Colors.amber.shade400;
       case 'bills':
-        return Colors.redAccent;
+        return Colors.orange.shade700;
       case 'health':
-        return Colors.pink;
+        return Colors.deepOrange.shade200;
       default:
-        return Colors.grey;
+        return Colors.orange.shade100;
     }
   }
 
@@ -97,28 +96,41 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     final hasData = categoryTotals.isNotEmpty;
 
-    return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
-      appBar: AppBar(
-        title: const Text(
-          "Monthly Budget Overview",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Color.fromARGB(255, 248, 222, 137),
+          ], // Gradient background
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : hasData
-          ? _buildBudgetOverview()
-          : _buildEmptyState(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Keep gradient visible
+        appBar: AppBar(
+          title: const Text(
+            "Monthly Budget Overview",
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Color(0xFFFFFFFF),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.amber),
+              )
+            : hasData
+            ? _buildBudgetOverview()
+            : _buildEmptyState(),
+      ),
     );
   }
 
-  /// UI when budget data exists
   Widget _buildBudgetOverview() {
     return Column(
       children: [
@@ -142,7 +154,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black87,
           ),
         ),
         Expanded(
@@ -155,67 +167,80 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
               return Center(
                 child: Card(
-                  color: Colors.grey[850],
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Colors.white24, width: 1.5),
+                    side: BorderSide(color: Colors.amber.shade300, width: 1.5),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: Icon(
-                            Icons.label,
-                            color: getColor(entry.key),
-                          ),
-                          title: Text(
-                            entry.key,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.amber.shade400,
+                          Colors.deepOrange.shade200,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Icons.label,
+                              color: getColor(entry.key),
                             ),
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '${percentage.toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: getColor(entry.key),
-                                  fontWeight: FontWeight.bold,
+                            title: Text(
+                              entry.key,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${percentage.toStringAsFixed(1)}%',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: getColor(entry.key),
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    CategoryDetailsScreen(category: entry.key),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey[700],
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              ],
                             ),
                           ),
-                          child: const Text("View Details"),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CategoryDetailsScreen(
+                                    category: entry.key,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber.shade700,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text("View Details"),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -227,7 +252,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
-  /// Attractive empty state for guest & login users
   Widget _buildEmptyState() {
     final isGuest = userId == null;
 
@@ -239,7 +263,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           children: [
             Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.amber,
+              color: Colors.amber.shade700,
               size: 100,
             ),
             const SizedBox(height: 20),
@@ -248,7 +272,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 10),
@@ -257,7 +281,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   ? "Start adding your expenses to track where your money goes."
                   : "Set up your budget and start tracking your expenses today.",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.white70),
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
@@ -270,8 +294,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 style: const TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
+                backgroundColor: Colors.amber.shade700,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
