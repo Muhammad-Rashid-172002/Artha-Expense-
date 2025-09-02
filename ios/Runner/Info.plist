@@ -2,6 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
     <!-- Notifications -->
     <key>NSPushNotificationUsageDescription</key>
     <string>We use notifications to remind you of your expenses and updates.</string>
@@ -12,12 +13,23 @@
 
     <key>CFBundleURLTypes</key>
     <array>
+        <!-- Google -->
         <dict>
             <key>CFBundleTypeRole</key>
             <string>Editor</string>
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
+            </array>
+        </dict>
+
+        <!-- Apple Sign-In -->
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.kesava.artha</string>
             </array>
         </dict>
     </array>
@@ -28,10 +40,9 @@
         <string>remote-notification</string>
     </array>
 
-        <!-- App Transport Security -->
+    <!-- App Transport Security -->
     <key>NSAppTransportSecurity</key>
     <dict>
-        <!-- Allow insecure HTTP loads (for dev APIs) -->
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
@@ -96,9 +107,9 @@
     <key>UNUserNotificationCenterDelegate</key>
     <string>YES</string>
 
-    <!-- Permissions for faceLook-->
+    <!-- Permissions for FaceID -->
     <key>NSFaceIDUsageDescription</key>
-<string>We use Face ID to protect your password</string>
+    <string>We use Face ID to protect your password</string>
 
 </dict>
 </plist>

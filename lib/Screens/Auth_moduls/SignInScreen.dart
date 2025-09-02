@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/ForgotPassword.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
@@ -6,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -278,6 +283,39 @@ class _SigninScreenState extends State<SigninScreen> {
                                 ),
                               ),
 
+                              const SizedBox(height: 12),
+
+                              GestureDetector(
+                                onTap: _isLoading ? null : _signInWithApple,
+                                child: Container(
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.apple,
+                                        size: 26,
+                                        color: Colors.black,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        "Sign in with Apple",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
                               /// Sign Up link
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -320,6 +358,58 @@ class _SigninScreenState extends State<SigninScreen> {
         ),
       ),
     );
+  }
+
+  // sign in with Apple
+  Future<void> _signInWithApple() async {
+    setState(() => _isLoading = true);
+    try {
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      final oauthCredential = OAuthProvider(
+        "apple.com",
+      ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
+
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Apple Sign-In failed: $e")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Generate random nonce
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  /// Hash nonce for Apple Sign-In
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   /// Custom Email/Username field

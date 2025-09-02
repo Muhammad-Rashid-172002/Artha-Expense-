@@ -1,10 +1,15 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -118,6 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             child: Card(
+              margin: const EdgeInsets.only(top: 32),
               elevation: 12,
               color: Colors.white,
               shadowColor: Colors.black26,
@@ -270,6 +276,31 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 15),
+                      GestureDetector(
+                        onTap: _isLoading ? null : _signInWithApple,
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.deepOrange),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.apple, size: 26, color: Colors.black),
+                              const SizedBox(width: 10),
+                              const Text(
+                                "Sign in with Apple",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
                       const SizedBox(height: 20),
                       Row(
@@ -304,6 +335,58 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
+  }
+
+  // sign in with Apple
+  Future<void> _signInWithApple() async {
+    setState(() => _isLoading = true);
+    try {
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      final oauthCredential = OAuthProvider(
+        "apple.com",
+      ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
+
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Apple Sign-In failed: $e")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Generate random nonce
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  /// Hash nonce for Apple Sign-In
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   InputDecoration _customInputDecoration(String label, IconData icon) {

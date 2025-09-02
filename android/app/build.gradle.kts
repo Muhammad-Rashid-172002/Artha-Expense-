@@ -31,7 +31,7 @@ android {
 
     defaultConfig {
         applicationId = "com.kesava.artha"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = 13
         versionName = "1.2.1"
