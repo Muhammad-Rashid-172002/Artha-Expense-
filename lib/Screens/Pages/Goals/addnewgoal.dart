@@ -1,4 +1,3 @@
-import 'package:expanse_tracker_app/Screens/Pages/TaskPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -90,7 +89,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("⚠️ Please enter all goal fields!"),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Colors.green,
         ),
       );
       setState(() => isLoading = false);
@@ -183,122 +182,96 @@ class _AddnewgoalState extends State<Addnewgoal> {
     final isEditing = widget.goalId != null;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // use gradient container instead
       appBar: AppBar(
         title: Text(
           isEditing ? "Edit Goal" : "Add New Goal",
-          style: TextStyle(
-            color: Colors.orange.shade900,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.orange.shade100,
+        backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back, color: Colors.orange.shade900),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Color.fromARGB(255, 254, 217, 96),
-            ], // light amber gradient
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Card(
-              color: Colors.amber.shade50, // card color to match the scaffold
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.orange.shade200, width: 1.5),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isEditing ? "Edit Your Goal" : "Set a New Goal",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade900,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: titleController,
-                      label: "Goal Title",
-                      icon: Icons.flag,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: currentController,
-                      label: "Current Savings",
-                      icon: Icons.savings,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: targetController,
-                      label: "Target Amount",
-                      icon: Icons.track_changes,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : saveGoal,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(
-                              color: Colors.orange.shade900,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                        child: isLoading
-                            ? const SpinKitThreeBounce(
-                                color: Colors.white,
-                                size: 20.0,
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    isEditing ? Icons.update : Icons.save,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    isEditing ? "Update Goal" : "Save Goal",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isEditing ? "Edit Your Goal" : "Set a New Goal",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: titleController,
+                  label: "Goal Title",
+                  icon: Icons.flag,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: currentController,
+                  label: "Current Savings",
+                  icon: Icons.savings,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: targetController,
+                  label: "Target Amount",
+                  icon: Icons.track_changes,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : saveGoal,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade700,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SpinKitThreeBounce(
+                            color: Colors.white,
+                            size: 20.0,
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isEditing ? Icons.update : Icons.save,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                isEditing ? "Update Goal" : "Save Goal",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -318,18 +291,18 @@ class _AddnewgoalState extends State<Addnewgoal> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.black54),
-        prefixIcon: Icon(icon, color: Colors.amber),
+        prefixIcon: Icon(icon, color: Colors.green),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.amber),
+          borderSide: BorderSide(color: Colors.green),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.amber),
+          borderSide: BorderSide(color: Colors.green),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.amber, width: 2),
+          borderSide: BorderSide(color: Colors.green, width: 2),
         ),
       ),
       style: TextStyle(color: Colors.black),

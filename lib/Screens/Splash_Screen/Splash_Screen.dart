@@ -55,13 +55,7 @@ class _SplashscreenState extends State<Splashscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFF8E1), Color(0xFFFFFFFF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: BoxDecoration(),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -90,7 +84,7 @@ class _SplashscreenState extends State<Splashscreen> {
                     "Track Today, Plan Tomorrow.",
                     style: GoogleFonts.roboto(
                       fontSize: 16,
-                      color: const Color(0xFFF57C00), // Deep Orange accent
+                      color: Colors.green, // Deep Orange accent
                       fontStyle: FontStyle.italic,
                       letterSpacing: 0.7,
                     ),
@@ -99,7 +93,7 @@ class _SplashscreenState extends State<Splashscreen> {
                   .fadeIn(delay: 1000.ms, duration: 800.ms)
                   .slideY(begin: 0.5, end: 0),
               const SizedBox(height: 40),
-              const SpinKitCircle(color: Colors.white, size: 50.0),
+              const SpinKitCircle(color: Colors.green, size: 50.0),
             ],
           ),
         ),

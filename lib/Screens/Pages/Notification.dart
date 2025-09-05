@@ -164,10 +164,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: Colors.amber.shade50, // light amber background
+        backgroundColor: Colors.green.shade200, // light amber background
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.orange.shade400, width: 2),
+          side: BorderSide(color: Colors.green.shade400, width: 2),
         ),
         title: const Text(
           "Delete Notification",
@@ -247,184 +247,163 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
         title: Text(
           'Notifications',
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF37474F), //  BlueGrey
+            color: Colors.white, //  BlueGrey
             letterSpacing: 1.2,
           ),
         ),
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+
         iconTheme: const IconThemeData(color: Colors.black87),
         elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              const Color.fromARGB(255, 254, 217, 96), // light amber
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: userId == null
-            ? const Center(
-                child: Text(
-                  "User not logged in",
-                  style: TextStyle(color: Colors.black87),
-                ),
-              )
-            : StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(userId)
-                    .collection('users_notifications')
-                    .orderBy('timestamp', descending: true)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.black87),
-                    );
-                  }
+      body: userId == null
+          ? const Center(
+              child: Text(
+                "User not logged in",
+                style: TextStyle(color: Colors.black87),
+              ),
+            )
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .collection('users_notifications')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.black87),
+                  );
+                }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No Notifications yet.',
-                        style: TextStyle(color: Colors.black87),
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No Notifications yet.',
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                  );
+                }
+
+                final notifications = snapshot.data!.docs;
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _handleNewNotifications(notifications);
+                });
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final doc = notifications[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    final title = data['title'] ?? 'No Title';
+                    final message = data['message'] ?? 'No Message';
+                    final timestamp = data['timestamp'] as Timestamp?;
+                    final formattedTime = timestamp != null
+                        ? DateFormat(
+                            'dd MMM yyyy, hh:mm a',
+                          ).format(timestamp.toDate())
+                        : 'Unknown time';
+
+                    return Dismissible(
+                      key: Key(doc.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        color: Colors.red.shade300,
+                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
-                    );
-                  }
-
-                  final notifications = snapshot.data!.docs;
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _handleNewNotifications(notifications);
-                  });
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: notifications.length,
-                    itemBuilder: (context, index) {
-                      final doc = notifications[index];
-                      final data = doc.data() as Map<String, dynamic>;
-                      final title = data['title'] ?? 'No Title';
-                      final message = data['message'] ?? 'No Message';
-                      final timestamp = data['timestamp'] as Timestamp?;
-                      final formattedTime = timestamp != null
-                          ? DateFormat(
-                              'dd MMM yyyy, hh:mm a',
-                            ).format(timestamp.toDate())
-                          : 'Unknown time';
-
-                      return Dismissible(
-                        key: Key(doc.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          color: Colors.red.shade300,
-                          child: const Icon(Icons.delete, color: Colors.white),
-                        ),
-                        confirmDismiss: (_) async {
-                          await _confirmDelete(doc.reference);
-                          return false;
-                        },
-                        child: Center(
-                          child: Card(
-                            color:
-                                Colors.amber.shade50, // light card background
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: Colors.orange.shade300,
-                                width: 1,
-                              ),
+                      confirmDismiss: (_) async {
+                        await _confirmDelete(doc.reference);
+                        return false;
+                      },
+                      child: Center(
+                        child: Card(
+                          color: Colors.green.shade100, // light card background
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: Colors.green.shade300,
+                              width: 1,
                             ),
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 6,
-                              horizontal: 12,
+                          ),
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
+                          elevation: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                              vertical: 8,
                             ),
-                            elevation: 3,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 4,
-                                    height: 80,
-                                    color: Colors.orange.shade300,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.notifications,
-                                        color: Colors.orange.shade600,
-                                      ),
-                                      title: Text(
-                                        title,
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            message,
-                                            style: TextStyle(
-                                              color: Colors.black87.withOpacity(
-                                                0.7,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            formattedTime,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.orange.shade700,
-                                            ),
-                                          ),
-                                        ],
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 80,
+                                  color: Colors.green.shade900,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: ListTile(
+                                    leading: Icon(
+                                      Icons.notifications,
+                                      color: Colors.green.shade600,
+                                    ),
+                                    title: Text(
+                                      title,
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          message,
+                                          style: TextStyle(
+                                            color: Colors.black87.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          formattedTime,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
-      ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }

@@ -10,14 +10,8 @@ class LoginRequiredPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
+
         //  Luxury gradient background
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFF8E1), Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Center(
@@ -28,7 +22,7 @@ class LoginRequiredPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.amber,
+                    color: Colors.green,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -70,11 +64,7 @@ class LoginRequiredPage extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
-                      gradient: const LinearGradient(
-                        colors: [Colors.amber, Colors.orange],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
+                      color: Colors.green,
                     ),
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
@@ -127,13 +117,13 @@ class LoginRequiredPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      side: const BorderSide(color: Colors.amber, width: 2),
-                      foregroundColor: Colors.amber,
+                      side: const BorderSide(color: Colors.green, width: 2),
+                      foregroundColor: Colors.green,
                     ),
                     icon: const Icon(
                       Icons.arrow_forward,
                       size: 20,
-                      color: Colors.amber,
+                      color: Colors.green,
                     ),
                     label: const Text(
                       "Continue as Guest",

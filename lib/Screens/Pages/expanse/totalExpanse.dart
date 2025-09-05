@@ -158,14 +158,14 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Color(0xFFFFFFFF),
+        backgroundColor: Colors.green,
         elevation: 0,
       ),
       body: Container(
@@ -201,10 +201,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFFFD54F), // Soft Amber
-                          Color(0xFFFFB74D), // Light Orange
-                        ],
+                        colors: [Colors.greenAccent, Colors.green],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -261,8 +258,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      Colors.amber.shade700, // Teal highlight
+                                  color: Colors.green[100], // Teal highlight
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -270,7 +266,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                                     Text(
                                       daysOfWeek[index],
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -278,7 +274,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                                     Text(
                                       '${currentDay.day}',
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
                                       ),
@@ -322,19 +318,19 @@ class _ExpenseScreenState extends State<ExpenseScreen>
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(
-                    0xFFFFE0B2,
+                  gradient: LinearGradient(
+                    colors: [Colors.greenAccent, Colors.green],
                   ), // Soft Amber-Orange background
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: Colors.deepOrange,
+                    color: Colors.green,
                     width: 2,
                   ), // Border to match
                 ),
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: Colors.orange, // Active tab color
+                    color: Colors.green, // Active tab color
                     borderRadius: BorderRadius.circular(30),
                   ),
                   labelColor: Colors.white, // Text color for active tab
@@ -365,7 +361,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _onAddExpense,
         child: const Icon(Icons.add, color: Colors.white, size: 30),
-        backgroundColor: Colors.amber,
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -418,7 +414,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           ),
           child: CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.orange[200], // Light amber background
+            backgroundColor: Colors.green[100], // Light amber background
             child: Text(
               "${totalSpent.toStringAsFixed(0)}",
               style: const TextStyle(
@@ -438,7 +434,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           "${percent.toStringAsFixed(0)}% of your budget",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.green,
           ),
         ),
         const SizedBox(height: 20),
@@ -454,7 +450,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         return const Center(
           child: Text(
             "No expenses yet.",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.green),
           ),
         );
       }
@@ -473,7 +469,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           return const Center(
             child: Text(
               "No expenses yet.",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.green),
             ),
           );
         }
@@ -519,19 +515,19 @@ class _ExpenseScreenState extends State<ExpenseScreen>
             ],
           ),
           child: Card(
-            color: Colors.orange[50], // Light warm background for the card
+            color: Colors.green[100], // Light warm background for the card
             margin: const EdgeInsets.symmetric(vertical: 6),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: const BorderSide(
-                color: Colors.amber, // Border matches theme
+                color: Colors.green, // Border matches theme
                 width: 1.5,
               ),
             ),
             child: ListTile(
               leading: Icon(
                 categoryIcons[data['category']] ?? Icons.category,
-                color: Colors.deepOrange, // Strong accent color
+                color: Colors.green, // Strong accent color
               ),
               title: Text(
                 showCategory
@@ -552,7 +548,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                 amt.toStringAsFixed(2),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange, // Amount highlighted
+                  color: Color.fromARGB(255, 14, 174, 19), // Amount highlighted
                 ),
               ),
             ),

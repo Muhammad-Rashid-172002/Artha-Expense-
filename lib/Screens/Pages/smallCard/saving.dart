@@ -65,44 +65,28 @@ class _SavingsState extends State<Savings> {
     final savings = totalIncome - totalExpenses;
 
     return Scaffold(
-      // ✅ Gradient Background
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Color.fromARGB(255, 254, 217, 96),
-            ], // Gradient background
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+      appBar: AppBar(
+        title: const Text(
+          'Your Savings',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              AppBar(
-                title: const Text(
-                  'Your Savings',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                iconTheme: const IconThemeData(color: Colors.black),
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                centerTitle: true,
-              ),
-              Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : (userId == null ||
-                          (totalIncome == 0 && totalExpenses == 0))
-                    ? _buildEmptyState(userId == null)
-                    : _buildSavingsCard(savings),
-              ),
-            ],
-          ),
+        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: Colors.green,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      // ✅ Gradient Background
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : (userId == null || (totalIncome == 0 && totalExpenses == 0))
+                  ? _buildEmptyState(userId == null)
+                  : _buildSavingsCard(savings),
+            ),
+          ],
         ),
       ),
     );
@@ -113,82 +97,62 @@ class _SavingsState extends State<Savings> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Center(
-        child: Card(
-          color: Colors.white,
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFFFD700), width: 2),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.amber.shade400, Colors.deepOrange.shade200],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.savings, size: 48, color: Colors.green),
+              const SizedBox(height: 10),
+              const Text(
+                'Total Savings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.savings, size: 48, color: Colors.deepOrange),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Total Savings',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${savings.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Progress bar
-                  LinearProgressIndicator(
-                    value: totalIncome > 0
-                        ? (savings / totalIncome).clamp(0.0, 1.0)
-                        : 0,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.deepOrange,
-                    ),
-                    minHeight: 8,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Savings: ${(totalIncome > 0 ? (savings / totalIncome * 100).clamp(0.0, 100.0) : 0).toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  Text(
-                    'Income: ${totalIncome.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  ),
-                  Text(
-                    'Expenses: ${totalExpenses.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  ),
-                ],
+              const SizedBox(height: 10),
+              Text(
+                '${savings.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+
+              // Progress bar
+              LinearProgressIndicator(
+                value: totalIncome > 0
+                    ? (savings / totalIncome).clamp(0.0, 1.0)
+                    : 0,
+                backgroundColor: Colors.grey[300],
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                minHeight: 8,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Savings: ${(totalIncome > 0 ? (savings / totalIncome * 100).clamp(0.0, 100.0) : 0).toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.green,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(color: Colors.green),
+              Text(
+                'Income: ${totalIncome.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 16, color: Colors.green),
+              ),
+              Text(
+                'Expenses: ${totalExpenses.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 16, color: Colors.red),
+              ),
+            ],
           ),
         ),
       ),
@@ -205,7 +169,7 @@ class _SavingsState extends State<Savings> {
           children: [
             const Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.amber,
+              color: Colors.green,
               size: 100,
             ),
             const SizedBox(height: 20),
@@ -230,13 +194,13 @@ class _SavingsState extends State<Savings> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.add, color: Colors.white),
+              icon: const Icon(Icons.add, color: Colors.green),
               label: Text(
                 isGuest ? "Login to Start" : "Add Income/Expense",
                 style: const TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,

@@ -157,124 +157,199 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       appBar: AppBar(
         title: Text(
           widget.existingData != null ? "Edit Expense" : "Add Expense",
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.red[300],
+        foregroundColor: Colors.white,
         elevation: 3,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color.fromARGB(255, 246, 227, 165)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Card(
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              elevation: 10,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.amber.shade400, Colors.deepOrange.shade200],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                padding: const EdgeInsets.all(22),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Date Picker
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          dialogBackgroundColor: Colors.blueGrey[800],
+                          colorScheme: const ColorScheme.dark(
+                            primary: Colors.amber,
+                            onPrimary: Colors.black,
+                            surface: Colors.blueGrey,
+                            onSurface: Colors.black,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (picked != null) setState(() => selectedDate = picked);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Date Picker
-                    GestureDetector(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                          builder: (context, child) {
-                            return Theme(
-                              data: Theme.of(context).copyWith(
-                                dialogBackgroundColor: Colors.blueGrey[800],
-                                colorScheme: const ColorScheme.dark(
-                                  primary: Colors.amber,
-                                  onPrimary: Colors.black,
-                                  surface: Colors.blueGrey,
-                                  onSurface: Colors.white,
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (picked != null)
-                          setState(() => selectedDate = picked);
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.calendar_today, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Text(
-                            DateFormat('dd MMM yyyy').format(selectedDate),
-                            style: const TextStyle(color: Colors.white),
+                    const Icon(Icons.calendar_today, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('dd MMM yyyy').format(selectedDate),
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Title TextField
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.shade100.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
+                      child: TextField(
+                        controller: titleController,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: "Expense Title",
+                          labelStyle: TextStyle(color: Colors.orange.shade700),
+                          prefixIcon: const Icon(
+                            Icons.title,
+                            color: Colors.deepOrange,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
-                    // Title
-                    TextField(
-                      controller: titleController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: _inputDecoration("Expense Title"),
+                    // Amount TextField
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.shade100.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: amountController,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: "Amount",
+                          labelStyle: TextStyle(color: Colors.orange.shade700),
+                          prefixIcon: const Icon(
+                            Icons.attach_money,
+                            color: Colors.deepOrange,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 18),
-
-                    // Amount
-                    TextField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: _inputDecoration("Amount"),
-                    ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
 
                     // Category Dropdown
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      dropdownColor: Colors.amber.shade300,
-                      style: const TextStyle(color: Colors.black),
-                      iconEnabledColor: Colors.black,
-                      onChanged: (value) {
-                        if (value != null)
-                          setState(() => selectedCategory = value);
-                      },
-                      items: categories.map((cat) {
-                        return DropdownMenuItem(
-                          value: cat,
-                          child: Row(
-                            children: [
-                              Icon(categoryIcons[cat], color: Colors.white),
-                              const SizedBox(width: 8),
-                              Text(
-                                cat,
-                                style: const TextStyle(color: Colors.black),
-                              ),
-                            ],
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.shade100.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                        );
-                      }).toList(),
-                      decoration: _inputDecoration("Category"),
+                        ],
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        dropdownColor: Colors.red.shade300,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        iconEnabledColor: Colors.deepOrange,
+                        onChanged: (value) {
+                          if (value != null)
+                            setState(() => selectedCategory = value);
+                        },
+                        items: categories.map((cat) {
+                          return DropdownMenuItem(
+                            value: cat,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  categoryIcons[cat],
+                                  color: Colors.deepOrange,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  cat,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: "Category",
+                          labelStyle: TextStyle(color: Colors.orange.shade700),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 30),
 
@@ -283,17 +358,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber.shade700,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(20),
                           ),
+                          elevation: 6,
+                          shadowColor: Colors.white,
+                          backgroundColor: Colors.red,
                         ),
                         onPressed: isLoading ? null : _submitExpense,
                         child: isLoading
                             ? const SpinKitFadingCircle(
-                                color: Colors.white,
+                                color: Colors.red,
                                 size: 28,
                               )
                             : Text(
@@ -303,6 +379,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
+                                  color: Colors.white,
                                 ),
                               ),
                       ),
@@ -310,7 +387,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

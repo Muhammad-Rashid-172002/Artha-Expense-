@@ -37,13 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFF8E1), Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: BoxDecoration(),
         child: SafeArea(
           child: Column(
             children: [
@@ -115,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _controller,
                 count: onboardingData.length,
                 effect: WormEffect(
-                  activeDotColor: const Color(0xFFFFB300),
+                  activeDotColor: Colors.green,
                   dotColor: Colors.blueGrey.shade200,
                   dotHeight: 8,
                   dotWidth: 8,
@@ -128,10 +122,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: isLoading
-                    ? const SpinKitCircle(color: Color(0xFFFFB300), size: 40)
+                    ? const SpinKitCircle(color: Colors.white, size: 40)
                     : ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
+                          backgroundColor: Colors.green,
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

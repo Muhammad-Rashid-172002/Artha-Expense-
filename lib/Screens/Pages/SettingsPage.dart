@@ -268,7 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
+            child: const Text("Cancel", style: TextStyle(color: Colors.green)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -288,13 +288,17 @@ class _SettingsPageState extends State<SettingsPage> {
           MaterialPageRoute(builder: (context) => OnboardingScreen()),
         );
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Account successfully deleted.")),
+          const SnackBar(
+            content: Text("Account successfully deleted."),
+            backgroundColor: Colors.green,
+          ),
         );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'requires-recent-login') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Please log in again to delete your account."),
+              backgroundColor: Colors.green,
             ),
           );
         } else {
@@ -316,109 +320,81 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.white, Color.fromARGB(255, 254, 217, 96)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SingleChildScrollView(
-            // <-- Add this
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              children: [
-                Text(
-                  "Settings",
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF37474F), //  BlueGrey
-                    letterSpacing: 1.2,
-                  ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            children: [
+              Text(
+                "Settings",
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF37474F), //  BlueGrey
+                  letterSpacing: 1.2,
                 ),
-                const SizedBox(height: 20),
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.orange.shade700,
-                  child: const Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Editable Name
-                ListTile(
-                  leading: const Icon(Icons.person),
-                  title: const Text("Name"),
-                  subtitle: Text(userName),
-                  onTap: () => _showEditDialog("Name", userName, "name"),
-                ),
-                // Editable Email
-                ListTile(
-                  leading: const Icon(Icons.email),
-                  title: const Text("Email"),
-                  subtitle: Text(userEmail),
-                  onTap: () => _showEditDialog("Email", userEmail, "email"),
-                ),
-                // Editable Password
-                ListTile(
-                  leading: const Icon(Icons.lock),
-                  title: const Text("Password"),
-                  subtitle: const Text("********"),
-                  onTap: () async {
-                    try {
-                      final bool canCheckBiometrics =
-                          await auth.canCheckBiometrics;
-                      final bool isDeviceSupported = await auth
-                          .isDeviceSupported();
+              ),
+              const SizedBox(height: 20),
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.orange.shade700,
+                child: const Icon(Icons.person, size: 50, color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              // Editable Name
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text("Name"),
+                subtitle: Text(userName),
+                onTap: () => _showEditDialog("Name", userName, "name"),
+              ),
+              // Editable Email
+              ListTile(
+                leading: const Icon(Icons.email),
+                title: const Text("Email"),
+                subtitle: Text(userEmail),
+                onTap: () => _showEditDialog("Email", userEmail, "email"),
+              ),
+              // Editable Password
+              ListTile(
+                leading: const Icon(Icons.lock),
+                title: const Text("Password"),
+                subtitle: const Text("********"),
+                onTap: () async {
+                  try {
+                    final bool canCheckBiometrics =
+                        await auth.canCheckBiometrics;
+                    final bool isDeviceSupported = await auth
+                        .isDeviceSupported();
 
-                      if (canCheckBiometrics && isDeviceSupported) {
-                        // Biometric OR device passcode authentication
-                        final bool authenticated = await auth.authenticate(
-                          localizedReason:
-                              'Please authenticate to edit your password',
-                          options: const AuthenticationOptions(
-                            biometricOnly:
-                                false, // allow PIN/Pattern/Password as fallback
-                            useErrorDialogs: true,
-                            stickyAuth: true,
-                          ),
-                        );
+                    if (canCheckBiometrics && isDeviceSupported) {
+                      // Biometric OR device passcode authentication
+                      final bool authenticated = await auth.authenticate(
+                        localizedReason:
+                            'Please authenticate to edit your password',
+                        options: const AuthenticationOptions(
+                          biometricOnly:
+                              false, // allow PIN/Pattern/Password as fallback
+                          useErrorDialogs: true,
+                          stickyAuth: true,
+                        ),
+                      );
 
-                        if (authenticated) {
-                          _showEditDialog(
-                            "Password",
-                            '',
-                            "password",
-                            isPassword: true,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Authentication failed'),
-                            ),
-                          );
-                        }
-                      } else {
-                        // No biometrics available, go directly to password edit
+                      if (authenticated) {
                         _showEditDialog(
                           "Password",
                           '',
                           "password",
                           isPassword: true,
                         );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Authentication failed'),
+                          ),
+                        );
                       }
-                    } catch (e) {
-                      debugPrint("Fingerprint auth error: $e");
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      // fallback to password dialog
+                    } else {
+                      // No biometrics available, go directly to password edit
                       _showEditDialog(
                         "Password",
                         '',
@@ -426,55 +402,67 @@ class _SettingsPageState extends State<SettingsPage> {
                         isPassword: true,
                       );
                     }
-                  },
+                  } catch (e) {
+                    debugPrint("Fingerprint auth error: $e");
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    // fallback to password dialog
+                    _showEditDialog(
+                      "Password",
+                      '',
+                      "password",
+                      isPassword: true,
+                    );
+                  }
+                },
+              ),
+              // Currency
+              ListTile(
+                leading: Icon(
+                  Icons.attach_money,
+                  color: Colors.orange.shade700,
                 ),
-                // Currency
-                ListTile(
-                  leading: Icon(
-                    Icons.attach_money,
-                    color: Colors.orange.shade700,
-                  ),
-                  title: const Text("Preferred Currency"),
-                  subtitle: Text('$currencyFlag $selectedCurrency'),
-                  onTap: _showCurrencyPicker,
-                ),
-                const SizedBox(height: 30), // Spacer replacement for scroll
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _logout,
-                        icon: const Icon(Icons.logout),
-                        label: const Text("Logout"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                title: const Text("Preferred Currency"),
+                subtitle: Text('$currencyFlag $selectedCurrency'),
+                onTap: _showCurrencyPicker,
+              ),
+              const SizedBox(height: 30), // Spacer replacement for scroll
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _logout,
+                      icon: const Icon(Icons.logout),
+                      label: const Text("Logout"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      const SizedBox(height: 15),
-                      ElevatedButton.icon(
-                        onPressed: _deleteAccount,
-                        icon: const Icon(Icons.delete_forever),
-                        label: const Text("Delete Account"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton.icon(
+                      onPressed: _deleteAccount,
+                      icon: const Icon(Icons.delete_forever),
+                      label: const Text("Delete Account"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade700,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

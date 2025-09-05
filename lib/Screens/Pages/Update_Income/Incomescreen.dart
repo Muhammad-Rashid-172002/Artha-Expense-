@@ -193,10 +193,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
         ),
       ),
       child: Scaffold(
-        backgroundColor:
-            Colors.transparent, // Make scaffold transparent to show gradient
         appBar: AppBar(
-          backgroundColor: Colors.white, // AppBar color
+          backgroundColor: Colors.green, // AppBar color
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.pop(context),
@@ -214,7 +212,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
         ),
         body: userId == null ? _buildGuestView() : _buildFirebaseView(),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.amber,
+          backgroundColor: Colors.green,
           tooltip: 'Add Income',
           onPressed: _openAddIncome,
           child: const Icon(Icons.add, color: Colors.white),
@@ -277,51 +275,41 @@ class _IncomeScreenState extends State<IncomeScreen> {
                             width: 1.5,
                           ),
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Colors.amber, Colors.orange],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(
+                                0.2,
+                              ), // subtle background for icon
+                              shape: BoxShape.circle,
                             ),
-                            borderRadius: BorderRadius.circular(16),
+                            child: const Icon(
+                              Icons.attach_money,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(
-                                  0.2,
-                                ), // subtle background for icon
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.attach_money,
-                                color: Colors.white,
-                              ),
+                          title: Text(
+                            income['title'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
                             ),
-                            title: Text(
-                              income['title'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
+                          ),
+                          subtitle: Text(
+                            formattedDate,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 13,
                             ),
-                            subtitle: Text(
-                              formattedDate,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 13,
-                              ),
-                            ),
-                            trailing: Text(
-                              '${income['amount']}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                          ),
+                          trailing: Text(
+                            '${income['amount']}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                         ),
@@ -413,43 +401,37 @@ class _IncomeScreenState extends State<IncomeScreen> {
                             ),
                             child: Container(
                               margin: const EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 12,
-                              ),
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.amber,
-                                    Colors.deepOrange,
-                                  ], // Amber → Orange gradient
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(16),
-                                ),
+                                vertical: 4,
+                                horizontal: 8,
+                              ), // optional spacing
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade600,
+                                borderRadius: BorderRadius.circular(
+                                  12,
+                                ), // rounded corners
                               ),
                               child: ListTile(
                                 leading: const Icon(
                                   Icons.attach_money,
-                                  color: Colors
-                                      .white, // white so it pops on gradient
+                                  color: Colors.green, // icon color
                                 ),
                                 title: Text(
                                   title,
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black, // title text color
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 subtitle: Text(
                                   formattedDate,
-                                  style: const TextStyle(color: Colors.white70),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                  ), // subtitle color
                                 ),
                                 trailing: Text(
                                   ' $amount',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.white, // trailing text color
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -473,10 +455,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFFD54F), // Soft Amber
-            Color(0xFFFFB74D), // Light Orange
-          ],
+          colors: [Colors.greenAccent, Colors.green],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

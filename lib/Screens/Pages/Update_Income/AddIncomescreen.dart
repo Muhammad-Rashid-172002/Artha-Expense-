@@ -122,124 +122,106 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            backgroundColor: Colors.amber.shade700,
+            backgroundColor: Colors.green.shade700,
             centerTitle: true,
             elevation: 4,
           ),
           body: Center(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 10,
-              margin: const EdgeInsets.all(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.amber.shade400, Colors.deepOrange.shade200],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Income Details',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Income Details',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      value: _selectedSource,
-                      items: _incomeSources.map((source) {
-                        return DropdownMenuItem<String>(
-                          value: source['label'],
-                          child: Row(
-                            children: [
-                              Icon(source['icon'], color: Colors.white),
-                              const SizedBox(width: 10),
-                              Text(
-                                source['label'],
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedSource = value),
-                      decoration: InputDecoration(
-                        labelText: 'Select Income Source',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Colors.white70),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.white,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      dropdownColor: Colors.amber.shade300,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'Enter Amount',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Colors.white70),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.white,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _isLoading
-                        ? const SpinKitFadingCircle(
-                            color: Colors.white,
-                            size: 40,
-                          )
-                        : ElevatedButton.icon(
-                            onPressed: _saveIncome,
-                            icon: const Icon(Icons.save),
-                            label: Text(
-                              widget.docId == null
-                                  ? 'Save Income'
-                                  : 'Update Income',
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    value: _selectedSource,
+                    items: _incomeSources.map((source) {
+                      return DropdownMenuItem<String>(
+                        value: source['label'],
+                        child: Row(
+                          children: [
+                            Icon(source['icon'], color: Colors.green),
+                            const SizedBox(width: 10),
+                            Text(
+                              source['label'],
+                              style: const TextStyle(color: Colors.black),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber.shade700,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedSource = value),
+                    decoration: InputDecoration(
+                      labelText: 'Select Income Source',
+                      labelStyle: const TextStyle(color: Colors.green),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.green),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    dropdownColor: Colors.green.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'Enter Amount',
+                      labelStyle: const TextStyle(color: Colors.green),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.green),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _isLoading
+                      ? const SpinKitFadingCircle(color: Colors.green, size: 40)
+                      : ElevatedButton.icon(
+                          onPressed: _saveIncome,
+                          icon: const Icon(Icons.save),
+                          label: Text(
+                            widget.docId == null
+                                ? 'Save Income'
+                                : 'Update Income',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                  ],
-                ),
+                        ),
+                ],
               ),
             ),
           ),

@@ -2,6 +2,43 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- fireBASE  -->
+    <key>CLIENT_ID</key>
+	<string>155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>155227403448-b4gq1n9nct3rk5497h3tg70f88h2fn9a.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBOMIucnaTmDSQnlkINqMdxl_nADE_IhFk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>155227403448</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kesava.artha</string>
+	<key>PROJECT_ID</key>
+	<string>artha-b88ab</string>
+	<key>STORAGE_BUCKET</key>
+	<string>artha-b88ab.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:155227403448:ios:1f24ec87ac9597038ef04d</string>
+    <key>NSAppleIDUsageDescription</key>
+    <string>Sign in with Apple is used to authenticate your account securely.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We need camera access to take receipt photos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need photo library access to select receipts.</string>
 
     <!-- Notifications -->
     <key>NSPushNotificationUsageDescription</key>

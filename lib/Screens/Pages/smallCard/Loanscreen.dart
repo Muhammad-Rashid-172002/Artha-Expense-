@@ -158,8 +158,8 @@ class _LoanscreenState extends State<Loanscreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.amber.shade200, // light color at top
-                Colors.orange.shade400, // medium
+                Colors.greenAccent.shade100, // light top
+                Colors.green.shade700, // middle
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -173,7 +173,7 @@ class _LoanscreenState extends State<Loanscreen> {
               const Text(
                 "Delete Loan",
                 style: TextStyle(
-                  color: Colors.orange,
+                  color: Colors.green,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -259,7 +259,10 @@ class _LoanscreenState extends State<Loanscreen> {
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.orange.shade700, Colors.amber.shade400],
+              colors: [
+                Colors.greenAccent.shade100, // light top
+                Colors.green.shade700,
+              ], // middle],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -283,7 +286,7 @@ class _LoanscreenState extends State<Loanscreen> {
                             ? "Add Loan"
                             : "Edit Loan",
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -293,48 +296,42 @@ class _LoanscreenState extends State<Loanscreen> {
                         controller: nameController,
                         decoration: InputDecoration(
                           labelText: 'Name',
-                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          labelStyle: TextStyle(color: Colors.black),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.amber.shade200,
-                            ),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.orange),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                         ),
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.black),
                       ),
                       const SizedBox(height: 10),
                       TextField(
                         controller: amountController,
                         decoration: InputDecoration(
                           labelText: 'Amount',
-                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          labelStyle: TextStyle(color: Colors.black),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.amber.shade200,
-                            ),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.orange),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                         ),
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.black),
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         value: status,
-                        dropdownColor: Colors.orange.shade700,
-                        style: const TextStyle(color: Colors.white),
+                        dropdownColor: Colors.greenAccent.shade200,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
                           labelText: 'Status',
-                          labelStyle: TextStyle(color: Colors.amber.shade100),
+                          labelStyle: TextStyle(color: Colors.black),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.amber.shade200,
-                            ),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.orange),
@@ -451,13 +448,13 @@ class _LoanscreenState extends State<Loanscreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.green,
         title: Text(
           'Loan List',
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF37474F), //  BlueGrey
+            color: Colors.white, //  BlueGrey
             letterSpacing: 1.2,
           ),
         ),
@@ -465,54 +462,42 @@ class _LoanscreenState extends State<Loanscreen> {
 
         foregroundColor: Colors.white,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              const Color.fromARGB(255, 254, 217, 96), // light amber
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: user == null
-            // ✅ Guest loans list
-            ? guestLoans.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No loans added yet. (Guest Mode)",
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    )
-                  : buildLoanList(guestLoans, isGuest: true)
-            // ✅ Firestore loans list
-            : StreamBuilder<QuerySnapshot>(
-                stream: loansStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: SpinKitCircle(color: Colors.black),
-                    );
-                  }
+      body: user == null
+          // ✅ Guest loans list
+          ? guestLoans.isEmpty
+                ? const Center(
+                    child: Text(
+                      "No loans added yet. (Guest Mode)",
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                  )
+                : buildLoanList(guestLoans, isGuest: true)
+          // ✅ Firestore loans list
+          : StreamBuilder<QuerySnapshot>(
+              stream: loansStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: SpinKitCircle(color: Colors.black),
+                  );
+                }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        "No loans added yet.",
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    );
-                  }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No loans added yet.",
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                  );
+                }
 
-                  return buildLoanList(snapshot.data!.docs, isGuest: false);
-                },
-              ),
-      ),
+                return buildLoanList(snapshot.data!.docs, isGuest: false);
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showLoanBottomSheet(),
-        backgroundColor: Colors.amber,
-        child: const Icon(Icons.add, color: Colors.black),
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -565,8 +550,8 @@ class _LoanscreenState extends State<Loanscreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.amber.shade100, // light top
-                        Colors.orange.shade200, // middle
+                        Colors.greenAccent.shade100, // light top
+                        Colors.green.shade700, // middle
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -613,10 +598,7 @@ class _LoanscreenState extends State<Loanscreen> {
                         ],
                       ),
                       child: ListTile(
-                        leading: const Icon(
-                          Icons.person,
-                          color: Colors.orangeAccent,
-                        ),
+                        leading: const Icon(Icons.person, color: Colors.red),
                         title: Text(
                           name,
                           style: const TextStyle(color: Colors.black87),

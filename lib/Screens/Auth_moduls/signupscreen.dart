@@ -8,6 +8,7 @@ import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -99,12 +100,13 @@ class _SignupScreenState extends State<SignupScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           'Sign Up',
-          style: TextStyle(
-            fontSize: 26,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.deepOrange,
+            color: const Color(0xFF37474F), //  BlueGrey
+            letterSpacing: 1.2,
           ),
         ),
         centerTitle: true,
@@ -121,213 +123,199 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            child: Card(
-              margin: const EdgeInsets.only(top: 32),
-              elevation: 12,
-              color: Colors.white,
-              shadowColor: Colors.black26,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 40,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(22.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
-                        ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
                       ),
-                      const SizedBox(height: 25),
+                    ),
+                    const SizedBox(height: 25),
 
-                      // Full Name
-                      TextFormField(
-                        controller: nameController,
-                        decoration: _customInputDecoration(
-                          'Full Name',
-                          Icons.person,
-                        ),
-                        validator: (value) => value != null && value.isNotEmpty
-                            ? null
-                            : 'Enter name',
-                        style: const TextStyle(color: Colors.black87),
+                    // Full Name
+                    TextFormField(
+                      controller: nameController,
+                      decoration: _customInputDecoration(
+                        'Full Name',
+                        Icons.person,
                       ),
-                      const SizedBox(height: 15),
+                      validator: (value) => value != null && value.isNotEmpty
+                          ? null
+                          : 'Enter name',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    const SizedBox(height: 15),
 
-                      // Email
-                      TextFormField(
-                        controller: emailController,
-                        decoration: _customInputDecoration(
-                          'Email',
-                          Icons.email,
-                        ),
-                        validator: (value) =>
-                            value != null && value.contains('@')
-                            ? null
-                            : 'Enter valid email',
-                        style: const TextStyle(color: Colors.black87),
+                    // Email
+                    TextFormField(
+                      controller: emailController,
+                      decoration: _customInputDecoration('Email', Icons.email),
+                      validator: (value) => value != null && value.contains('@')
+                          ? null
+                          : 'Enter valid email',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    const SizedBox(height: 15),
+
+                    // Password
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: _customInputDecoration(
+                        'Password',
+                        Icons.lock,
                       ),
-                      const SizedBox(height: 15),
+                      validator: (value) => value != null && value.length >= 6
+                          ? null
+                          : 'Password must be at least 6 characters',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    const SizedBox(height: 15),
 
-                      // Password
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: true,
-                        decoration: _customInputDecoration(
-                          'Password',
-                          Icons.lock,
-                        ),
-                        validator: (value) => value != null && value.length >= 6
-                            ? null
-                            : 'Password must be at least 6 characters',
-                        style: const TextStyle(color: Colors.black87),
+                    // Confirm Password
+                    TextFormField(
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      decoration: _customInputDecoration(
+                        'Confirm Password',
+                        Icons.lock_outline,
                       ),
-                      const SizedBox(height: 15),
+                      validator: (value) => value == passwordController.text
+                          ? null
+                          : 'Passwords do not match',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
 
-                      // Confirm Password
-                      TextFormField(
-                        controller: confirmPasswordController,
-                        obscureText: true,
-                        decoration: _customInputDecoration(
-                          'Confirm Password',
-                          Icons.lock_outline,
-                        ),
-                        validator: (value) => value == passwordController.text
-                            ? null
-                            : 'Passwords do not match',
-                        style: const TextStyle(color: Colors.black87),
-                      ),
+                    const SizedBox(height: 25),
 
-                      const SizedBox(height: 25),
-
-                      // Sign Up Button
-                      GestureDetector(
-                        onTap: _isLoading ? null : _signUpWithEmail,
-                        child: Container(
-                          height: 55,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: const LinearGradient(
-                              colors: [Colors.deepOrange, Colors.orangeAccent],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                    // Sign Up Button
+                    GestureDetector(
+                      onTap: _isLoading ? null : _signUpWithEmail,
+                      child: Container(
+                        height: 55,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: Colors.green,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.withOpacity(0.4),
+                              offset: const Offset(0, 4),
+                              blurRadius: 8,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.orange.withOpacity(0.4),
-                                offset: const Offset(0, 4),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: _isLoading
-                                ? const SpinKitFadingCircle(
+                          ],
+                        ),
+                        child: Center(
+                          child: _isLoading
+                              ? const SpinKitFadingCircle(
+                                  color: Colors.white,
+                                  size: 30.0,
+                                )
+                              : const Text(
+                                  'Sign Up',
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    size: 30.0,
-                                  )
-                                : const Text(
-                                    'Sign Up',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                          ),
+                                ),
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 25),
-                      const Divider(color: Colors.deepOrange),
+                    const SizedBox(height: 25),
+                    const Divider(color: Colors.green),
 
-                      const SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
-                      // Google Sign In
-                      GestureDetector(
-                        onTap: _isLoading ? null : _signInWithGoogle,
-                        child: Container(
-                          height: 45,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.deepOrange),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset("assets/google.png", height: 24),
-                              const SizedBox(width: 10),
-                              const Text(
-                                "Sign up with Google",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                    // Google Sign In
+                    GestureDetector(
+                      onTap: _isLoading ? null : _signInWithGoogle,
+                      child: Container(
+                        height: 45,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.green),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/google.png", height: 24),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Sign up with Google",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      GestureDetector(
-                        onTap: _isLoading ? null : _signInWithApple,
-                        child: Container(
-                          height: 48,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.deepOrange),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.apple, size: 26, color: Colors.black),
-                              const SizedBox(width: 10),
-                              const Text(
-                                "Sign in with Apple",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Already have an account?",
-                            style: TextStyle(color: Colors.black54),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SigninScreen(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Sign In',
-                              style: TextStyle(color: Colors.deepOrange),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 15),
+                    GestureDetector(
+                      onTap: _isLoading ? null : _signInWithApple,
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.green),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.apple, size: 26, color: Colors.black),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Sign in with Apple",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Already have an account?",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SigninScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(color: Colors.green),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -392,7 +380,7 @@ class _SignupScreenState extends State<SignupScreen> {
   InputDecoration _customInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: Colors.deepOrange),
+      prefixIcon: Icon(icon, color: Colors.green),
       filled: true,
       fillColor: Colors.grey[100],
       labelStyle: const TextStyle(color: Colors.black87),
@@ -403,15 +391,15 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.deepOrange, width: 2),
+        borderSide: const BorderSide(color: Colors.green, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+        borderSide: const BorderSide(color: Colors.green, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+        borderSide: const BorderSide(color: Colors.green, width: 2),
       ),
     );
   }
