@@ -3,18 +3,71 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+/// ✅ Guest storage (temporary, in-memory)
+class GuestIncomeStore {
+  static final List<Map<String, dynamic>> _incomes = [];
+
+  static List<Map<String, dynamic>> get incomes =>
+      List<Map<String, dynamic>>.from(_incomes)..sort(
+        (a, b) =>
+            (b['createdAt'] as DateTime).compareTo(a['createdAt'] as DateTime),
+      );
+
+  static void addIncome({required String title, required double amount}) {
+    _incomes.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'title': title,
+      'amount': amount,
+      'createdAt': DateTime.now(),
+    });
+  }
+
+  static void editIncome({
+    required String id,
+    required String title,
+    required double amount,
+  }) {
+    final idx = _incomes.indexWhere((r) => r['id'] == id);
+    if (idx != -1) {
+      _incomes[idx] = {
+        'id': id,
+        'title': title,
+        'amount': amount,
+        'createdAt': DateTime.now(),
+      };
+    }
+  }
+
+  static void deleteIncome(String id) {
+    _incomes.removeWhere((r) => r['id'] == id);
+  }
+
+  static double get totalIncome {
+    return _incomes.fold(
+      0,
+      (sum, item) =>
+          sum +
+          (item['amount'] is num ? (item['amount'] as num).toDouble() : 0),
+    );
+  }
+}
+
 class AddIncomeScreen extends StatefulWidget {
-  final String? docId;
-  final String? title;
-  final String? amount;
-  final Timestamp? createdAt;
+  final String? incomeId;
+  final String? initialTitle;
+  final double? initialAmount;
+  final DateTime? initialDate;
+  final bool isEditing;
+  final bool isGuest;
 
   const AddIncomeScreen({
     super.key,
-    this.docId,
-    this.title,
-    this.amount,
-    this.createdAt,
+    this.incomeId,
+    this.initialTitle,
+    this.initialAmount,
+    this.initialDate,
+    this.isEditing = false,
+    this.isGuest = false,
   });
 
   @override
@@ -37,8 +90,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.title != null) _selectedSource = widget.title;
-    if (widget.amount != null) _amountController.text = widget.amount!;
+    if (widget.initialTitle != null) _selectedSource = widget.initialTitle;
+    if (widget.initialAmount != null) {
+      _amountController.text = widget.initialAmount!.toString();
+    }
   }
 
   Future<void> _saveIncome() async {
@@ -58,7 +113,44 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
     setState(() => _isLoading = true);
 
-    final userId = FirebaseAuth.instance.currentUser!.uid;
+    // ✅ Guest mode
+    if (widget.isGuest) {
+      if (!widget.isEditing) {
+        GuestIncomeStore.addIncome(title: _selectedSource!, amount: amount);
+      } else {
+        GuestIncomeStore.editIncome(
+          id: widget.incomeId!,
+          title: _selectedSource!,
+          amount: amount,
+        );
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Income saved (Guest Mode)'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true); // return true to refresh
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    // ✅ Firebase mode
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("❌ Not logged in. Please sign in."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final userId = user.uid;
     final incomeData = {
       'title': _selectedSource,
       'amount': amount,
@@ -71,8 +163,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         .collection('users_income');
 
     try {
-      if (widget.docId != null) {
-        await incomeRef.doc(widget.docId).update(incomeData);
+      if (widget.isEditing && widget.incomeId != null) {
+        await incomeRef.doc(widget.incomeId).update(incomeData);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Income updated successfully.'),
@@ -88,7 +180,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
           ),
         );
       }
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -116,7 +208,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text(
-              widget.docId == null ? 'Add Income' : 'Edit Income',
+              widget.isEditing ? 'Edit Income' : 'Add Income',
               style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -205,9 +297,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                           onPressed: _saveIncome,
                           icon: const Icon(Icons.save),
                           label: Text(
-                            widget.docId == null
-                                ? 'Save Income'
-                                : 'Update Income',
+                            widget.isEditing ? 'Update Income' : 'Save Income',
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green.shade700,

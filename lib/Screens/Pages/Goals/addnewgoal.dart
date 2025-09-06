@@ -8,7 +8,7 @@ class Addnewgoal extends StatefulWidget {
   final String? goalId;
   final DocumentSnapshot? existingData;
   final Map<String, dynamic>? guestGoal;
-  final Function(Map<String, dynamic>)? onSave;
+  final Function(Map<String, dynamic>)? onSave; // Callback for guest mode
   final bool isGuest;
 
   const Addnewgoal({
@@ -107,10 +107,10 @@ class _AddnewgoalState extends State<Addnewgoal> {
         'createdAt': DateTime.now(),
       };
 
-      // ✅ Guest mode: save locally, not Firestore
+      // ✅ Guest mode: save locally and call onSave callback
       if (widget.isGuest || FirebaseAuth.instance.currentUser == null) {
-        widget.onSave?.call(goalData);
-        Navigator.pop(context);
+        if (widget.onSave != null) widget.onSave!(goalData);
+        Navigator.pop(context); // Close screen
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Goal saved locally (Guest Mode)!"),
@@ -120,7 +120,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
         return;
       }
 
-      // ✅ Logged-in user: Save to Firestore
+      // ✅ Logged-in user: save to Firestore
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final goalRef = FirebaseFirestore.instance
           .collection('users')
@@ -128,6 +128,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
           .collection('users_goals');
 
       if (widget.goalId != null) {
+        // Update existing goal
         await goalRef.doc(widget.goalId).update(goalData);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -137,6 +138,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
           ),
         );
       } else {
+        // Add new goal
         await goalRef.add(goalData);
 
         // Firestore notification
@@ -185,13 +187,16 @@ class _AddnewgoalState extends State<Addnewgoal> {
       appBar: AppBar(
         title: Text(
           isEditing ? "Edit Goal" : "Add New Goal",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
       body: Center(
@@ -204,7 +209,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
               children: [
                 Text(
                   isEditing ? "Edit Your Goal" : "Set a New Goal",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -290,7 +295,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.black54),
+        labelStyle: const TextStyle(color: Colors.black54),
         prefixIcon: Icon(icon, color: Colors.green),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -305,7 +310,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
           borderSide: BorderSide(color: Colors.green, width: 2),
         ),
       ),
-      style: TextStyle(color: Colors.black),
+      style: const TextStyle(color: Colors.black),
     );
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/LoginRequriedPage.dart';
 import 'package:expanse_tracker_app/Screens/Pages/Update_income/Incomescreen.dart';
@@ -12,11 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:expanse_tracker_app/Screens/Pages/expanse/montlybudget.dart';
 import 'package:expanse_tracker_app/Screens/Pages/expanse/totalExpanse.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

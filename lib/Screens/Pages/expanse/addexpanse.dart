@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Temporary storage for guest users
+/// Temporary storage for guest users (global list)
 List<Map<String, dynamic>> guestExpenses = [];
 
 class AddExpenseScreen extends StatefulWidget {
@@ -101,10 +101,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     try {
       if (user == null) {
-        // Guest Mode → Save locally
+        // 🚀 Guest Mode → Save locally
         guestExpenses.add(newExpense);
+
+        // Sort by latest first
+        guestExpenses.sort(
+          (a, b) => (b['timestamp'] as Timestamp).compareTo(
+            a['timestamp'] as Timestamp,
+          ),
+        );
+
         Navigator.pop(context, newExpense);
       } else {
+        // 🚀 Logged-in User → Save in Firestore
         final userDoc = FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid);
@@ -157,7 +166,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       appBar: AppBar(
         title: Text(
           widget.existingData != null ? "Edit Expense" : "Add Expense",
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.red[300],
@@ -169,7 +178,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Date Picker
+              // 📅 Date Picker
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -212,98 +221,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // Title TextField
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.shade100.withOpacity(0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: titleController,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: "Expense Title",
-                          labelStyle: TextStyle(color: Colors.orange.shade700),
-                          prefixIcon: const Icon(
-                            Icons.title,
-                            color: Colors.deepOrange,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                        ),
-                      ),
+                    // 📝 Title TextField
+                    _buildTextField(
+                      controller: titleController,
+                      label: "Expense Title",
+                      icon: Icons.title,
                     ),
                     const SizedBox(height: 20),
 
-                    // Amount TextField
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.shade100.withOpacity(0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: amountController,
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: "Amount",
-                          labelStyle: TextStyle(color: Colors.orange.shade700),
-                          prefixIcon: const Icon(
-                            Icons.attach_money,
-                            color: Colors.deepOrange,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                        ),
-                      ),
+                    // 💵 Amount TextField
+                    _buildTextField(
+                      controller: amountController,
+                      label: "Amount",
+                      icon: Icons.attach_money,
+                      keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 20),
 
-                    // Category Dropdown
+                    // 📂 Category Dropdown
                     Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.shade100.withOpacity(0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                      decoration: _boxDecoration(),
                       child: DropdownButtonFormField<String>(
                         value: selectedCategory,
                         dropdownColor: Colors.red.shade300,
@@ -313,8 +250,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         ),
                         iconEnabledColor: Colors.deepOrange,
                         onChanged: (value) {
-                          if (value != null)
+                          if (value != null) {
                             setState(() => selectedCategory = value);
+                          }
                         },
                         items: categories.map((cat) {
                           return DropdownMenuItem(
@@ -353,7 +291,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Submit Button
+                    // ✅ Submit Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -369,7 +307,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         onPressed: isLoading ? null : _submitExpense,
                         child: isLoading
                             ? const SpinKitFadingCircle(
-                                color: Colors.red,
+                                color: Colors.white,
                                 size: 28,
                               )
                             : Text(
@@ -391,6 +329,53 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Reusable TextField builder
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Container(
+      decoration: _boxDecoration(),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.orange.shade700),
+          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 18,
+            horizontal: 16,
+          ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: Colors.orange.shade50,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.orange.shade100.withOpacity(0.5),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
     );
   }
 }

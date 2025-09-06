@@ -97,6 +97,9 @@ flutter:
     - assets/images/Adobe Express - file.png
     - assets/Icon_image/WhatsApp Image 2025-07-19 at 12.49.34 PM.jpeg
     - assets/images/splashScreen.png
+    - assets/animation_assets/Business Growth.json
+    - assets/animation_assets/growth.json
+    - assets/animation_assets/increment.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

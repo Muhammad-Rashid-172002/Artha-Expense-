@@ -427,50 +427,67 @@ class _ReminderscreenState extends State<Reminderscreen> {
         final reminder = reminders[index];
         final date = reminder['dateTime'] as DateTime;
 
-        return Card(
-          color: Colors.grey[850],
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Colors.white24),
-          ),
-          child: ListTile(
-            leading: const Icon(Icons.alarm, color: Colors.green),
-            title: Text(
-              reminder['title'] as String,
-              style: const TextStyle(color: Colors.white),
-            ),
-            subtitle: Text(
-              "${reminder['description'] ?? ''}\n${DateFormat.yMMMd().add_jm().format(date)}",
-              style: const TextStyle(color: Colors.white70),
-            ),
-            isThreeLine: true,
-            trailing: PopupMenuButton<String>(
-              color: Colors.grey[900],
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _openGuestReminderDialog(initial: reminder);
-                } else if (value == 'delete') {
-                  _confirmDeleteReminder(
-                    reminder['id'] as String,
-                    isGuest: true,
-                  );
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Text('Edit', style: TextStyle(color: Colors.white)),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    'Delete',
-                    style: TextStyle(color: Colors.redAccent),
-                  ),
-                ),
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.green.shade300, // lighter green
+                Colors.green.shade700, // darker green
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Card(
+            color: Colors.transparent, // transparent to show gradient
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.alarm, color: Colors.white),
+              title: Text(
+                reminder['title'] as String,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                "${reminder['description'] ?? ''}\n${DateFormat.yMMMd().add_jm().format(date)}",
+                style: const TextStyle(color: Colors.white70),
+              ),
+              isThreeLine: true,
+              trailing: PopupMenuButton<String>(
+                color: Colors.green,
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _openGuestReminderDialog(initial: reminder);
+                  } else if (value == 'delete') {
+                    _confirmDeleteReminder(
+                      reminder['id'] as String,
+                      isGuest: true,
+                    );
+                  }
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit', style: TextStyle(color: Colors.white)),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

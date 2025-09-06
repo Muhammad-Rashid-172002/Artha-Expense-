@@ -16,12 +16,13 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final user = FirebaseAuth.instance.currentUser;
-
   String userName = '';
   String userEmail = '';
   String selectedCurrency = 'USD';
   String currencySymbol = '';
   String currencyFlag = '';
+
+  final LocalAuthentication auth = LocalAuthentication();
 
   @override
   void initState() {
@@ -51,25 +52,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _updateField(String field, String value) async {
     if (user == null) return;
-
     try {
       if (field == 'name') {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user!.uid)
             .update({'name': value});
-        setState(() {
-          userName = value;
-        });
+        setState(() => userName = value);
       } else if (field == 'email') {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user!.uid)
             .update({'email': value});
         await user!.updateEmail(value);
-        setState(() {
-          userEmail = value;
-        });
+        setState(() => userEmail = value);
       } else if (field == 'password') {
         await user!.updatePassword(value);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,8 +106,8 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.amber.shade50,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text("Edit $title", style: const TextStyle(color: Colors.black)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
+            child: const Text("Cancel", style: TextStyle(color: Colors.orange)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -182,7 +178,7 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Currency updated to ${currency.code}'),
-        backgroundColor: Colors.orange.shade700, // Matches Scaffold gradient
+        backgroundColor: Colors.orange.shade700,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -194,9 +190,9 @@ class _SettingsPageState extends State<SettingsPage> {
       showFlag: true,
       showSearchField: true,
       theme: CurrencyPickerThemeData(
-        backgroundColor: Colors.amber.shade50, // Matches light part of gradient
+        backgroundColor: Colors.white,
         titleTextStyle: TextStyle(color: Colors.orange.shade900, fontSize: 18),
-        subtitleTextStyle: TextStyle(color: Colors.black54),
+        subtitleTextStyle: const TextStyle(color: Colors.black54),
         bottomSheetHeight: 400,
       ),
       onSelect: (Currency currency) {
@@ -209,24 +205,18 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text("Logout", style: TextStyle(color: Colors.white)),
-        content: const Text(
-          "Are you sure you want to logout?",
-          style: TextStyle(color: Colors.white70),
-        ),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.amber)),
+            child: const Text("Cancel", style: TextStyle(color: Colors.orange)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             child: const Text("Logout"),
           ),
         ],
@@ -234,17 +224,11 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (confirm == true) {
-      try {
-        await FirebaseAuth.instance.signOut();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SigninScreen()),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Logout failed: $e")));
-      }
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SigninScreen()),
+      );
     }
   }
 
@@ -255,15 +239,11 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text(
-          "Delete Account",
-          style: TextStyle(color: Colors.white),
-        ),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Delete Account"),
         content: const Text(
           "Are you sure you want to delete your account? This action is permanent.",
-          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
@@ -293,121 +273,122 @@ class _SettingsPageState extends State<SettingsPage> {
             backgroundColor: Colors.green,
           ),
         );
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'requires-recent-login') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please log in again to delete your account."),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
-        }
       } catch (e) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Unexpected error: $e")));
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
 
-  final LocalAuthentication auth = LocalAuthentication();
-  final LocalAuthentication authentication = LocalAuthentication();
+  Widget _buildCardTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color iconColor = Colors.orange,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: iconColor.withOpacity(0.1),
+          child: Icon(icon, color: iconColor),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             children: [
-              Text(
-                "Settings",
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF37474F), //  BlueGrey
-                  letterSpacing: 1.2,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF57A773), Color(0xFF2C7A4B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(36),
+                    bottomRight: Radius.circular(36),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      userName,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userEmail,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.orange.shade700,
-                child: const Icon(Icons.person, size: 50, color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              // Editable Name
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text("Name"),
-                subtitle: Text(userName),
+              _buildCardTile(
+                icon: Icons.person,
+                title: "Name",
+                subtitle: userName,
                 onTap: () => _showEditDialog("Name", userName, "name"),
               ),
-              // Editable Email
-              ListTile(
-                leading: const Icon(Icons.email),
-                title: const Text("Email"),
-                subtitle: Text(userEmail),
+              _buildCardTile(
+                icon: Icons.email,
+                title: "Email",
+                subtitle: userEmail,
                 onTap: () => _showEditDialog("Email", userEmail, "email"),
               ),
-              // Editable Password
-              ListTile(
-                leading: const Icon(Icons.lock),
-                title: const Text("Password"),
-                subtitle: const Text("********"),
+              _buildCardTile(
+                icon: Icons.lock,
+                title: "Password",
+                subtitle: "********",
                 onTap: () async {
+                  bool authenticated = false;
                   try {
-                    final bool canCheckBiometrics =
-                        await auth.canCheckBiometrics;
-                    final bool isDeviceSupported = await auth
-                        .isDeviceSupported();
+                    authenticated = await auth.authenticate(
+                      localizedReason: 'Authenticate to edit password',
+                      options: const AuthenticationOptions(
+                        biometricOnly: false,
+                        useErrorDialogs: true,
+                        stickyAuth: true,
+                      ),
+                    );
+                  } catch (_) {}
 
-                    if (canCheckBiometrics && isDeviceSupported) {
-                      // Biometric OR device passcode authentication
-                      final bool authenticated = await auth.authenticate(
-                        localizedReason:
-                            'Please authenticate to edit your password',
-                        options: const AuthenticationOptions(
-                          biometricOnly:
-                              false, // allow PIN/Pattern/Password as fallback
-                          useErrorDialogs: true,
-                          stickyAuth: true,
-                        ),
-                      );
-
-                      if (authenticated) {
-                        _showEditDialog(
-                          "Password",
-                          '',
-                          "password",
-                          isPassword: true,
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Authentication failed'),
-                          ),
-                        );
-                      }
-                    } else {
-                      // No biometrics available, go directly to password edit
-                      _showEditDialog(
-                        "Password",
-                        '',
-                        "password",
-                        isPassword: true,
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint("Fingerprint auth error: $e");
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                    // fallback to password dialog
+                  if (authenticated) {
                     _showEditDialog(
                       "Password",
                       '',
@@ -417,19 +398,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   }
                 },
               ),
-              // Currency
-              ListTile(
-                leading: Icon(
-                  Icons.attach_money,
-                  color: Colors.orange.shade700,
-                ),
-                title: const Text("Preferred Currency"),
-                subtitle: Text('$currencyFlag $selectedCurrency'),
+              _buildCardTile(
+                icon: Icons.attach_money,
+                iconColor: Colors.green.shade700,
+                title: "Currency",
+                subtitle: '$currencyFlag $selectedCurrency',
                 onTap: _showCurrencyPicker,
               ),
-              const SizedBox(height: 30), // Spacer replacement for scroll
+              const SizedBox(height: 30),
               Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
                     ElevatedButton.icon(
@@ -462,6 +440,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),

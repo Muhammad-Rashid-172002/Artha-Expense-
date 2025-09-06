@@ -1,18 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/totalExpanse.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+/// Import Guest Expense Store
 
 class BudgetScreen extends StatefulWidget {
   @override
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
 
-class _BudgetScreenState extends State<BudgetScreen> {
+class _BudgetScreenState extends State<BudgetScreen>
+    with TickerProviderStateMixin {
   final userId = FirebaseAuth.instance.currentUser?.uid;
   Map<String, double> categoryTotals = {};
   bool isLoading = true;
+  int? touchedIndex;
 
   @override
   void initState() {
@@ -22,13 +28,22 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   Future<void> fetchCategoryData() async {
     if (userId == null) {
+      // ✅ Guest Mode: calculate from GuestExpenseStore
+      final Map<String, double> totals = {};
+      for (var exp in GuestExpenseStore.expenses) {
+        final category = exp['category'] ?? 'Other';
+        final amount = (exp['amount'] ?? 0).toDouble();
+        totals[category] = (totals[category] ?? 0) + amount;
+      }
+
       setState(() {
-        categoryTotals = {};
+        categoryTotals = totals;
         isLoading = false;
       });
       return;
     }
 
+    // ✅ Logged-in Mode: fetch from Firestore
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -40,12 +55,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
       final data = doc.data();
       final category = data['category'] ?? 'Other';
       final amount = (data['amount'] ?? 0).toDouble();
-
-      if (totals.containsKey(category)) {
-        totals[category] = totals[category]! + amount;
-      } else {
-        totals[category] = amount;
-      }
+      totals[category] = (totals[category] ?? 0) + amount;
     }
 
     setState(() {
@@ -57,15 +67,17 @@ class _BudgetScreenState extends State<BudgetScreen> {
   List<PieChartSectionData> getPieChartSections() {
     final total = categoryTotals.values.fold(0.0, (a, b) => a + b);
 
-    return categoryTotals.entries.map((entry) {
-      final percentage = (entry.value / total) * 100;
+    return categoryTotals.entries.mapIndexed((index, entry) {
+      final percentage = total == 0 ? 0 : (entry.value / total) * 100;
+      final isTouched = index == touchedIndex;
+
       return PieChartSectionData(
         color: getColor(entry.key),
         value: entry.value,
         title: '${percentage.toStringAsFixed(1)}%',
-        radius: 60,
+        radius: isTouched ? 70 : 60,
         titleStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -76,19 +88,19 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Color getColor(String category) {
     switch (category.toLowerCase()) {
       case 'food':
-        return Colors.amber.shade600;
+        return Colors.green.shade400;
       case 'transport':
-        return Colors.deepOrange.shade400;
+        return Colors.teal.shade400;
       case 'shopping':
-        return Colors.orangeAccent.shade200;
+        return Colors.lightGreen.shade300;
       case 'entertainment':
-        return Colors.amber.shade400;
+        return Colors.greenAccent.shade400;
       case 'bills':
-        return Colors.orange.shade700;
+        return Colors.lime.shade700;
       case 'health':
-        return Colors.deepOrange.shade200;
+        return Colors.green.shade200;
       default:
-        return Colors.orange.shade100;
+        return Colors.grey.shade400;
     }
   }
 
@@ -96,38 +108,29 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     final hasData = categoryTotals.isNotEmpty;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white,
-            Color.fromARGB(255, 248, 222, 137),
-          ], // Gradient background
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Monthly Budget Overview",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent, // Keep gradient visible
-        appBar: AppBar(
-          title: const Text(
-            "Monthly Budget Overview",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Color(0xFFFFFFFF),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
+        backgroundColor: Colors.green,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.amber),
-              )
-            : hasData
-            ? _buildBudgetOverview()
-            : _buildEmptyState(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: fetchCategoryData,
+          ),
+        ],
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.green))
+          : hasData
+          ? _buildBudgetOverview()
+          : _buildEmptyState(),
     );
   }
 
@@ -135,15 +138,31 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return Column(
       children: [
         const SizedBox(height: 20),
-        Center(
-          child: SizedBox(
-            height: 200,
-            width: 200,
-            child: PieChart(
-              PieChartData(
-                sections: getPieChartSections(),
-                centerSpaceRadius: 40,
-                sectionsSpace: 2,
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              touchedIndex = (touchedIndex == null) ? 0 : null;
+            });
+          },
+          child: Center(
+            child: SizedBox(
+              height: 220,
+              width: 220,
+              child: PieChart(
+                PieChartData(
+                  sections: getPieChartSections(),
+                  centerSpaceRadius: 40,
+                  sectionsSpace: 2,
+                  pieTouchData: PieTouchData(
+                    touchCallback: (event, pieTouchResponse) {
+                      setState(() {
+                        touchedIndex = pieTouchResponse
+                            ?.touchedSection
+                            ?.touchedSectionIndex;
+                      });
+                    },
+                  ),
+                ),
               ),
             ),
           ),
@@ -152,7 +171,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         const Text(
           "Category Breakdown",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -163,86 +182,69 @@ class _BudgetScreenState extends State<BudgetScreen> {
             itemBuilder: (context, index) {
               final entry = categoryTotals.entries.elementAt(index);
               final total = categoryTotals.values.fold(0.0, (a, b) => a + b);
-              final percentage = (entry.value / total) * 100;
+              final percentage = total == 0 ? 0 : (entry.value / total) * 100;
+              final isSelected = touchedIndex == index;
 
-              return Center(
-                child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                transform: isSelected
+                    ? (Matrix4.identity()..scale(1.05))
+                    : Matrix4.identity(),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isSelected
+                        ? [Colors.green.shade500, Colors.teal.shade300]
+                        : [Colors.green.shade300, Colors.lightGreen.shade200],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.amber.shade300, width: 1.5),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.amber.shade400,
-                          Colors.deepOrange.shade200,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: isSelected ? 10 : 6,
+                      offset: const Offset(0, 4),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: Icon(
-                              Icons.label,
-                              color: getColor(entry.key),
-                            ),
-                            title: Text(
-                              entry.key,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '${percentage.toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: getColor(entry.key),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CategoryDetailsScreen(
-                                    category: entry.key,
-                                  ),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber.shade700,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text("View Details"),
-                          ),
-                        ],
-                      ),
+                  ],
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.label,
+                    color: getColor(entry.key),
+                    size: isSelected ? 36 : 28,
+                  ),
+                  title: Text(
+                    entry.key,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSelected ? 18 : 16,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
+                  trailing: Text(
+                    '${percentage.toStringAsFixed(1)}%',
+                    style: TextStyle(
+                      fontSize: isSelected ? 16 : 14,
+                      color: getColor(entry.key),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      touchedIndex = index;
+                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CategoryDetailsScreen(category: entry.key),
+                      ),
+                    );
+                  },
                 ),
               );
             },
@@ -263,7 +265,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           children: [
             Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.amber.shade700,
+              color: Colors.green.shade400,
               size: 100,
             ),
             const SizedBox(height: 20),
@@ -278,23 +280,21 @@ class _BudgetScreenState extends State<BudgetScreen> {
             const SizedBox(height: 10),
             Text(
               isGuest
-                  ? "Start adding your expenses to track where your money goes."
+                  ? "Start adding your expenses to see your spending breakdown."
                   : "Set up your budget and start tracking your expenses today.",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.add, color: Colors.white),
               label: Text(
                 isGuest ? "Add Your First Expense" : "Set Up Budget",
                 style: const TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber.shade700,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -309,5 +309,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
         ),
       ),
     );
+  }
+}
+
+// Helper extension for map with index
+extension IndexedMap<E> on Iterable<E> {
+  Iterable<T> mapIndexed<T>(T Function(int index, E item) f) sync* {
+    int index = 0;
+    for (var item in this) yield f(index++, item);
   }
 }

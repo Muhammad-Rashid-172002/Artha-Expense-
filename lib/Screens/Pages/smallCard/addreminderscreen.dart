@@ -43,18 +43,15 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       text: widget.initialDescription ?? '',
     );
     _selectedDateTime = widget.initialDateTime;
-
     _initializeNotifications();
   }
 
   void _initializeNotifications() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-
     const InitializationSettings settings = InitializationSettings(
       android: androidSettings,
     );
-
     await _flutterLocalNotificationsPlugin.initialize(settings);
   }
 
@@ -94,28 +91,25 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       builder: (context, child) => Theme(
         data: ThemeData.light().copyWith(
           colorScheme: const ColorScheme.light(
-            primary: Colors.greenAccent, // Selected date
-            onPrimary: Colors.white, // Text on selected date
-            surface: Color(0xFFFFF3E0), // Light amber background for date cells
-            onSurface: Colors.lightGreen, // Text on date cells
+            primary: Colors.greenAccent,
+            onPrimary: Colors.white,
+            surface: Color(0xFFFFF3E0),
+            onSurface: Colors.green,
           ),
-          dialogBackgroundColor: const Color(
-            0xFFFFF8E1,
-          ), // Very light amber background
+          dialogBackgroundColor: const Color(0xFFFFF8E1),
         ),
         child: child!,
       ),
     );
 
     if (pickedDate != null) {
-      // Time picker
       final pickedTime = await showTimePicker(
         context: context,
         initialTime: const TimeOfDay(hour: 9, minute: 0),
         builder: (context, child) => Theme(
           data: ThemeData.light().copyWith(
             timePickerTheme: const TimePickerThemeData(
-              backgroundColor: Color(0xFFFFF8E1), // Very light amber
+              backgroundColor: Color(0xFFFFF8E1),
               hourMinuteTextColor: Colors.deepOrange,
               hourMinuteColor: Colors.orangeAccent,
               dialHandColor: Colors.deepOrange,
@@ -149,8 +143,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   }
 
   Future<void> _saveReminder() async {
-    final isValid = _formKey.currentState!.validate();
-    if (!isValid) {
+    if (!_formKey.currentState!.validate()) {
       _showSnackbar("Please fill all fields");
       return;
     }
@@ -164,6 +157,10 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        _showSnackbar("User not logged in!");
+        return;
+      }
 
       final reminderData = {
         'title': _titleController.text.trim(),
@@ -174,7 +171,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
       final remindersRef = FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUser!.uid)
+          .doc(currentUser.uid)
           .collection('users_reminders');
 
       if (widget.isEditing && widget.reminderId != null) {
@@ -189,11 +186,13 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         _showSnackbar("Reminder added successfully");
       }
 
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.pop(context, true);
+      }
     } catch (e) {
-      _showSnackbar("Something went wrong. Try again.");
-    } finally {
       if (mounted) setState(() => _isLoading = false);
+      _showSnackbar("Something went wrong. Try again.\n$e");
     }
   }
 
@@ -226,73 +225,74 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         backgroundColor: Colors.green,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
-              child: ListView(
-                shrinkWrap: true,
+              child: Column(
                 children: [
-                  TextFormField(
-                    controller: _titleController,
-                    style: const TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      labelText: "Title",
-                      hintText: "Enter your reminder title",
-                      hintStyle: const TextStyle(color: Colors.green),
-                      labelStyle: const TextStyle(color: Colors.green),
-                      prefixIcon: const Icon(Icons.title, color: Colors.green),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.green),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.green,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  // Title
+                  Card(
+                    elevation: 4,
+                    shadowColor: Colors.greenAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? "Enter a title" : null,
+                    child: TextFormField(
+                      controller: _titleController,
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        labelText: "Title",
+                        hintText: "Enter your reminder title",
+                        hintStyle: const TextStyle(color: Colors.green),
+                        labelStyle: const TextStyle(color: Colors.green),
+                        prefixIcon: const Icon(
+                          Icons.title,
+                          color: Colors.green,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? "Enter a title"
+                          : null,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _descriptionController,
-                    maxLines: 3,
-                    style: const TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      labelText: "Description",
-                      hintText: "Enter details about your reminder",
-                      hintStyle: const TextStyle(color: Colors.green),
-                      labelStyle: const TextStyle(color: Colors.green),
-                      prefixIcon: const Icon(
-                        Icons.description,
-                        color: Colors.green,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.green),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.green,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  // Description
+                  Card(
+                    elevation: 4,
+                    shadowColor: Colors.greenAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    validator: (value) => value == null || value.isEmpty
-                        ? "Enter a description"
-                        : null,
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 3,
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        labelText: "Description",
+                        hintText: "Enter details about your reminder",
+                        hintStyle: const TextStyle(color: Colors.green),
+                        labelStyle: const TextStyle(color: Colors.green),
+                        prefixIcon: const Icon(
+                          Icons.description,
+                          color: Colors.green,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? "Enter a description"
+                          : null,
+                    ),
                   ),
                   const SizedBox(height: 16),
+                  // Date & Time
                   ListTile(
-                    tileColor: Colors.amber[100],
+                    tileColor: Colors.green.shade50,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -306,39 +306,55 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                     ),
                     onTap: _pickDateTime,
                   ),
-                  const SizedBox(height: 24),
-                  _isLoading
-                      ? const Center(
-                          child: SpinKitFadingCircle(
-                            color: Colors.green,
-                            size: 40.0,
-                          ),
-                        )
-                      : ElevatedButton.icon(
-                          icon: const Icon(Icons.save, color: Colors.white),
-                          label: Text(
-                            widget.isEditing
-                                ? "Update Reminder"
-                                : "Save Reminder",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: _saveReminder,
+                  const SizedBox(height: 32),
+                  // Save Button
+                  GestureDetector(
+                    onTap: _isLoading ? null : _saveReminder,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [Colors.green, Colors.lightGreen],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.greenAccent,
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          widget.isEditing
+                              ? "Update Reminder"
+                              : "Save Reminder",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black45,
+              child: const Center(
+                child: SpinKitFadingCircle(color: Colors.greenAccent, size: 50),
+              ),
+            ),
+        ],
       ),
     );
   }

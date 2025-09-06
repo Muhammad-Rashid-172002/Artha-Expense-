@@ -26,7 +26,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     setState(() => _isLoading = true);
 
     try {
-      // Check if user exists
       final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(
         emailController.text.trim(),
       );
@@ -42,7 +41,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         return;
       }
 
-      // Send reset email
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text.trim(),
       );
@@ -57,7 +55,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     } catch (e) {
       setState(() => _isLoading = false);
       print("Password Reset Error: $e");
-
       showDialog(
         context: context,
         builder: (context) => const AlertDialog(
@@ -72,115 +69,99 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.green,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
           'Reset Password',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+
         centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFFFFB74D), // Amber
-              Color(0xFFFFF8E1), // Light Yellow
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Enter your email and we will send a password reset link',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(1, 1),
-                          blurRadius: 3,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Enter your email to receive a password reset link',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(1, 1),
+                        blurRadius: 3,
+                        color: Colors.black26,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                // Email TextField
+                customTextField(
+                  label: "Email",
+                  controller: emailController,
+                  icon: Icons.email,
+                  inputType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Enter your email";
+                    }
+                    if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                      return "Enter a valid email";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 50),
+
+                // Reset Button
+                GestureDetector(
+                  onTap: _isLoading ? null : passwordReset,
+                  child: Container(
+                    height: 55,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
                           color: Colors.black26,
+                          offset: const Offset(0, 4),
+                          blurRadius: 6,
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Email TextField
-                  customTextField(
-                    label: "Email",
-                    controller: emailController,
-                    icon: Icons.email,
-                    inputType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Enter your email";
-                      }
-                      if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                        return "Enter a valid email";
-                      }
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  // Reset Button
-                  GestureDetector(
-                    onTap: _isLoading ? null : passwordReset,
-                    child: Container(
-                      height: 50,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Colors.deepOrange, Colors.amber],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.withOpacity(0.4),
-                            offset: const Offset(0, 4),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: SpinKitFadingCircle(
-                                  color: Colors.white,
-                                  size: 30.0,
-                                ),
-                              )
-                            : const Text(
-                                'Reset Password',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
+                    child: Center(
+                      child: _isLoading
+                          ? const SpinKitFadingCircle(
+                              color: Colors.white,
+                              size: 25.0,
+                            )
+                          : const Text(
+                              'Reset Password',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
-                      ),
+                            ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -203,17 +184,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         keyboardType: inputType,
         validator: validator,
         style: const TextStyle(
-          color: Color(0xFF37474F),
+          color: Colors.black87,
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        cursorColor: const Color(0xFFFFB300),
+        cursorColor: Colors.green.shade700,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: Colors.white.withOpacity(0.9),
           labelText: label,
-          labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-          prefixIcon: Icon(icon, color: const Color(0xFFFFB300), size: 22),
+          labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 15),
+          prefixIcon: Icon(icon, color: Colors.green.shade700, size: 22),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 18,
@@ -225,10 +206,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: const BorderSide(
-              color: Color(0xFFFFB300),
-              width: 2,
-            ), // Amber
+            borderSide: BorderSide(color: Colors.green.shade700, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),

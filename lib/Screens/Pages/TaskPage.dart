@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expanse_tracker_app/Screens/Auth_moduls/LoginRequriedPage.dart';
 import 'package:expanse_tracker_app/Screens/Pages/Goals/addnewgoal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,47 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
+/// Guest goals store
+class GuestGoalStore {
+  static final List<Map<String, dynamic>> _goals = [];
+
+  static List<Map<String, dynamic>> get goals =>
+      List<Map<String, dynamic>>.from(_goals)..sort(
+        (a, b) =>
+            (b['createdAt'] as DateTime).compareTo(a['createdAt'] as DateTime),
+      );
+
+  static void addGoal(Map<String, dynamic> goal) {
+    _goals.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      ...goal,
+    });
+  }
+
+  static void editGoal(String id, Map<String, dynamic> updatedGoal) {
+    final idx = _goals.indexWhere((g) => g['id'] == id);
+    if (idx != -1) _goals[idx] = {'id': id, ...updatedGoal};
+  }
+
+  static void deleteGoal(String id) {
+    _goals.removeWhere((g) => g['id'] == id);
+  }
+
+  static double totalCurrent() =>
+      _goals.fold(0.0, (sum, g) => sum + (g['current'] ?? 0.0));
+
+  static double monthlyCurrent() {
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, 1);
+    return _goals.fold(0.0, (sum, g) {
+      final createdAt = g['createdAt'] ?? DateTime.now();
+      return createdAt.isAfter(firstDay.subtract(const Duration(days: 1)))
+          ? sum + (g['current'] ?? 0.0)
+          : sum;
+    });
+  }
+}
 
 class TaskPage extends StatefulWidget {
   const TaskPage({super.key});
@@ -25,10 +65,14 @@ class _TaskPageState extends State<TaskPage> {
   @override
   void initState() {
     super.initState();
+    _refreshTotals();
+  }
+
+  void _refreshTotals() {
     if (currentUser != null) {
       calculateMonthlyAndTotalSavings();
     } else {
-      isLoading = false;
+      calculateGuestSavings();
     }
   }
 
@@ -38,7 +82,6 @@ class _TaskPageState extends State<TaskPage> {
     setState(() => isLoading = true);
     final now = DateTime.now();
     final firstDay = DateTime(now.year, now.month, 1);
-    final lastDay = DateTime(now.year, now.month + 1, 0);
 
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -52,12 +95,11 @@ class _TaskPageState extends State<TaskPage> {
     for (var doc in snapshot.docs) {
       final goal = doc.data();
       final current = (goal['current'] ?? 0).toDouble();
-      final createdAt = (goal['createdAt'] as Timestamp?)?.toDate();
+      final createdAt =
+          (goal['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
       overallTotal += current;
-
-      if (createdAt != null &&
-          createdAt.isAfter(firstDay.subtract(const Duration(days: 1)))) {
+      if (createdAt.isAfter(firstDay.subtract(const Duration(days: 1)))) {
         monthlyTotal += current;
       }
     }
@@ -66,6 +108,13 @@ class _TaskPageState extends State<TaskPage> {
       monthlySavings = monthlyTotal;
       totalSavings = overallTotal;
       isLoading = false;
+    });
+  }
+
+  void calculateGuestSavings() {
+    setState(() {
+      monthlySavings = GuestGoalStore.monthlyCurrent();
+      totalSavings = GuestGoalStore.totalCurrent();
     });
   }
 
@@ -87,14 +136,48 @@ class _TaskPageState extends State<TaskPage> {
 
   String formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '';
-    final formatter = DateFormat('MMMM d, y - h:mm a');
-    return formatter.format(dateTime);
+    return DateFormat('MMMM d, y - h:mm a').format(dateTime);
   }
 
-  void _navigateToLoginRequired() {
-    Navigator.push(
+  void _onAddGoalPressed() async {
+    if (isFabLoading) return;
+    setState(() => isFabLoading = true);
+
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const LoginRequiredPage()),
+      MaterialPageRoute(
+        builder: (_) => Addnewgoal(
+          isGuest: currentUser == null,
+          onSave: currentUser == null
+              ? (goalData) {
+                  GuestGoalStore.addGoal(goalData);
+                  calculateGuestSavings();
+                }
+              : null,
+        ),
+      ),
+    );
+
+    if (currentUser != null) {
+      await calculateMonthlyAndTotalSavings();
+    }
+
+    setState(() => isFabLoading = false);
+  }
+
+  Future<void> _editGuestGoal(Map<String, dynamic> goal) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Addnewgoal(
+          isGuest: true,
+          guestGoal: goal,
+          onSave: (updatedGoal) {
+            GuestGoalStore.editGoal(goal['id'], updatedGoal);
+            calculateGuestSavings();
+          },
+        ),
+      ),
     );
   }
 
@@ -110,390 +193,339 @@ class _TaskPageState extends State<TaskPage> {
               .snapshots();
 
     return Scaffold(
-      // Gradient background for the whole page
-      body: Column(
-        children: [
-          AppBar(
-            backgroundColor: Colors.green,
-            title: Text(
-              'My Saving Goal',
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, //  BlueGrey
-                letterSpacing: 1.2,
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: Text(
+          'My Saving Goal',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                const SizedBox(height: 16),
+                Center(child: _buildSavingsCircle()),
+                const SizedBox(height: 16),
+                _buildTotalsTile(),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: currentUser == null
+                      ? _buildGuestGoalsList()
+                      : StreamBuilder<QuerySnapshot>(
+                          stream: goalsStream,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: SpinKitCircle(color: Colors.green),
+                              );
+                            }
+
+                            final goals = snapshot.data?.docs ?? [];
+
+                            if (goals.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No savings goals yet.\nTap the + button to add one.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: goals.length,
+                              itemBuilder: (context, index) {
+                                final goalDoc = goals[index];
+                                final goal =
+                                    goalDoc.data() as Map<String, dynamic>;
+                                final String title = goal['title'] ?? '';
+                                final double current = (goal['current'] ?? 0)
+                                    .toDouble();
+                                final double target = (goal['target'] ?? 1)
+                                    .toDouble();
+                                final double progress = (current / target)
+                                    .clamp(0.0, 1.0);
+                                final createdAt =
+                                    (goal['createdAt'] as Timestamp?)
+                                        ?.toDate() ??
+                                    DateTime.now();
+
+                                return _buildGoalTile(
+                                  goalDoc.id,
+                                  title,
+                                  current,
+                                  target,
+                                  progress,
+                                  createdAt,
+                                  () => calculateMonthlyAndTotalSavings(),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                backgroundColor: Colors.green.shade300,
+                onPressed: _onAddGoalPressed,
+                child: isFabLoading
+                    ? const SpinKitFadingCircle(color: Colors.white, size: 25)
+                    : const Icon(Icons.add, color: Colors.white),
               ),
             ),
-            centerTitle: true,
-            automaticallyImplyLeading: false,
+          ],
+        ),
+      ),
+    );
+  }
 
-            elevation: 0,
-          ),
+  Widget _buildGuestGoalsList() {
+    if (GuestGoalStore.goals.isEmpty) {
+      return const Center(
+        child: Text(
+          'No savings goals yet in Guest Mode.\nTap the + button to add one.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: Colors.black87),
+        ),
+      );
+    }
 
-          const SizedBox(height: 16),
-          Center(
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.greenAccent.shade100, // light top
-                    Colors.green.shade700,
-                  ], // middle],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.green, width: 1.5),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: GuestGoalStore.goals.length,
+      itemBuilder: (context, index) {
+        final goal = GuestGoalStore.goals[index];
+        final String title = goal['title'] ?? '';
+        final double current = goal['current'] ?? 0.0;
+        final double target = goal['target'] ?? 1.0;
+        final double progress = (current / target).clamp(0.0, 1.0);
+        final createdAt = goal['createdAt'] ?? DateTime.now();
+
+        return _buildGoalTile(
+          goal['id'],
+          title,
+          current,
+          target,
+          progress,
+          createdAt,
+          () => setState(() => calculateGuestSavings()),
+          isGuest: true,
+          guestGoalData: goal,
+        );
+      },
+    );
+  }
+
+  Widget _buildGoalTile(
+    String id,
+    String title,
+    double current,
+    double target,
+    double progress,
+    DateTime createdAt,
+    VoidCallback onUpdate, {
+    bool isGuest = false,
+    Map<String, dynamic>? guestGoalData,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Slidable(
+        key: ValueKey(id),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.45,
+          children: [
+            SlidableAction(
+              onPressed: (_) async {
+                if (isGuest && guestGoalData != null) {
+                  _editGuestGoal(guestGoalData);
+                } else {
+                  onUpdate();
+                }
+              },
+              backgroundColor: Colors.orange.shade400,
+              foregroundColor: Colors.white,
+              icon: Icons.edit,
+              label: 'Edit',
+            ),
+            SlidableAction(
+              onPressed: (_) async {
+                if (isGuest) {
+                  GuestGoalStore.deleteGoal(id);
+                  calculateGuestSavings();
+                } else {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUser!.uid)
+                      .collection('users_goals')
+                      .doc(id)
+                      .delete();
+                  onUpdate();
+                }
+              },
+              backgroundColor: Colors.red.shade400,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Delete',
+            ),
+          ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.greenAccent.shade100, Colors.green.shade700],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green.shade700, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.shade100.withOpacity(0.5),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
               ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  const Icon(
-                    Icons.monetization_on,
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    currentUser == null
-                        ? "0"
-                        : "${monthlySavings.toStringAsFixed(0)}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
+                  Icon(getGoalIcon(title), color: Colors.black),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.greenAccent.shade100, // light top
-                    Colors.green.shade700,
-                  ], // middle],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.orange.shade100.withOpacity(0.5),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white,
+                color: Colors.black12,
+                minHeight: 8,
               ),
-              child: ListTile(
-                leading: const Icon(Icons.savings, color: Colors.black),
-                title: const Text(
-                  "This Month Savings",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    fontSize: 16,
-                  ),
-                ),
-                subtitle: Text(
-                  currentUser == null
-                      ? "Login to track your savings"
-                      : "Based on all saved payments",
-                  style: const TextStyle(color: Colors.black54, fontSize: 14),
-                ),
-                trailing: Text(
-                  currentUser == null
-                      ? "0"
-                      : "${totalSavings.toStringAsFixed(0)}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    fontSize: 16,
-                  ),
-                ),
+              const SizedBox(height: 8),
+              Text(
+                " ${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}",
+                style: const TextStyle(color: Colors.black87),
               ),
-            ),
+              const SizedBox(height: 4),
+              Text(
+                "Saved on: ${formatDateTime(createdAt)}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: currentUser == null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Please login to view and manage your savings goals.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _navigateToLoginRequired,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green.shade300,
-                          ),
-                          child: const Text(
-                            'Login Now',
-                            style: TextStyle(color: Colors.black87),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : StreamBuilder<QuerySnapshot>(
-                    stream: goalsStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: SpinKitCircle(color: Colors.green),
-                        );
-                      }
+        ),
+      ),
+    );
+  }
 
-                      final goals = snapshot.data?.docs ?? [];
-
-                      if (goals.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            'No savings goals yet.\nTap the + button to add one.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: goals.length,
-                        itemBuilder: (context, index) {
-                          final goalDoc = goals[index];
-                          final goal = goalDoc.data() as Map<String, dynamic>;
-                          final String title = goal['title'] ?? '';
-                          final double current = (goal['current'] ?? 0)
-                              .toDouble();
-                          final double target = (goal['target'] ?? 1)
-                              .toDouble();
-                          final double progress = (current / target).clamp(
-                            0.0,
-                            1.0,
-                          );
-                          final createdAt = (goal['createdAt'] as Timestamp?)
-                              ?.toDate();
-
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Slidable(
-                              key: ValueKey(goalDoc.id),
-                              endActionPane: ActionPane(
-                                motion: const ScrollMotion(),
-                                extentRatio: 0.45,
-                                children: [
-                                  SlidableAction(
-                                    onPressed: (_) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => Addnewgoal(
-                                            goalId: goalDoc.id,
-                                            existingData: goalDoc,
-                                          ),
-                                        ),
-                                      ).then(
-                                        (_) =>
-                                            calculateMonthlyAndTotalSavings(),
-                                      );
-                                    },
-                                    backgroundColor: Colors.orange.shade400,
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.edit,
-                                    label: 'Edit',
-                                  ),
-                                  SlidableAction(
-                                    onPressed: (_) async {
-                                      final confirm = await showDialog(
-                                        context: context,
-                                        builder: (_) => AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            side: BorderSide(
-                                              color: Colors.orange.shade700,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          backgroundColor: Colors.amber.shade50,
-                                          title: const Text(
-                                            "Delete Goal",
-                                            style: TextStyle(
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          content: const Text(
-                                            "Are you sure you want to delete this goal?",
-                                            style: TextStyle(
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text(
-                                                "Cancel",
-                                                style: TextStyle(
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              child: const Text(
-                                                "Delete",
-                                                style: TextStyle(
-                                                  color: Colors.redAccent,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-
-                                      if (confirm == true) {
-                                        await FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(currentUser!.uid)
-                                            .collection('users_goals')
-                                            .doc(goalDoc.id)
-                                            .delete();
-                                        calculateMonthlyAndTotalSavings();
-                                      }
-                                    },
-                                    backgroundColor: Colors.red.shade400,
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.delete,
-                                    label: 'Delete',
-                                  ),
-                                ],
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.greenAccent.shade100, // light top
-                                      Colors.green.shade700, // middle
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.green.shade700,
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.orange.shade100.withOpacity(
-                                        0.5,
-                                      ),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          getGoalIcon(title),
-                                          color: Colors.black,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            title,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    LinearProgressIndicator(
-                                      value: progress,
-                                      backgroundColor: Colors.white,
-                                      color: Colors.black12,
-                                      minHeight: 8,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      " ${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}",
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    if (createdAt != null) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "Saved on: ${formatDateTime(createdAt)}",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+  Widget _buildSavingsCircle() {
+    return Container(
+      width: 150,
+      height: 150,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.greenAccent.shade100, Colors.green.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.green, width: 1.5),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.monetization_on, size: 40, color: Colors.white),
+          const SizedBox(height: 8),
+          Text(
+            "${monthlySavings.toStringAsFixed(0)}",
+            style: const TextStyle(
+              fontSize: 20,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green.shade300,
-        onPressed: () async {
-          if (currentUser == null) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const Addnewgoal()),
-            );
-            return;
-          }
+    );
+  }
 
-          setState(() => isFabLoading = true);
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const Addnewgoal()),
-          );
-          await calculateMonthlyAndTotalSavings();
-          setState(() => isFabLoading = false);
-        },
-        child: isFabLoading
-            ? const SpinKitFadingCircle(color: Colors.white, size: 25)
-            : const Icon(Icons.add, color: Colors.white),
+  Widget _buildTotalsTile() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.greenAccent.shade100, Colors.green.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.shade100.withOpacity(0.5),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListTile(
+          leading: const Icon(Icons.savings, color: Colors.black),
+          title: const Text(
+            "This Month Savings",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Text(
+            currentUser == null
+                ? "Using Guest Mode"
+                : "Based on all saved payments",
+            style: const TextStyle(color: Colors.black54, fontSize: 14),
+          ),
+          trailing: Text(
+            "${totalSavings.toStringAsFixed(0)}",
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontSize: 16,
+            ),
+          ),
+        ),
       ),
     );
   }
