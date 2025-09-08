@@ -1,4 +1,5 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/LoginRequriedPage.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
@@ -62,14 +63,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const SizedBox(height: 40),
                         // Lottie animation
                         Lottie.asset(item['image']!, height: 250),
-
                         const SizedBox(height: 40),
                         Text(
                               item['title']!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF37474F),
+                                color: kHeadingTextColor, // Updated
                                 letterSpacing: 1.2,
                               ),
                               textAlign: TextAlign.center,
@@ -82,7 +82,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               item['description']!,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.blueGrey[700],
+                                color: kSubtitleTextColor, // Updated
                               ),
                               textAlign: TextAlign.center,
                             )
@@ -101,8 +101,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               controller: _controller,
               count: onboardingData.length,
               effect: WormEffect(
-                activeDotColor: Colors.green,
-                dotColor: Colors.blueGrey.shade200,
+                activeDotColor: kButtonPrimary, // Updated
+                dotColor: kFadedTextColor, // Updated
                 dotHeight: 8,
                 dotWidth: 8,
               ),
@@ -113,16 +113,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: isLoading
-                  ? const SpinKitCircle(color: Colors.green, size: 40)
+                  ? SpinKitCircle(color: kButtonPrimary, size: 40) // Updated
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: kButtonPrimary, // Updated
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 6,
-                        shadowColor: Colors.blueAccent,
+                        shadowColor: kAppBarColor, // Updated
                       ),
                       onPressed: () async {
                         if (_currentIndex < onboardingData.length - 1) {
@@ -148,7 +148,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         "LET'S GO",
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.white,
+                          color: kButtonPrimaryText, // Updated
                           fontWeight: FontWeight.bold,
                         ),
                       ),

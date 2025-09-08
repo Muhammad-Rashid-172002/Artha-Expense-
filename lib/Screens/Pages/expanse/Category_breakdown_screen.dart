@@ -5,6 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+
+const Color kButtonSecondaryBorder = Colors.blue; // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
 Map<String, IconData> categoryIcons = {
   'Food': Icons.restaurant,
   'Transport': Icons.directions_car,
@@ -142,17 +166,17 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: kAppBarColor,
         elevation: 0,
         title: Text(
           "${widget.category} Expenses",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: kAppBarTextColor,
           ),
         ),
         automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: kAppBarTextColor),
       ),
       body: SafeArea(
         child: Column(
@@ -163,7 +187,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
-                      child: SpinKitCircle(color: Colors.green),
+                      child: SpinKitCircle(color: kAppBarColor),
                     );
                   }
 
@@ -182,28 +206,18 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                             borderRadius: BorderRadius.circular(15),
                           ),
                           elevation: 6,
+                          color: kBalanceCardColor,
                           child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.green.shade400,
-                                  Colors.teal.shade300,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   "Income vs Expenses",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: kBalanceCardTextColor,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -211,15 +225,17 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       "Total Income:",
-                                      style: TextStyle(color: Colors.white70),
+                                      style: TextStyle(
+                                        color: kSubtitleTextColor,
+                                      ),
                                     ),
                                     Text(
                                       totalIncome.toStringAsFixed(2),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.greenAccent,
+                                        color: kAppBarColor,
                                       ),
                                     ),
                                   ],
@@ -229,24 +245,26 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       "Total Expenses:",
-                                      style: TextStyle(color: Colors.white70),
+                                      style: TextStyle(
+                                        color: kSubtitleTextColor,
+                                      ),
                                     ),
                                     Text(
                                       totalAllExpenses.toStringAsFixed(2),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.tealAccent,
+                                        color: kButtonSecondaryText,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
+                                Text(
                                   "Spending Overview",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: kHeadingTextColor,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -257,14 +275,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                   child: LinearProgressIndicator(
                                     value: spendingRatio.clamp(0.0, 1.0),
                                     minHeight: 10,
-                                    color: Colors.green.shade700,
-                                    backgroundColor: Colors.green.shade100,
+                                    color: kAppBarColor,
+                                    backgroundColor: kFadedTextColor,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   "${(spendingRatio * 100).toStringAsFixed(1)}% of income spent",
-                                  style: const TextStyle(color: Colors.white70),
+                                  style: TextStyle(color: kSubtitleTextColor),
                                 ),
                               ],
                             ),
@@ -279,14 +297,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                             child: Text(
                               "No expenses in this category.",
                               style: TextStyle(
-                                color: Colors.black87,
+                                color: kBodyTextColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         )
                       else
-                        // Replace the ListView.builder section inside your FutureBuilder with this:
                         Expanded(
                           child: ListView.builder(
                             itemCount: expenses.length,
@@ -321,12 +338,12 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                     horizontal: 20,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.green,
+                                    color: kButtonPrimary,
                                     borderRadius: BorderRadius.circular(15),
                                   ),
                                   child: const Icon(
                                     Icons.edit,
-                                    color: Colors.white,
+                                    color: kButtonPrimaryText,
                                   ),
                                 ),
                                 secondaryBackground: Container(
@@ -346,12 +363,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                 confirmDismiss: (direction) async {
                                   if (direction ==
                                       DismissDirection.startToEnd) {
-                                    // Slide right → Edit
                                     _editExpense(expense);
-                                    return false; // don't remove item
+                                    return false;
                                   } else if (direction ==
                                       DismissDirection.endToStart) {
-                                    // Slide left → Delete
                                     final shouldDelete = await showDialog(
                                       context: context,
                                       builder: (context) => AlertDialog(
@@ -386,7 +401,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                           .collection('users_expenses')
                                           .doc(expense['id'])
                                           .delete();
-                                      setState(() {}); // refresh list
+                                      setState(() {});
                                     }
                                     return shouldDelete;
                                   }
@@ -402,8 +417,8 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.green.shade300,
-                                        Colors.teal.shade200,
+                                        kBalanceCardColor.withOpacity(0.8),
+                                        kButtonSecondaryBorder.withOpacity(0.8),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -427,14 +442,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                     title: Text(
                                       title,
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: kCardTextColor,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     subtitle: Text(
                                       formattedDate,
                                       style: const TextStyle(
-                                        color: Colors.white70,
+                                        color: kSubtitleTextColor,
                                       ),
                                     ),
                                     trailing: Column(
@@ -447,14 +462,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen>
                                           amount.toStringAsFixed(2),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: kCardTextColor,
                                           ),
                                         ),
                                         Text(
                                           '${percentage.toStringAsFixed(1)}%',
                                           style: const TextStyle(
                                             fontSize: 12,
-                                            color: Colors.white70,
+                                            color: kFadedTextColor,
                                           ),
                                         ),
                                       ],

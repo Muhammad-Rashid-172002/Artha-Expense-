@@ -2,10 +2,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expanse_tracker_app/Screens/Pages/Update_Income/AddIncomescreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-/// Temporary storage for guest incomes (in-memory)
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
+/// ✅ Guest Income Store (local-only)
 class GuestIncomeStore {
   static final List<Map<String, dynamic>> _incomes = [];
 
@@ -50,507 +69,458 @@ class GuestIncomeStore {
 }
 
 class IncomeScreen extends StatefulWidget {
-  const IncomeScreen({super.key});
+  final bool isGuest;
+  final Function(Map<String, dynamic>)? onIncomeAdded;
+
+  const IncomeScreen({super.key, this.isGuest = false, this.onIncomeAdded});
 
   @override
   State<IncomeScreen> createState() => _IncomeScreenState();
 }
 
 class _IncomeScreenState extends State<IncomeScreen> {
-  final User? currentUser = FirebaseAuth.instance.currentUser;
-  bool _isLoading = false;
+  String? userId; // null = guest mode
 
-  // ---------- Firestore helpers ----------
+  @override
+  void initState() {
+    super.initState();
+    userId = FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _deleteIncome(String id) async {
-    final uid = currentUser?.uid;
-    if (uid == null) return; // Guest: ignore
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('users_incomes')
-        .doc(id)
-        .delete();
-  }
-
-  void _editIncome(DocumentSnapshot incomeDoc) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddIncomeScreen(
-          isEditing: true,
-          incomeId: incomeDoc.id,
-          initialTitle: incomeDoc['title'],
-          initialAmount: incomeDoc['amount'].toDouble(),
-          initialDate: (incomeDoc['date'] as Timestamp).toDate(),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToAddIncome() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AddIncomeScreen()),
-    );
-  }
-
-  // ---------- Guest mode: add/edit dialog ----------
-  Future<void> _openGuestIncomeDialog({Map<String, dynamic>? initial}) async {
-    final titleCtrl = TextEditingController(text: initial?['title'] ?? '');
-    final amountCtrl = TextEditingController(
-      text: initial?['amount']?.toString() ?? '',
-    );
-    DateTime selectedDate = (initial?['date'] as DateTime?) ?? DateTime.now();
-
-    await showModalBottomSheet(
+    final confirm = await showDialog<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.green,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: StatefulBuilder(
-            builder: (context, setModal) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.white54,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    initial == null ? 'Add Income (Guest)' : 'Edit Income',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: titleCtrl,
-                    style: const TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      labelText: 'Title',
-                      labelStyle: const TextStyle(color: Colors.black87),
-                      filled: true,
-                      fillColor: Colors.amber[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: amountCtrl,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      labelStyle: const TextStyle(color: Colors.black87),
-                      filled: true,
-                      fillColor: Colors.amber[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.amber[200],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amberAccent),
-                          ),
-                          child: Text(
-                            DateFormat.yMMMd().format(selectedDate),
-                            style: const TextStyle(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final date = await showDatePicker(
-                            context: context,
-                            initialDate: selectedDate,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (date != null) {
-                            setModal(() => selectedDate = date);
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.calendar_today,
-                          color: Colors.white,
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                        ),
-                        label: const Text('Pick Date'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        final title = titleCtrl.text.trim();
-                        final amountText = amountCtrl.text.trim();
-                        if (title.isEmpty || amountText.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Title and Amount required'),
-                            ),
-                          );
-                          return;
-                        }
-                        final amount = double.tryParse(amountText) ?? 0.0;
-                        if (initial == null) {
-                          GuestIncomeStore.addIncome(
-                            title: title,
-                            amount: amount,
-                            date: selectedDate,
-                          );
-                        } else {
-                          GuestIncomeStore.editIncome(
-                            id: initial['id'] as String,
-                            title: title,
-                            amount: amount,
-                            date: selectedDate,
-                          );
-                        }
-                        Navigator.pop(context);
-                        setState(() {}); // refresh list
-                      },
-                      icon: const Icon(Icons.save, color: Colors.white),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      label: Text(initial == null ? 'Save Income' : 'Update'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _confirmDeleteIncome(
-    String incomeId, {
-    bool isGuest = false,
-  }) async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.white,
+      builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          "Delete Income",
-          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+        backgroundColor: kCardColor,
+        title: Text(
+          'Delete Income',
+          style: TextStyle(fontWeight: FontWeight.bold, color: kCardTextColor),
         ),
-        content: const Text(
-          "Are you sure you want to delete this income?",
-          style: TextStyle(color: Colors.black87),
+        content: Text(
+          'Are you sure you want to delete this income?',
+          style: TextStyle(color: kBodyTextColor),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.amber[100],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: Colors.deepOrange),
-            ),
+            style: TextButton.styleFrom(foregroundColor: kFadedTextColor),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.deepOrange,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            child: const Text("Delete", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      if (isGuest) {
-        GuestIncomeStore.deleteIncome(incomeId);
-        if (!mounted) return;
-        setState(() {});
+      if (userId == null) {
+        setState(() {
+          GuestIncomeStore.deleteIncome(id);
+        });
       } else {
-        await _deleteIncome(incomeId);
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Income deleted"),
-            backgroundColor: Colors.green,
-          ),
-        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('users_income')
+            .doc(id)
+            .delete();
       }
     }
+  }
+
+  void _editIncome(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddIncomeScreen(
+          incomeId: doc.id,
+          initialTitle: data['title'],
+          initialAmount: double.tryParse(data['amount'].toString()) ?? 0.0,
+          initialDate: (data['createdAt'] as Timestamp?)?.toDate(),
+          isEditing: true,
+          isGuest: false,
+          onIncomeAdded: (title, amount) {
+            setState(() {});
+          },
+        ),
+      ),
+    );
+  }
+
+  void _editGuestIncome(Map<String, dynamic> income) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddIncomeScreen(
+          incomeId: income['id'],
+          initialTitle: income['title'],
+          initialAmount: income['amount'] as double,
+          initialDate: income['date'] as DateTime,
+          isEditing: true,
+          isGuest: true,
+          onIncomeAdded: (title, amount) {
+            setState(() {
+              GuestIncomeStore.editIncome(
+                id: income['id'],
+                title: title,
+                amount: amount,
+                date: DateTime.now(),
+              );
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void _openAddIncome() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddIncomeScreen(
+          isGuest: userId == null,
+          onIncomeAdded: (title, amount) {
+            if (userId == null) {
+              setState(() {
+                GuestIncomeStore.addIncome(
+                  title: title,
+                  amount: amount,
+                  date: DateTime.now(),
+                );
+              });
+            } else {
+              setState(() {});
+            }
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isGuest = currentUser == null;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Incomes",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFFE8F5E9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: kAppBarColor,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
+            onPressed: () => Navigator.pop(context),
           ),
+          title: Text(
+            'Income',
+            style: GoogleFonts.playfairDisplay(
+              color: kAppBarTextColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+          elevation: 0,
         ),
-        backgroundColor: Colors.green,
-        elevation: 4,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        body: userId == null ? _buildGuestView() : _buildFirebaseView(),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: kButtonPrimary,
+          tooltip: 'Add Income',
+          onPressed: _openAddIncome,
+          child: const Icon(Icons.add, color: kButtonPrimaryText),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        tooltip: 'Add Income',
-        onPressed: _isLoading
-            ? null
-            : (isGuest ? () => _openGuestIncomeDialog() : _navigateToAddIncome),
-        child: _isLoading
-            ? const SpinKitCircle(color: Colors.white, size: 24)
-            : const Icon(Icons.add, color: Colors.blueGrey),
-      ),
-      body: isGuest ? _buildGuestList() : _buildFirestoreList(currentUser!.uid),
     );
   }
 
-  // ---------- Guest list ----------
-  Widget _buildGuestList() {
+  Widget _buildGuestView() {
     final incomes = GuestIncomeStore.incomes;
-    if (incomes.isEmpty) {
-      return const Center(
-        child: Text(
-          "No incomes added yet (Guest).",
-          style: TextStyle(color: Colors.black),
-        ),
-      );
-    }
+    double totalIncome = incomes.fold(
+      0,
+      (sum, i) => sum + (i['amount'] as double),
+    );
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 80),
-      itemCount: incomes.length,
-      itemBuilder: (context, index) {
-        final income = incomes[index];
-        final date = income['date'] as DateTime;
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        _buildTotalIncomeCard(totalIncome),
+        const SizedBox(height: 16),
+        Expanded(
+          child: incomes.isEmpty
+              ? Center(
+                  child: Text(
+                    'No income added yet (Guest Mode)',
+                    style: TextStyle(color: kCardTextColor),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: incomes.length,
+                  itemBuilder: (context, index) {
+                    final income = incomes[index];
+                    final formattedDate = DateFormat.yMMMd().format(
+                      income['date'] as DateTime,
+                    );
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.green.shade200, // lighter green for top
-                Colors.green.shade700, // darker green for bottom
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Card(
-            color: Colors.transparent, // make card transparent to show gradient
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.attach_money, color: Colors.white),
-              title: Text(
-                income['title'] as String,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                    return Slidable(
+                      key: ValueKey(income['id']),
+                      endActionPane: ActionPane(
+                        motion: const DrawerMotion(),
+                        extentRatio: 0.50,
+                        children: [
+                          SlidableAction(
+                            onPressed: (_) => _editGuestIncome(income),
+                            backgroundColor: kButtonPrimary,
+                            icon: Icons.edit,
+                            label: 'Edit',
+                          ),
+                          SlidableAction(
+                            onPressed: (_) => _deleteIncome(income['id']),
+                            backgroundColor: Colors.red,
+                            icon: Icons.delete,
+                            label: 'Delete',
+                          ),
+                        ],
+                      ),
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: kButtonPrimary, width: 1.5),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [kButtonPrimary, Color(0xFF2E7D32)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: Colors.white24,
+                              child: Icon(
+                                Icons.attach_money,
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: Text(
+                              income['title'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              formattedDate,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                            trailing: Text(
+                              '${income['amount']}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
-              subtitle: Text(
-                "Amount: ${income['amount']}\n${DateFormat.yMMMd().format(date)}",
-                style: const TextStyle(color: Colors.white70),
-              ),
-              isThreeLine: true,
-              trailing: PopupMenuButton<String>(
-                color: Colors.green,
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _openGuestIncomeDialog(initial: income);
-                  } else if (value == 'delete') {
-                    _confirmDeleteIncome(income['id'] as String, isGuest: true);
-                  }
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit', style: TextStyle(color: Colors.white)),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.redAccent),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  // ---------- Firestore list ----------
-  Widget _buildFirestoreList(String uid) {
+  Widget _buildFirebaseView() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
-          .doc(uid)
-          .collection('users_incomes')
-          .orderBy('date', descending: true)
+          .doc(userId)
+          .collection('users_income')
+          .orderBy('createdAt', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: SpinKitCircle(color: Colors.green));
+          return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text(
-              "No incomes added yet.",
-              style: TextStyle(color: Colors.black),
-            ),
-          );
+        final incomeDocs = snapshot.data?.docs ?? [];
+        double totalIncome = 0;
+        for (var doc in incomeDocs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final amt = double.tryParse(data['amount']?.toString() ?? '0') ?? 0;
+          totalIncome += amt;
         }
 
-        final incomes = snapshot.data!.docs;
+        return Column(
+          children: [
+            const SizedBox(height: 16),
+            _buildTotalIncomeCard(totalIncome),
+            const SizedBox(height: 16),
+            Expanded(
+              child: incomeDocs.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No income added yet.',
+                        style: TextStyle(color: kCardTextColor),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: incomeDocs.length,
+                      itemBuilder: (context, index) {
+                        final doc = incomeDocs[index];
+                        final data = doc.data() as Map<String, dynamic>;
+                        final title = data['title'] ?? 'No Title';
+                        final amount = data['amount']?.toString() ?? '0';
+                        final date = (data['createdAt'] as Timestamp?)
+                            ?.toDate();
+                        final formattedDate = date != null
+                            ? DateFormat.yMMMd().format(date)
+                            : '';
 
-        return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 80),
-          itemCount: incomes.length,
-          itemBuilder: (context, index) {
-            final income = incomes[index];
-            final date = (income['date'] as Timestamp).toDate();
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.white24),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color.fromARGB(255, 57, 134, 60), Colors.green],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.attach_money, color: Colors.white),
-                  title: Text(
-                    income['title'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                        return Slidable(
+                          key: ValueKey(doc.id),
+                          endActionPane: ActionPane(
+                            motion: const DrawerMotion(),
+                            extentRatio: 0.50,
+                            children: [
+                              SlidableAction(
+                                onPressed: (_) => _editIncome(doc),
+                                backgroundColor: kButtonPrimary,
+                                icon: Icons.edit,
+                                label: 'Edit',
+                              ),
+                              SlidableAction(
+                                onPressed: (_) => _deleteIncome(doc.id),
+                                backgroundColor: Colors.red,
+                                icon: Icons.delete,
+                                label: 'Delete',
+                              ),
+                            ],
+                          ),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                color: kButtonPrimary,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 6,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [kButtonPrimary, Color(0xFF1B5E20)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(16),
+                                ),
+                              ),
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.attach_money,
+                                  color: Colors.white,
+                                ),
+                                title: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  formattedDate,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                trailing: Text(
+                                  amount,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onTap: () => _editIncome(doc),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  subtitle: Text(
-                    "Amount: ${income['amount']}\n${DateFormat.yMMMd().format(date)}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  isThreeLine: true,
-                  trailing: PopupMenuButton<String>(
-                    color: Colors.green,
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        _editIncome(income);
-                      } else if (value == 'delete') {
-                        _confirmDeleteIncome(income.id);
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text(
-                          'Edit',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
+            ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildTotalIncomeCard(double totalIncome) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [kButtonPrimary, Color(0xFF1B5E20)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: kButtonPrimary.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(4, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Total Income',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            totalIncome.toStringAsFixed(2),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

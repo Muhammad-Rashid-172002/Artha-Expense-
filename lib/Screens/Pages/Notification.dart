@@ -6,6 +6,32 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+// ==== COLOR CONSTANTS ====
+// App Bar & Background
+const Color kWhite = Color(0xFFFFFFFF);
+
+// Balance Card Background
+const Color kLightGray = Color(0xFFF5F5F5);
+
+// List Tile Card Border
+const Color kBorderGray = Color(0xFFE0E0E0);
+
+// Buttons, Icons, Highlights
+const Color kBlueAccent = Color(0xFF1565C0);
+
+// ==== TEXT COLORS ====
+// Main Headings (AppBar title, card titles)
+const Color kTextHeading = Color(0xFF000000);
+
+// Subtitles (ListTile subtitle, labels)
+const Color kTextSubtitle = Color(0xFF424242);
+
+// Body Text (normal descriptions, content)
+const Color kTextBody = Color(0xFF212121);
+
+// Secondary/Faded text (hints, less important info)
+const Color kTextSecondary = Color(0xFF757575);
+
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -164,32 +190,26 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: Colors.green.shade200, // light amber background
+        backgroundColor: kLightGray,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.green.shade400, width: 2),
+          side: BorderSide(color: kBlueAccent, width: 2),
         ),
         title: const Text(
           "Delete Notification",
-          style: TextStyle(
-            color: Colors.black87, // dark text for contrast
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: kTextHeading, fontWeight: FontWeight.bold),
         ),
         content: const Text(
           "Are you sure you want to delete this notification?",
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(color: kTextSubtitle),
         ),
         actions: [
           TextButton(
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: Colors.orange.shade700),
-            ),
+            child: Text("Cancel", style: TextStyle(color: kBlueAccent)),
             onPressed: () => Navigator.pop(context, false),
           ),
           TextButton(
-            child: Text("Delete", style: TextStyle(color: Colors.red.shade400)),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -247,27 +267,26 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: kBlueAccent,
         automaticallyImplyLeading: false,
         title: Text(
           'Notifications',
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white, //  BlueGrey
+            color: kWhite,
             letterSpacing: 1.2,
           ),
         ),
         centerTitle: true,
-
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: kTextHeading),
         elevation: 0,
       ),
       body: userId == null
-          ? const Center(
+          ? Center(
               child: Text(
                 "User not logged in",
-                style: TextStyle(color: Colors.black87),
+                style: TextStyle(color: kTextBody),
               ),
             )
           : StreamBuilder<QuerySnapshot>(
@@ -280,15 +299,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Colors.black87),
+                    child: CircularProgressIndicator(color: kTextBody),
                   );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No Notifications yet.',
-                      style: TextStyle(color: Colors.black87),
+                      style: TextStyle(color: kTextBody),
                     ),
                   );
                 }
@@ -321,7 +340,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         color: Colors.red.shade300,
-                        child: const Icon(Icons.delete, color: Colors.white),
+                        child: const Icon(Icons.delete, color: kWhite),
                       ),
                       confirmDismiss: (_) async {
                         await _confirmDelete(doc.reference);
@@ -329,13 +348,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       },
                       child: Center(
                         child: Card(
-                          color: Colors.green.shade100, // light card background
+                          color: kLightGray,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: Colors.green.shade300,
-                              width: 1,
-                            ),
+                            side: BorderSide(color: kBorderGray, width: 1),
                           ),
                           margin: const EdgeInsets.symmetric(
                             vertical: 6,
@@ -353,19 +369,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 Container(
                                   width: 4,
                                   height: 80,
-                                  color: Colors.green.shade900,
+                                  color: kBlueAccent,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: ListTile(
                                     leading: Icon(
                                       Icons.notifications,
-                                      color: Colors.green.shade600,
+                                      color: kBlueAccent,
                                     ),
                                     title: Text(
                                       title,
                                       style: TextStyle(
-                                        color: Colors.black87,
+                                        color: kTextHeading,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -377,9 +393,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         Text(
                                           message,
                                           style: TextStyle(
-                                            color: Colors.black87.withOpacity(
-                                              0.7,
-                                            ),
+                                            color: kTextBody.withOpacity(0.7),
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -387,7 +401,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           formattedTime,
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.black,
+                                            color: kTextSecondary,
                                           ),
                                         ),
                                       ],

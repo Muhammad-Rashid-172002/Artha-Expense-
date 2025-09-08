@@ -6,7 +6,40 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-/// Import Guest Expense Store
+// ==== COLOR CONSTANTS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
+// Custom category colors for Pie Chart
+const Map<String, Color> kCategoryColors = {
+  'food': Color(0xFFFFB74D), // Orange
+  'transport': Color(0xFF4FC3F7), // Light Blue
+  'shopping': Color(0xFF81C784), // Light Green
+  'entertainment': Color(0xFFE57373), // Red
+  'bills': Color(0xFFFFD54F), // Yellow
+  'health': Color(0xFFBA68C8), // Purple
+  'other': Color(0xFF90A4AE), // Grey Blue
+};
 
 class BudgetScreen extends StatefulWidget {
   @override
@@ -28,7 +61,6 @@ class _BudgetScreenState extends State<BudgetScreen>
 
   Future<void> fetchCategoryData() async {
     if (userId == null) {
-      // ✅ Guest Mode: calculate from GuestExpenseStore
       final Map<String, double> totals = {};
       for (var exp in GuestExpenseStore.expenses) {
         final category = exp['category'] ?? 'Other';
@@ -43,7 +75,6 @@ class _BudgetScreenState extends State<BudgetScreen>
       return;
     }
 
-    // ✅ Logged-in Mode: fetch from Firestore
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -86,22 +117,7 @@ class _BudgetScreenState extends State<BudgetScreen>
   }
 
   Color getColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return Colors.green.shade400;
-      case 'transport':
-        return Colors.teal.shade400;
-      case 'shopping':
-        return Colors.lightGreen.shade300;
-      case 'entertainment':
-        return Colors.greenAccent.shade400;
-      case 'bills':
-        return Colors.lime.shade700;
-      case 'health':
-        return Colors.green.shade200;
-      default:
-        return Colors.grey.shade400;
-    }
+    return kCategoryColors[category.toLowerCase()] ?? kCategoryColors['other']!;
   }
 
   @override
@@ -112,22 +128,25 @@ class _BudgetScreenState extends State<BudgetScreen>
       appBar: AppBar(
         title: const Text(
           "Monthly Budget Overview",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: kAppBarTextColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: kAppBarColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: kAppBarTextColor),
             onPressed: fetchCategoryData,
           ),
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.green))
+          ? const Center(child: CircularProgressIndicator(color: kAppBarColor))
           : hasData
           ? _buildBudgetOverview()
           : _buildEmptyState(),
@@ -173,7 +192,7 @@ class _BudgetScreenState extends State<BudgetScreen>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: kHeadingTextColor,
           ),
         ),
         Expanded(
@@ -195,7 +214,7 @@ class _BudgetScreenState extends State<BudgetScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isSelected
-                        ? [Colors.green.shade500, Colors.teal.shade300]
+                        ? [kButtonPrimary, Colors.teal.shade300]
                         : [Colors.green.shade300, Colors.lightGreen.shade200],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -218,7 +237,7 @@ class _BudgetScreenState extends State<BudgetScreen>
                   title: Text(
                     entry.key,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: kButtonPrimaryText,
                       fontSize: isSelected ? 18 : 16,
                       fontWeight: isSelected
                           ? FontWeight.bold
@@ -265,7 +284,7 @@ class _BudgetScreenState extends State<BudgetScreen>
           children: [
             Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.green.shade400,
+              color: kBalanceCardColor,
               size: 100,
             ),
             const SizedBox(height: 20),
@@ -274,7 +293,7 @@ class _BudgetScreenState extends State<BudgetScreen>
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: kCardTextColor,
               ),
             ),
             const SizedBox(height: 10),
@@ -283,19 +302,19 @@ class _BudgetScreenState extends State<BudgetScreen>
                   ? "Start adding your expenses to see your spending breakdown."
                   : "Set up your budget and start tracking your expenses today.",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              style: const TextStyle(fontSize: 16, color: kBodyTextColor),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.add, color: Colors.white),
+              icon: const Icon(Icons.add, color: kButtonPrimaryText),
               label: Text(
                 isGuest ? "Add Your First Expense" : "Set Up Budget",
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16, color: kButtonPrimaryText),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                backgroundColor: kButtonPrimary,
+                foregroundColor: kButtonPrimaryText,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,

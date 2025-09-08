@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Pages/expanse/totalExpanse.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -10,8 +11,16 @@ List<Map<String, dynamic>> guestExpenses = [];
 class AddExpenseScreen extends StatefulWidget {
   final Map<String, dynamic>? existingData;
   final String? docId;
+  final bool isGuest;
+  final void Function(Map<String, dynamic> expense)? onExpenseAdded;
 
-  const AddExpenseScreen({super.key, this.existingData, this.docId});
+  const AddExpenseScreen({
+    super.key,
+    this.existingData,
+    this.docId,
+    this.isGuest = false,
+    this.onExpenseAdded,
+  });
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -95,25 +104,33 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       "iconFontFamily": categoryIcons[selectedCategory]?.fontFamily,
       "category": selectedCategory,
       "timestamp": Timestamp.now(),
+      "docId": widget.docId ?? DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
     final user = FirebaseAuth.instance.currentUser;
 
     try {
-      if (user == null) {
-        // 🚀 Guest Mode → Save locally
-        guestExpenses.add(newExpense);
+      if (widget.isGuest || user == null) {
+        // Guest Mode → Save locally
+        if (widget.docId != null) {
+          final idx = guestExpenses.indexWhere(
+            (exp) => exp['docId'] == widget.docId,
+          );
+          if (idx != -1) guestExpenses[idx] = newExpense;
+        } else {
+          guestExpenses.add(newExpense);
+        }
 
-        // Sort by latest first
         guestExpenses.sort(
           (a, b) => (b['timestamp'] as Timestamp).compareTo(
             a['timestamp'] as Timestamp,
           ),
         );
 
+        widget.onExpenseAdded?.call(newExpense);
+
         Navigator.pop(context, newExpense);
       } else {
-        // 🚀 Logged-in User → Save in Firestore
         final userDoc = FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid);
@@ -129,6 +146,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             'timestamp': FieldValue.serverTimestamp(),
           });
         }
+
+        widget.onExpenseAdded?.call(newExpense);
+
         Navigator.pop(context, newExpense);
       }
     } catch (e) {
@@ -147,14 +167,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.black),
+      labelStyle: TextStyle(color: kSubtitleTextColor),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.black),
+        borderSide: BorderSide(color: kCardTextColor),
         borderRadius: BorderRadius.circular(12),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.white, width: 2),
+        borderSide: BorderSide(color: kButtonPrimary, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -164,13 +184,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         title: Text(
           widget.existingData != null ? "Edit Expense" : "Add Expense",
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: kAppBarTextColor),
         ),
         centerTitle: true,
-        backgroundColor: Colors.red[300],
-        foregroundColor: Colors.white,
+        backgroundColor: kAppBarColor,
         elevation: 3,
       ),
       body: Center(
@@ -178,7 +198,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 📅 Date Picker
+              // Date Picker
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -186,50 +206,32 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     initialDate: selectedDate,
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          dialogBackgroundColor: Colors.blueGrey[800],
-                          colorScheme: const ColorScheme.dark(
-                            primary: Colors.amber,
-                            onPrimary: Colors.black,
-                            surface: Colors.blueGrey,
-                            onSurface: Colors.black,
-                          ),
-                        ),
-                        child: child!,
-                      );
-                    },
                   );
                   if (picked != null) setState(() => selectedDate = picked);
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.calendar_today, color: Colors.red),
+                    Icon(Icons.calendar_today, color: kButtonPrimary),
                     const SizedBox(width: 8),
                     Text(
                       DateFormat('dd MMM yyyy').format(selectedDate),
-                      style: const TextStyle(color: Colors.redAccent),
+                      style: const TextStyle(color: kButtonPrimaryText),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 22),
-
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // 📝 Title TextField
                     _buildTextField(
                       controller: titleController,
                       label: "Expense Title",
                       icon: Icons.title,
                     ),
                     const SizedBox(height: 20),
-
-                    // 💵 Amount TextField
                     _buildTextField(
                       controller: amountController,
                       label: "Amount",
@@ -237,18 +239,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 20),
-
-                    // 📂 Category Dropdown
                     Container(
                       decoration: _boxDecoration(),
                       child: DropdownButtonFormField<String>(
                         value: selectedCategory,
-                        dropdownColor: Colors.red.shade300,
+                        dropdownColor: kBalanceCardColor,
                         style: const TextStyle(
-                          color: Colors.black,
+                          color: kCardTextColor,
                           fontWeight: FontWeight.w500,
                         ),
-                        iconEnabledColor: Colors.deepOrange,
+                        iconEnabledColor: kButtonPrimary,
                         onChanged: (value) {
                           if (value != null) {
                             setState(() => selectedCategory = value);
@@ -259,15 +259,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             value: cat,
                             child: Row(
                               children: [
-                                Icon(
-                                  categoryIcons[cat],
-                                  color: Colors.deepOrange,
-                                ),
+                                Icon(categoryIcons[cat], color: kButtonPrimary),
                                 const SizedBox(width: 8),
                                 Text(
                                   cat,
                                   style: const TextStyle(
-                                    color: Colors.black,
+                                    color: kCardTextColor,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -277,7 +274,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         }).toList(),
                         decoration: InputDecoration(
                           labelText: "Category",
-                          labelStyle: TextStyle(color: Colors.orange.shade700),
+                          labelStyle: TextStyle(color: kHeadingTextColor),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
@@ -290,8 +287,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-
-                    // ✅ Submit Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -301,13 +296,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           elevation: 6,
-                          shadowColor: Colors.white,
-                          backgroundColor: Colors.red,
+                          shadowColor: kBalanceCardColor,
+                          backgroundColor: kButtonPrimary,
                         ),
                         onPressed: isLoading ? null : _submitExpense,
                         child: isLoading
                             ? const SpinKitFadingCircle(
-                                color: Colors.white,
+                                color: kButtonPrimaryText,
                                 size: 28,
                               )
                             : Text(
@@ -317,7 +312,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: Colors.white,
+                                  color: kButtonPrimaryText,
                                 ),
                               ),
                       ),
@@ -332,7 +327,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  /// Reusable TextField builder
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -345,13 +339,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         controller: controller,
         keyboardType: keyboardType,
         style: const TextStyle(
-          color: Colors.black,
+          color: kCardTextColor,
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.orange.shade700),
-          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          labelStyle: const TextStyle(color: kHeadingTextColor),
+          prefixIcon: Icon(icon, color: kButtonPrimary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide.none,
@@ -367,11 +361,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   BoxDecoration _boxDecoration() {
     return BoxDecoration(
-      color: Colors.orange.shade50,
+      color: kBalanceCardColor.withOpacity(0.2),
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(
-          color: Colors.orange.shade100.withOpacity(0.5),
+          color: kBalanceCardColor.withOpacity(0.3),
           blurRadius: 8,
           offset: const Offset(0, 4),
         ),

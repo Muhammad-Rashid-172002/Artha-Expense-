@@ -1,5 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expanse_tracker_app/Screens/Pages/smallCard/addreminderscreen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/smallCard/addreminderscreen.dart'
+    hide
+        kButtonPrimary,
+        kAppBarTextColor,
+        kAppBarColor,
+        kCardTextColor,
+        kCardColor,
+        kFadedTextColor;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -94,7 +102,6 @@ class _ReminderscreenState extends State<Reminderscreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Logged-in: go to normal AddReminder screen
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddReminderScreen()),
@@ -111,7 +118,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.green, // make transparent to show gradient
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -132,7 +139,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.white54,
+                      color: kFadedTextColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
@@ -140,7 +147,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   Text(
                     initial == null ? 'Add Reminder (Guest)' : 'Edit Reminder',
                     style: const TextStyle(
-                      color: Colors.black,
+                      color: kHeadingTextColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
@@ -148,12 +155,12 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: titleCtrl,
-                    style: const TextStyle(color: Colors.black),
+                    style: const TextStyle(color: kBodyTextColor),
                     decoration: InputDecoration(
                       labelText: 'Title',
-                      labelStyle: const TextStyle(color: Colors.black87),
+                      labelStyle: const TextStyle(color: kSubtitleTextColor),
                       filled: true,
-                      fillColor: Colors.amber[100],
+                      fillColor: kBalanceCardColor.withOpacity(0.3),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -163,12 +170,12 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   TextField(
                     controller: descCtrl,
                     maxLines: 2,
-                    style: const TextStyle(color: Colors.black),
+                    style: const TextStyle(color: kBodyTextColor),
                     decoration: InputDecoration(
                       labelText: 'Description',
-                      labelStyle: const TextStyle(color: Colors.black87),
+                      labelStyle: const TextStyle(color: kSubtitleTextColor),
                       filled: true,
-                      fillColor: Colors.amber[100],
+                      fillColor: kBalanceCardColor.withOpacity(0.3),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -184,15 +191,15 @@ class _ReminderscreenState extends State<Reminderscreen> {
                             horizontal: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.amber[200],
+                            color: kBalanceCardColor.withOpacity(0.4),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amberAccent),
+                            border: Border.all(color: kButtonSecondaryBorder),
                           ),
                           child: Text(
                             DateFormat.yMMMd().add_jm().format(
                               selectedDateTime,
                             ),
-                            style: const TextStyle(color: Colors.black),
+                            style: const TextStyle(color: kBodyTextColor),
                           ),
                         ),
                       ),
@@ -207,7 +214,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                             builder: (_, child) => Theme(
                               data: Theme.of(context).copyWith(
                                 colorScheme: const ColorScheme.light(
-                                  primary: Colors.orange,
+                                  primary: kButtonPrimary,
                                   surface: Colors.white,
                                   onSurface: Colors.black,
                                 ),
@@ -224,7 +231,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                             builder: (_, child) => Theme(
                               data: Theme.of(context).copyWith(
                                 colorScheme: const ColorScheme.light(
-                                  primary: Colors.orange,
+                                  primary: kButtonPrimary,
                                   surface: Colors.white,
                                   onSurface: Colors.black,
                                 ),
@@ -244,8 +251,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                         },
                         icon: const Icon(Icons.schedule, color: Colors.white),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
+                          backgroundColor: kButtonPrimary,
                         ),
                         label: const Text('Pick Date & Time'),
                       ),
@@ -285,7 +291,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                       },
                       icon: const Icon(Icons.save, color: Colors.white),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: kButtonPrimary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -312,28 +318,28 @@ class _ReminderscreenState extends State<Reminderscreen> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: kCardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           "Delete Reminder",
-          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+          style: TextStyle(color: kButtonPrimary, fontWeight: FontWeight.bold),
         ),
         content: const Text(
           "Are you sure you want to delete this reminder?",
-          style: TextStyle(color: Colors.black87),
+          style: TextStyle(color: kBodyTextColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             style: TextButton.styleFrom(
-              backgroundColor: Colors.amber[100],
+              backgroundColor: kBalanceCardColor.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: const Text(
               "Cancel",
-              style: TextStyle(color: Colors.deepOrange),
+              style: TextStyle(color: kButtonSecondaryText),
             ),
           ),
           TextButton(
@@ -362,7 +368,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Reminder deleted"),
-            backgroundColor: Colors.green,
+            backgroundColor: kButtonPrimary,
           ),
         );
       }
@@ -370,30 +376,29 @@ class _ReminderscreenState extends State<Reminderscreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final bool isGuest = currentUser == null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Reminders",
           style: TextStyle(
-            color: Colors.white,
+            color: kAppBarTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: kAppBarColor,
         elevation: 4,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
+        backgroundColor: kButtonPrimary,
         tooltip: 'Add Reminder',
         onPressed: _isLoading
             ? null
@@ -402,7 +407,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   : _navigateToAddReminder),
         child: _isLoading
             ? const SpinKitCircle(color: Colors.white, size: 24)
-            : const Icon(Icons.add, color: Colors.blueGrey),
+            : const Icon(Icons.add, color: kCardTextColor),
       ),
       body: isGuest ? _buildGuestList() : _buildFirestoreList(currentUser!.uid),
     );
@@ -415,7 +420,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
       return const Center(
         child: Text(
           "No reminders added yet (Guest).",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: kBodyTextColor),
         ),
       );
     }
@@ -430,10 +435,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.green.shade300, // lighter green
-                Colors.green.shade700, // darker green
-              ],
+              colors: [kButtonPrimary.withOpacity(0.7), Colors.green.shade700],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -441,7 +443,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Card(
-            color: Colors.transparent, // transparent to show gradient
+            color: Colors.transparent,
             elevation: 3,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -462,7 +464,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
               ),
               isThreeLine: true,
               trailing: PopupMenuButton<String>(
-                color: Colors.green,
+                color: kButtonPrimary,
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onSelected: (value) {
                   if (value == 'edit') {
@@ -506,14 +508,14 @@ class _ReminderscreenState extends State<Reminderscreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: SpinKitCircle(color: Colors.green));
+          return const Center(child: SpinKitCircle(color: kButtonPrimary));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
               "No reminders added yet.",
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(color: kBodyTextColor),
             ),
           );
         }
@@ -528,7 +530,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
             final date = (reminder['dateTime'] as Timestamp).toDate();
 
             return Card(
-              color: Colors.transparent, // Make card background transparent
+              color: Colors.transparent,
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -539,7 +541,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color.fromARGB(255, 57, 134, 60), Colors.green],
+                    colors: [kButtonPrimary, Colors.green],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -558,7 +560,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
                   ),
                   isThreeLine: true,
                   trailing: PopupMenuButton<String>(
-                    color: Colors.green,
+                    color: kButtonPrimary,
                     icon: const Icon(Icons.more_vert, color: Colors.white),
                     onSelected: (value) {
                       if (value == 'edit') {

@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/ForgotPassword.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -57,8 +58,7 @@ class _SigninScreenState extends State<SigninScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      //  Force sign-out so account picker always appears
-      await GoogleSignIn().signOut();
+      await GoogleSignIn().signOut(); // Force account picker
 
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
@@ -93,7 +93,7 @@ class _SigninScreenState extends State<SigninScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Color(0xFFFFF8E1)], //  Gradient background
+            colors: [Color(0xFFFFF8E1), Colors.white],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -111,7 +111,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF37474F), //  BlueGrey
+                    color: kAppBarColor,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -138,30 +138,28 @@ class _SigninScreenState extends State<SigninScreen> {
                               style: GoogleFonts.playfairDisplay(
                                 fontSize: 26,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                                color: kButtonPrimary,
                               ),
                             ),
                             const SizedBox(height: 25),
 
-                            /// Email
+                            // Email
                             customTextField(
                               label: "Email",
                               controller: emailController,
                               icon: Icons.email,
                               inputType: TextInputType.emailAddress,
                               validator: (v) {
-                                if (v == null || v.isEmpty) {
+                                if (v == null || v.isEmpty)
                                   return "Enter your email";
-                                }
-                                if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
+                                if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v))
                                   return "Enter a valid email";
-                                }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 15),
 
-                            /// Password
+                            // Password
                             _buildPasswordField(
                               label: "Password",
                               controller: passwordController,
@@ -176,33 +174,36 @@ class _SigninScreenState extends State<SigninScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ForgotPassword(),
-                                      ),
-                                    );
-                                  },
+                                  onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ForgotPassword(),
+                                    ),
+                                  ),
                                   child: const Text(
                                     'Forgot Password?',
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(color: kCardTextColor),
                                   ),
                                 ),
                               ],
                             ),
 
-                            /// Sign In Button
+                            // Sign In Button
                             GestureDetector(
                               onTap: _isLoading ? null : _signInWithEmail,
                               child: Container(
                                 height: 55,
                                 decoration: BoxDecoration(
-                                  color: Colors.green,
                                   borderRadius: BorderRadius.circular(15),
+                                  gradient: const LinearGradient(
+                                    colors: [kButtonPrimary, kAppBarColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.amber.withOpacity(0.4),
+                                      color: kButtonPrimary.withOpacity(0.4),
                                       blurRadius: 12,
                                       offset: const Offset(0, 6),
                                     ),
@@ -217,7 +218,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                       : Text(
                                           "Sign In",
                                           style: GoogleFonts.roboto(
-                                            color: Colors.white,
+                                            color: kButtonPrimaryText,
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1.2,
@@ -228,15 +229,16 @@ class _SigninScreenState extends State<SigninScreen> {
                             ),
 
                             const SizedBox(height: 25),
-                            Divider(color: Colors.green, thickness: 1),
+                            Divider(color: kButtonPrimary, thickness: 1),
                             const SizedBox(height: 15),
 
+                            // Google Sign In
                             GestureDetector(
                               onTap: _isLoading ? null : _signInWithGoogle,
                               child: Container(
                                 height: 48,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.green),
+                                  border: Border.all(color: kButtonPrimary),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -251,7 +253,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                       "Sign in with Google",
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black54,
+                                        color: kCardTextColor,
                                       ),
                                     ),
                                   ],
@@ -261,12 +263,13 @@ class _SigninScreenState extends State<SigninScreen> {
 
                             const SizedBox(height: 12),
 
+                            // Apple Sign In
                             GestureDetector(
                               onTap: _isLoading ? null : _signInWithApple,
                               child: Container(
                                 height: 48,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.green),
+                                  border: Border.all(color: kButtonPrimary),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -275,14 +278,14 @@ class _SigninScreenState extends State<SigninScreen> {
                                     Icon(
                                       Icons.apple,
                                       size: 26,
-                                      color: Colors.black,
+                                      color: kCardTextColor,
                                     ),
                                     const SizedBox(width: 10),
                                     const Text(
                                       "Sign in with Apple",
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: kCardTextColor,
                                       ),
                                     ),
                                   ],
@@ -290,14 +293,16 @@ class _SigninScreenState extends State<SigninScreen> {
                               ),
                             ),
 
-                            /// Sign Up link
+                            const SizedBox(height: 20),
+
+                            // Sign Up link
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   "Don't have an account? ",
                                   style: TextStyle(
-                                    color: Colors.grey[700],
+                                    color: kBodyTextColor,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -305,13 +310,14 @@ class _SigninScreenState extends State<SigninScreen> {
                                   onPressed: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => SignupScreen(),
+                                      builder: (context) =>
+                                          const SignupScreen(),
                                     ),
                                   ),
                                   child: Text(
                                     "Sign Up",
                                     style: GoogleFonts.roboto(
-                                      color: Colors.green,
+                                      color: kButtonPrimary,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -333,7 +339,7 @@ class _SigninScreenState extends State<SigninScreen> {
     );
   }
 
-  // sign in with Apple
+  // Apple Sign In
   Future<void> _signInWithApple() async {
     setState(() => _isLoading = true);
     try {
@@ -367,7 +373,6 @@ class _SigninScreenState extends State<SigninScreen> {
     }
   }
 
-  /// Generate random nonce
   String _generateNonce([int length = 32]) {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
@@ -378,14 +383,13 @@ class _SigninScreenState extends State<SigninScreen> {
     ).join();
   }
 
-  /// Hash nonce for Apple Sign-In
   String _sha256ofString(String input) {
     final bytes = utf8.encode(input);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  /// Custom Email/Username field
+  // Custom Email/Username field
   Widget customTextField({
     required TextEditingController controller,
     required String label,
@@ -400,18 +404,17 @@ class _SigninScreenState extends State<SigninScreen> {
         keyboardType: inputType,
         validator: validator,
         style: const TextStyle(
-          color: Color(0xFF37474F),
+          color: kCardTextColor,
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        cursorColor: Colors.green,
+        cursorColor: kButtonPrimary,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: kCardColor,
           labelText: label,
-          labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-          prefixIcon: Icon(icon, color: Colors.green, size: 22),
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          labelStyle: const TextStyle(color: kCardTextColor, fontSize: 15),
+          prefixIcon: Icon(icon, color: kButtonPrimary, size: 22),
           contentPadding: const EdgeInsets.symmetric(
             vertical: 18,
             horizontal: 20,
@@ -422,7 +425,7 @@ class _SigninScreenState extends State<SigninScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: const BorderSide(color: Colors.green, width: 2),
+            borderSide: BorderSide(color: kButtonPrimary, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
@@ -437,7 +440,7 @@ class _SigninScreenState extends State<SigninScreen> {
     );
   }
 
-  /// Custom Password field
+  // Custom Password field
   Widget _buildPasswordField({
     required String label,
     required TextEditingController controller,
@@ -451,18 +454,18 @@ class _SigninScreenState extends State<SigninScreen> {
       validator:
           validator ??
           (v) => v != null && v.length >= 6 ? null : "Enter valid password",
-      style: const TextStyle(color: Color(0xFF37474F)),
-      cursorColor: Colors.green,
+      style: const TextStyle(color: kCardTextColor),
+      cursorColor: kButtonPrimary,
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: kCardColor,
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey.shade600),
-        prefixIcon: const Icon(Icons.lock, color: Colors.green),
+        labelStyle: const TextStyle(color: kCardTextColor),
+        prefixIcon: Icon(Icons.lock, color: kButtonPrimary),
         suffixIcon: IconButton(
           icon: Icon(
             isVisible ? Icons.visibility : Icons.visibility_off,
-            color: Colors.grey.shade700,
+            color: kBodyTextColor,
           ),
           onPressed: onToggle,
         ),
@@ -472,7 +475,7 @@ class _SigninScreenState extends State<SigninScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Colors.green, width: 2),
+          borderSide: BorderSide(color: kButtonPrimary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),

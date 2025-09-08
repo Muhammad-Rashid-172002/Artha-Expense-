@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -64,8 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      // Force sign-out so account picker always appears
-      await GoogleSignIn().signOut();
+      await GoogleSignIn().signOut(); // Force account picker
 
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
@@ -105,7 +105,7 @@ class _SignupScreenState extends State<SignupScreen> {
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF37474F), //  BlueGrey
+            color: kAppBarColor,
             letterSpacing: 1.2,
           ),
         ),
@@ -139,7 +139,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green,
+                        color: kButtonPrimary,
                       ),
                     ),
                     const SizedBox(height: 25),
@@ -154,7 +154,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       validator: (value) => value != null && value.isNotEmpty
                           ? null
                           : 'Enter name',
-                      style: const TextStyle(color: Colors.black87),
+                      style: const TextStyle(color: kCardTextColor),
                     ),
                     const SizedBox(height: 15),
 
@@ -165,7 +165,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       validator: (value) => value != null && value.contains('@')
                           ? null
                           : 'Enter valid email',
-                      style: const TextStyle(color: Colors.black87),
+                      style: const TextStyle(color: kCardTextColor),
                     ),
                     const SizedBox(height: 15),
 
@@ -180,7 +180,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       validator: (value) => value != null && value.length >= 6
                           ? null
                           : 'Password must be at least 6 characters',
-                      style: const TextStyle(color: Colors.black87),
+                      style: const TextStyle(color: kCardTextColor),
                     ),
                     const SizedBox(height: 15),
 
@@ -195,7 +195,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       validator: (value) => value == passwordController.text
                           ? null
                           : 'Passwords do not match',
-                      style: const TextStyle(color: Colors.black87),
+                      style: const TextStyle(color: kCardTextColor),
                     ),
 
                     const SizedBox(height: 25),
@@ -207,10 +207,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 55,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
-                          color: Colors.green,
+                          gradient: const LinearGradient(
+                            colors: [kButtonPrimary, kAppBarColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.4),
+                              color: kButtonPrimary.withOpacity(0.4),
                               offset: const Offset(0, 4),
                               blurRadius: 8,
                             ),
@@ -225,7 +229,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               : const Text(
                                   'Sign Up',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: kButtonPrimaryText,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -235,7 +239,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
 
                     const SizedBox(height: 25),
-                    const Divider(color: Colors.green),
+                    Divider(color: kButtonPrimary),
 
                     const SizedBox(height: 15),
 
@@ -245,7 +249,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Container(
                         height: 45,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.green),
+                          border: Border.all(color: kButtonPrimary),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -258,32 +262,33 @@ class _SignupScreenState extends State<SignupScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: kCardTextColor,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 15),
                     GestureDetector(
                       onTap: _isLoading ? null : _signInWithApple,
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.green),
+                          border: Border.all(color: kButtonPrimary),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.apple, size: 26, color: Colors.black),
+                            Icon(Icons.apple, size: 26, color: kCardTextColor),
                             const SizedBox(width: 10),
                             const Text(
                               "Sign in with Apple",
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.black,
+                                color: kCardTextColor,
                               ),
                             ),
                           ],
@@ -297,7 +302,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       children: [
                         const Text(
                           "Already have an account?",
-                          style: TextStyle(color: Colors.black54),
+                          style: TextStyle(color: kBodyTextColor),
                         ),
                         TextButton(
                           onPressed: () {
@@ -310,7 +315,10 @@ class _SignupScreenState extends State<SignupScreen> {
                           },
                           child: const Text(
                             'Sign In',
-                            style: TextStyle(color: Colors.green),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: kButtonPrimary,
+                            ),
                           ),
                         ),
                       ],
@@ -325,7 +333,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // sign in with Apple
+  // Apple Sign In
   Future<void> _signInWithApple() async {
     setState(() => _isLoading = true);
     try {
@@ -359,7 +367,7 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  /// Generate random nonce
+  // Nonce helper
   String _generateNonce([int length = 32]) {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
@@ -370,7 +378,6 @@ class _SignupScreenState extends State<SignupScreen> {
     ).join();
   }
 
-  /// Hash nonce for Apple Sign-In
   String _sha256ofString(String input) {
     final bytes = utf8.encode(input);
     final digest = sha256.convert(bytes);
@@ -380,10 +387,10 @@ class _SignupScreenState extends State<SignupScreen> {
   InputDecoration _customInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: Colors.green),
+      prefixIcon: Icon(icon, color: kButtonPrimary),
       filled: true,
-      fillColor: Colors.grey[100],
-      labelStyle: const TextStyle(color: Colors.black87),
+      fillColor: kCardColor,
+      labelStyle: const TextStyle(color: kCardTextColor),
       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
@@ -391,15 +398,15 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.green, width: 2),
+        borderSide: BorderSide(color: kButtonPrimary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.green, width: 1.5),
+        borderSide: BorderSide(color: kButtonPrimary, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.green, width: 2),
+        borderSide: BorderSide(color: kButtonPrimary, width: 2),
       ),
     );
   }

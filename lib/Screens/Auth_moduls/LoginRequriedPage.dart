@@ -1,5 +1,6 @@
 import 'package:expanse_tracker_app/Screens/Auth_moduls/signupscreen.dart';
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginRequiredPage extends StatelessWidget {
@@ -10,8 +11,7 @@ class LoginRequiredPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
-
-        //  Luxury gradient background
+        color: Colors.grey.shade100, // optional background color
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Center(
@@ -22,13 +22,13 @@ class LoginRequiredPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: kButtonPrimary, // updated
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.lock_outline,
                     size: 80,
-                    color: Colors.white,
+                    color: Colors.white, // stays white
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -37,7 +37,7 @@ class LoginRequiredPage extends StatelessWidget {
                 const Text(
                   "Please Login",
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: kHeadingTextColor, // updated
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
@@ -47,12 +47,11 @@ class LoginRequiredPage extends StatelessWidget {
 
                 // Description
                 const Text(
-                  "Login to save your data securely in the cloud ",
-
+                  "Login to save your data securely in the cloud",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black54,
+                    color: kBodyTextColor, // updated
                     height: 1.5,
                   ),
                 ),
@@ -64,7 +63,14 @@ class LoginRequiredPage extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
-                      color: Colors.green,
+                      gradient: const LinearGradient(
+                        colors: [
+                          kButtonPrimary,
+                          kAppBarColor,
+                        ], // updated gradient
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
@@ -117,20 +123,23 @@ class LoginRequiredPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      side: const BorderSide(color: Colors.green, width: 2),
-                      foregroundColor: Colors.green,
+                      side: BorderSide(
+                        color: kButtonPrimary,
+                        width: 2,
+                      ), // updated
+                      foregroundColor: kButtonPrimary, // updated
                     ),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_forward,
                       size: 20,
-                      color: Colors.green,
+                      color: kButtonPrimary, // updated
                     ),
                     label: const Text(
                       "Continue as Guest",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: kBodyTextColor, // updated
                       ),
                     ),
                   ),

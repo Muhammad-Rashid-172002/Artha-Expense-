@@ -9,6 +9,30 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
+// ==== COLOR CONSTANTS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
 /// ✅ Guest Loan Store (Temporary Storage)
 class GuestLoanStore {
   static final List<Map<String, dynamic>> _loans = [];
@@ -212,7 +236,7 @@ class _LoanscreenState extends State<Loanscreen> {
           ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.green.shade400, Colors.green.shade700],
+              colors: [kButtonPrimary, kButtonSecondaryBorder],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -238,7 +262,7 @@ class _LoanscreenState extends State<Loanscreen> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: kHeadingTextColor,
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -279,7 +303,7 @@ class _LoanscreenState extends State<Loanscreen> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: status,
-                      dropdownColor: Colors.green.shade700,
+                      dropdownColor: kButtonPrimary,
                       style: const TextStyle(color: Colors.white),
                       items: ["Pending", "Paid"].map((val) {
                         return DropdownMenuItem(
@@ -309,7 +333,7 @@ class _LoanscreenState extends State<Loanscreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade900,
+                          backgroundColor: kButtonPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -378,7 +402,7 @@ class _LoanscreenState extends State<Loanscreen> {
                         child: const Text(
                           "Save",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: kButtonPrimaryText,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -401,14 +425,14 @@ class _LoanscreenState extends State<Loanscreen> {
 
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.green,
+        foregroundColor: kAppBarTextColor,
+        backgroundColor: kAppBarColor,
         title: Text(
           'Loan List',
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: kAppBarTextColor,
           ),
         ),
         centerTitle: true,
@@ -435,7 +459,7 @@ class _LoanscreenState extends State<Loanscreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showLoanBottomSheet(),
-        backgroundColor: Colors.green,
+        backgroundColor: kButtonPrimary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -467,7 +491,7 @@ class _LoanscreenState extends State<Loanscreen> {
             margin: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.greenAccent.shade100, Colors.green.shade700],
+                colors: [kBalanceCardColor.withOpacity(0.4), kButtonPrimary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -509,11 +533,11 @@ class _LoanscreenState extends State<Loanscreen> {
                   leading: const Icon(Icons.person, color: Colors.red),
                   title: Text(
                     name,
-                    style: const TextStyle(color: Colors.black87),
+                    style: const TextStyle(color: kCardTextColor),
                   ),
                   subtitle: Text(
                     "Amount: $amount\nDate: $formattedDate",
-                    style: const TextStyle(color: Colors.black54),
+                    style: const TextStyle(color: kBodyTextColor),
                   ),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(

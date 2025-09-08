@@ -14,6 +14,34 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+/// ==========================
+/// Guest Income Store (Local)
+/// ==========================
+class GuestStore {
+  static ValueNotifier<List<Map<String, dynamic>>> incomes = ValueNotifier([]);
+  static ValueNotifier<List<Map<String, dynamic>>> expenses = ValueNotifier([]);
+
+  static double get totalIncome =>
+      incomes.value.fold(0.0, (sum, item) => sum + (item['amount'] as double));
+
+  static double get totalExpense =>
+      expenses.value.fold(0.0, (sum, item) => sum + (item['amount'] as double));
+
+  static void addIncome(double amount) {
+    incomes.value = [
+      ...incomes.value,
+      {'amount': amount},
+    ];
+  }
+
+  static void addExpense(double amount) {
+    expenses.value = [
+      ...expenses.value,
+      {'amount': amount},
+    ];
+  }
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -112,27 +140,53 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showAddIncomeExpenseSheet(String type, {TransactionModel? tx}) {
-    // Navigate to IncomeScreen or ExpenseScreen instead of showing bottom sheet
+  void _showAddIncomeExpenseSheet(String type) {
     if (type == "Income") {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => IncomeScreen()),
-      );
+        MaterialPageRoute(
+          builder: (_) => IncomeScreen(
+            isGuest: currentUser == null,
+            onIncomeAdded: (income) {
+              setState(() {
+                GuestStore.addIncome(income['amount']);
+              });
+            },
+          ),
+        ),
+      ).then((_) => setState(() {}));
     } else if (type == "Expense") {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ExpenseScreen()),
-      );
+        MaterialPageRoute(
+          builder: (_) => ExpenseScreen(
+            isGuest: currentUser == null,
+            onExpenseAdded: (expense) {
+              setState(() {
+                GuestStore.addExpense(expense['amount']);
+              });
+            },
+          ),
+        ),
+      ).then((_) => setState(() {}));
     }
   }
 
+  /// ================================
+  /// Income/Expense Stream + Guest UI
+  /// ================================
   Widget buildIncomeExpenseStream() {
-    double totalIncome = 0.0;
     double totalExpense = 0.0;
 
     if (currentUser == null) {
-      // guest mode
+      // GUEST MODE
+      double totalIncome = GuestIncomeStore.incomes.fold(
+        0.0,
+        (sum, item) => sum + (item['amount'] as double),
+      );
+
+      double balance = totalIncome - totalExpense;
+
       return Column(
         children: [
           _buildBalanceCard(totalIncome, totalExpense),
@@ -140,19 +194,19 @@ class _HomePageState extends State<HomePage> {
           _buildMainCards([
             {
               "title": "Income",
-              "amount": "0.00",
+              "amount": "$currencySymbol${formatter.format(totalIncome)}",
               "icon": Icons.arrow_upward,
               "iconColor": Colors.green,
             },
             {
               "title": "Expense",
-              "amount": "0.00",
+              "amount": "$currencySymbol${formatter.format(totalExpense)}",
               "icon": Icons.arrow_downward,
               "iconColor": Colors.red,
             },
             {
               "title": "Budget",
-              "amount": "0.00",
+              "amount": "$currencySymbol${formatter.format(balance)}",
               "icon": Icons.pie_chart,
               "iconColor": Colors.black,
             },
@@ -161,6 +215,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    // LOGGED-IN USER MODE
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
@@ -175,7 +230,7 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        totalIncome = incomeSnapshot.data!.docs.fold(0.0, (sum, doc) {
+        double totalIncome = incomeSnapshot.data!.docs.fold(0.0, (sum, doc) {
           final amount = doc['amount'];
           return sum + (amount is num ? amount.toDouble() : 0.0);
         });
@@ -200,33 +255,23 @@ class _HomePageState extends State<HomePage> {
             });
 
             double balance = totalIncome - totalExpense;
-            double monthlyBudget = balance;
-            final bool isOverspending = totalExpense >= totalIncome;
-            final bool isHighSpending = totalExpense >= (totalIncome * 0.75);
 
             final List<Map<String, dynamic>> mainCards = [
               {
                 "title": "Income",
-                "amount":
-                    "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}$currencySymbol${formatter.format(totalIncome)}",
+                "amount": "$currencySymbol${formatter.format(totalIncome)}",
                 "icon": Icons.arrow_upward,
                 "iconColor": Colors.green,
               },
               {
                 "title": "Expense",
-                "amount":
-                    "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}$currencySymbol${formatter.format(totalExpense)}",
-                "icon": isOverspending || isHighSpending
-                    ? Icons.arrow_downward
-                    : Icons.arrow_upward,
-                "iconColor": isOverspending || isHighSpending
-                    ? Colors.red
-                    : Colors.green,
+                "amount": "$currencySymbol${formatter.format(totalExpense)}",
+                "icon": Icons.arrow_downward,
+                "iconColor": Colors.red,
               },
               {
                 "title": "Budget",
-                "amount":
-                    "${currencyFlag.isNotEmpty ? "$currencyFlag " : ""}$currencySymbol${formatter.format(monthlyBudget)}",
+                "amount": "$currencySymbol${formatter.format(balance)}",
                 "icon": Icons.pie_chart,
                 "iconColor": Colors.blue,
               },
@@ -251,7 +296,8 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 6,
-        color: Colors.green.shade900,
+        color: Color(0xFFFFD700),
+
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -266,13 +312,13 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Color(0xFF0D47A1),
                     ),
                   ),
                   IconButton(
                     icon: Icon(
                       _isHidden ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.white,
+                      color: Color(0xFF1565C0),
                     ),
                     onPressed: () {
                       setState(() {
@@ -291,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
-                    color: balance >= 0 ? Colors.white : Colors.redAccent,
+                    color: balance >= 0 ? Color(0xFF1565C0) : Colors.redAccent,
                   ),
                 ),
               ),
@@ -485,7 +531,8 @@ class _HomePageState extends State<HomePage> {
         slivers: [
           SliverAppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.green.shade900,
+            backgroundColor: Color(0xFF1565C0),
+
             pinned: true,
             expandedHeight: 120,
             collapsedHeight: kToolbarHeight,
@@ -530,7 +577,7 @@ class _HomePageState extends State<HomePage> {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const Center(
-                            child: SpinKitCircle(color: Colors.green),
+                            child: SpinKitCircle(color: Colors.blue),
                           );
                         }
                         if (snapshot.hasError) {
@@ -586,7 +633,7 @@ class _HomePageState extends State<HomePage> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.green.shade200
+                                    ? Colors.blue.shade200
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
@@ -602,7 +649,7 @@ class _HomePageState extends State<HomePage> {
                                   Icon(
                                     card['icon'],
                                     size: 30,
-                                    color: Colors.green.shade900,
+                                    color: Colors.black,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -618,7 +665,6 @@ class _HomePageState extends State<HomePage> {
                         );
                       }),
                     ),
-                    SizedBox(height: 20),
                   ],
                 ),
               ),

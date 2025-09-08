@@ -5,11 +5,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'addexpanse.dart';
 
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
 /// Temporary storage for guest expenses
 class GuestExpenseStore {
   static final List<Map<String, dynamic>> _expenses = [];
 
-  /// Get sorted list (latest first)
   static List<Map<String, dynamic>> get expenses =>
       List<Map<String, dynamic>>.from(_expenses)..sort((a, b) {
         final da = DateFormat("dd MMM yyyy").parse(a["date"]);
@@ -34,7 +51,10 @@ class GuestExpenseStore {
 }
 
 class ExpenseScreen extends StatefulWidget {
-  const ExpenseScreen({super.key});
+  final bool isGuest;
+  final void Function(Map<String, dynamic> expense)? onExpenseAdded;
+
+  const ExpenseScreen({super.key, this.isGuest = false, this.onExpenseAdded});
 
   @override
   State<ExpenseScreen> createState() => _ExpenseScreenState();
@@ -61,7 +81,6 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     );
 
     if (result != null && userId == null) {
-      // Guest mode → Save locally
       final newExpense = {
         "id": DateTime.now().millisecondsSinceEpoch.toString(),
         "title": result["title"],
@@ -72,7 +91,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
       GuestExpenseStore.addExpense(newExpense);
     }
 
-    setState(() {}); // refresh UI after returning
+    setState(() {});
   }
 
   Future<void> _editExpense(Map<String, dynamic> data, String id) async {
@@ -159,77 +178,67 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: kAppBarTextColor,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: kAppBarColor,
         elevation: 0,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 80),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              _buildCalendar(),
-              _buildTotalSpent(),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.greenAccent, Colors.green],
-                  ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            _buildCalendar(),
+            _buildTotalSpent(),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [kButtonPrimary, Color(0xFF1976D2)],
+                ),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: kButtonPrimary, width: 2),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: kButtonPrimary,
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.green, width: 2),
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.deepOrange,
-                  tabs: const [
-                    Tab(text: "Spends"),
-                    Tab(text: "Categories"),
-                  ],
-                ),
+                labelColor: kButtonPrimaryText,
+                unselectedLabelColor: kButtonSecondaryText,
+                tabs: const [
+                  Tab(text: "Spends"),
+                  Tab(text: "Categories"),
+                ],
               ),
-              SizedBox(
-                height: 500,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildExpenseList(showCategory: false),
-                    _buildExpenseList(showCategory: true),
-                  ],
-                ),
+            ),
+            SizedBox(
+              height: 500,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildExpenseList(showCategory: false),
+                  _buildExpenseList(showCategory: true),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _onAddExpense,
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-        backgroundColor: Colors.green,
+        child: const Icon(Icons.add, color: kButtonPrimaryText, size: 30),
+        backgroundColor: kButtonPrimary,
       ),
     );
   }
 
-  /// Calendar widget
   Widget _buildCalendar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -237,13 +246,13 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         margin: const EdgeInsets.only(bottom: 20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF80DEEA), width: 1.5),
+          side: BorderSide(color: kButtonPrimary, width: 1.5),
         ),
         elevation: 6,
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Colors.greenAccent, Colors.green],
+              colors: [Color(0xFFFFD700), kButtonPrimary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -258,7 +267,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: kHeadingTextColor,
                 ),
               ),
               const SizedBox(height: 10),
@@ -291,7 +300,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green[100],
+                        color: kBalanceCardColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -299,7 +308,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                           Text(
                             daysOfWeek[index],
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: kBalanceCardTextColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -307,7 +316,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                           Text(
                             '${currentDay.day}',
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: kBalanceCardTextColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -321,7 +330,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                         Text(
                           daysOfWeek[index],
                           style: const TextStyle(
-                            color: Colors.black87,
+                            color: kSubtitleTextColor,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -329,7 +338,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
                         Text(
                           '${currentDay.day}',
                           style: const TextStyle(
-                            color: Colors.black87,
+                            color: kSubtitleTextColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -345,7 +354,6 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     );
   }
 
-  /// Total Spent Widget
   Widget _buildTotalSpent() {
     if (userId == null) {
       double totalSpent = GuestExpenseStore.expenses.fold(
@@ -389,15 +397,15 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: Colors.blue, width: 2),
           ),
           child: CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.green[100],
+            backgroundColor: kBalanceCardColor,
             child: Text(
               "${totalSpent.toStringAsFixed(0)}",
               style: const TextStyle(
-                color: Colors.deepOrange,
+                color: kBalanceCardTextColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -407,13 +415,13 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         const SizedBox(height: 8),
         const Text(
           "You have spent total",
-          style: TextStyle(color: Colors.black, fontSize: 16),
+          style: TextStyle(color: kBodyTextColor, fontSize: 16),
         ),
         Text(
           "${percent.toStringAsFixed(0)}% of your budget",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.green,
+            color: kButtonPrimary,
           ),
         ),
         const SizedBox(height: 20),
@@ -421,7 +429,6 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     );
   }
 
-  /// Expense List
   Widget _buildExpenseList({required bool showCategory}) {
     if (userId == null) {
       final docs = GuestExpenseStore.expenses;
@@ -429,7 +436,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
         return const Center(
           child: Text(
             "No expenses yet.",
-            style: TextStyle(color: Colors.green),
+            style: TextStyle(color: kButtonPrimary),
           ),
         );
       }
@@ -448,7 +455,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
           return const Center(
             child: Text(
               "No expenses yet.",
-              style: TextStyle(color: Colors.green),
+              style: TextStyle(color: kButtonPrimary),
             ),
           );
         }
@@ -482,7 +489,7 @@ class _ExpenseScreenState extends State<ExpenseScreen>
               SlidableAction(
                 icon: Icons.edit,
                 label: "Edit",
-                backgroundColor: Colors.blue,
+                backgroundColor: kButtonPrimary,
                 onPressed: (_) => _editExpense(data, id),
               ),
               SlidableAction(
@@ -494,35 +501,35 @@ class _ExpenseScreenState extends State<ExpenseScreen>
             ],
           ),
           child: Card(
-            color: Colors.green[100],
+            color: kCardColor,
             margin: const EdgeInsets.symmetric(vertical: 6),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Colors.green, width: 1.5),
+              side: BorderSide(color: kButtonPrimary, width: 1.5),
             ),
             child: ListTile(
               leading: Icon(
                 categoryIcons[data['category']] ?? Icons.category,
-                color: Colors.green,
+                color: kButtonPrimary,
               ),
               title: Text(
                 showCategory
                     ? (data['category'] ?? 'Other')
                     : (data['title'] ?? ''),
                 style: const TextStyle(
-                  color: Colors.black87,
+                  color: kCardTextColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 showCategory ? (data['title'] ?? '') : (data['date'] ?? ''),
-                style: TextStyle(color: Colors.grey[700]),
+                style: const TextStyle(color: kFadedTextColor),
               ),
               trailing: Text(
                 amt.toStringAsFixed(2),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 14, 174, 19),
+                  color: kButtonSecondaryText,
                 ),
               ),
             ),

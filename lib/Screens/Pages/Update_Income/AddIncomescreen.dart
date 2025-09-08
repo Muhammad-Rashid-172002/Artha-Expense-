@@ -3,14 +3,30 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kCardColor = Colors.white;
+const Color kCardTextColor = Colors.black87;
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue
+const Color kSubtitleTextColor = Colors.black87;
+const Color kBodyTextColor = Colors.black54;
+const Color kFadedTextColor = Colors.grey;
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue
+const Color kButtonPrimaryText = Colors.white;
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold
+const Color kButtonSecondaryText = Color(0xFF1565C0);
+const Color kButtonDisabled = Color(0xFFBDBDBD);
+const Color kButtonDisabledText = Color(0xFF757575);
+
 /// ✅ Guest storage (temporary, in-memory)
 class GuestIncomeStore {
   static final List<Map<String, dynamic>> _incomes = [];
 
   static List<Map<String, dynamic>> get incomes =>
       List<Map<String, dynamic>>.from(_incomes)..sort(
-        (a, b) =>
-            (b['createdAt'] as DateTime).compareTo(a['createdAt'] as DateTime),
+        (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
       );
 
   static void addIncome({required String title, required double amount}) {
@@ -18,7 +34,7 @@ class GuestIncomeStore {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'title': title,
       'amount': amount,
-      'createdAt': DateTime.now(),
+      'date': DateTime.now(),
     });
   }
 
@@ -33,7 +49,7 @@ class GuestIncomeStore {
         'id': id,
         'title': title,
         'amount': amount,
-        'createdAt': DateTime.now(),
+        'date': DateTime.now(),
       };
     }
   }
@@ -59,6 +75,7 @@ class AddIncomeScreen extends StatefulWidget {
   final DateTime? initialDate;
   final bool isEditing;
   final bool isGuest;
+  final void Function(String title, double amount)? onIncomeAdded;
 
   const AddIncomeScreen({
     super.key,
@@ -68,6 +85,7 @@ class AddIncomeScreen extends StatefulWidget {
     this.initialDate,
     this.isEditing = false,
     this.isGuest = false,
+    this.onIncomeAdded,
   });
 
   @override
@@ -101,8 +119,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
     if (_selectedSource == null || amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+        SnackBar(
+          content: const Text(
             '⚠️ Please select a valid income source and enter a positive amount.',
           ),
           backgroundColor: Colors.redAccent,
@@ -113,7 +131,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
     setState(() => _isLoading = true);
 
-    // ✅ Guest mode
+    // Guest mode
     if (widget.isGuest) {
       if (!widget.isEditing) {
         GuestIncomeStore.addIncome(title: _selectedSource!, amount: amount);
@@ -125,24 +143,26 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         );
       }
 
+      widget.onIncomeAdded?.call(_selectedSource!, amount);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Income saved (Guest Mode)'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text('✅ Income saved (Guest Mode)'),
+          backgroundColor: Colors.blue,
         ),
       );
 
-      Navigator.pop(context, true); // return true to refresh
+      Navigator.pop(context, true);
       setState(() => _isLoading = false);
       return;
     }
 
-    // ✅ Firebase mode
+    // Firebase mode
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("❌ Not logged in. Please sign in."),
+        SnackBar(
+          content: const Text("❌ Not logged in. Please sign in."),
           backgroundColor: Colors.red,
         ),
       );
@@ -166,20 +186,23 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       if (widget.isEditing && widget.incomeId != null) {
         await incomeRef.doc(widget.incomeId).update(incomeData);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Income updated successfully.'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('✅ Income updated successfully.'),
+            backgroundColor: Colors.blue,
           ),
         );
       } else {
         await incomeRef.add(incomeData);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Income added successfully.'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('✅ Income added successfully.'),
+            backgroundColor: Colors.blue,
           ),
         );
       }
+
+      widget.onIncomeAdded?.call(_selectedSource!, amount);
+
       Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -197,9 +220,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Color.fromARGB(255, 248, 222, 137)],
+            colors: [
+              kAppBarColor.withOpacity(0.1),
+              kBalanceCardColor.withOpacity(0.2),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -209,27 +235,28 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
           appBar: AppBar(
             title: Text(
               widget.isEditing ? 'Edit Income' : 'Add Income',
-              style: const TextStyle(
-                color: Colors.black,
+              style: TextStyle(
+                color: kAppBarTextColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            backgroundColor: Colors.green.shade700,
+            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: kAppBarColor,
             centerTitle: true,
             elevation: 4,
           ),
           body: Center(
             child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Income Details',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: kHeadingTextColor,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -240,11 +267,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         value: source['label'],
                         child: Row(
                           children: [
-                            Icon(source['icon'], color: Colors.green),
+                            Icon(source['icon'], color: kButtonPrimary),
                             const SizedBox(width: 10),
                             Text(
                               source['label'],
-                              style: const TextStyle(color: Colors.black),
+                              style: TextStyle(color: kBodyTextColor),
                             ),
                           ],
                         ),
@@ -254,45 +281,39 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         setState(() => _selectedSource = value),
                     decoration: InputDecoration(
                       labelText: 'Select Income Source',
-                      labelStyle: const TextStyle(color: Colors.green),
+                      labelStyle: TextStyle(color: kButtonPrimary),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.green),
+                        borderSide: BorderSide(color: kButtonPrimary),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: Colors.green,
-                          width: 2,
-                        ),
+                        borderSide: BorderSide(color: kButtonPrimary, width: 2),
                       ),
                     ),
-                    dropdownColor: Colors.green.shade300,
+                    dropdownColor: kCardColor,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: kBodyTextColor),
                     decoration: InputDecoration(
                       labelText: 'Enter Amount',
-                      labelStyle: const TextStyle(color: Colors.green),
+                      labelStyle: TextStyle(color: kButtonPrimary),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.green),
+                        borderSide: BorderSide(color: kButtonPrimary),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: Colors.green,
-                          width: 2,
-                        ),
+                        borderSide: BorderSide(color: kButtonPrimary, width: 2),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   _isLoading
-                      ? const SpinKitFadingCircle(color: Colors.green, size: 40)
+                      ? SpinKitFadingCircle(color: kButtonPrimary, size: 40)
                       : ElevatedButton.icon(
                           onPressed: _saveIncome,
                           icon: const Icon(Icons.save),
@@ -300,8 +321,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                             widget.isEditing ? 'Update Income' : 'Save Income',
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green.shade700,
-                            foregroundColor: Colors.white,
+                            backgroundColor: kButtonPrimary,
+                            foregroundColor: kButtonPrimaryText,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 12,

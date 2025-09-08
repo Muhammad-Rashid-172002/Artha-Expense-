@@ -7,6 +7,33 @@ import 'package:currency_picker/currency_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 
+// ==== COLORS ====
+// AppBar
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+
+// Balance Card
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+
+// Cards / ListTile
+const Color kCardColor = Colors.white;
+const Color kCardTextColor = Colors.black87;
+
+// Text
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87;
+const Color kBodyTextColor = Colors.black54;
+const Color kFadedTextColor = Colors.grey;
+
+// Buttons
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue
+const Color kButtonPrimaryText = Colors.white;
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold
+const Color kButtonSecondaryText = Color(0xFF1565C0);
+const Color kButtonDisabled = Color(0xFFBDBDBD);
+const Color kButtonDisabledText = Color(0xFF757575);
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -106,19 +133,19 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: kCardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Edit $title", style: const TextStyle(color: Colors.black)),
+        title: Text("Edit $title", style: TextStyle(color: kHeadingTextColor)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
               obscureText: isPassword,
-              style: const TextStyle(color: Colors.black),
+              style: TextStyle(color: kBodyTextColor),
               decoration: InputDecoration(
                 hintText: "Enter $title",
-                hintStyle: const TextStyle(color: Colors.black54),
+                hintStyle: TextStyle(color: kSubtitleTextColor),
               ),
             ),
             if (isPassword) const SizedBox(height: 10),
@@ -126,10 +153,10 @@ class _SettingsPageState extends State<SettingsPage> {
               TextField(
                 controller: confirmController,
                 obscureText: true,
-                style: const TextStyle(color: Colors.black),
-                decoration: const InputDecoration(
+                style: TextStyle(color: kBodyTextColor),
+                decoration: InputDecoration(
                   hintText: "Confirm Password",
-                  hintStyle: TextStyle(color: Colors.black54),
+                  hintStyle: TextStyle(color: kSubtitleTextColor),
                 ),
               ),
           ],
@@ -137,7 +164,10 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.orange)),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: kButtonSecondaryText),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -150,10 +180,11 @@ class _SettingsPageState extends State<SettingsPage> {
               _updateField(field, controller.text.trim());
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade700,
+            style: ElevatedButton.styleFrom(backgroundColor: kButtonPrimary),
+            child: const Text(
+              "Save",
+              style: TextStyle(color: kButtonPrimaryText),
             ),
-            child: const Text("Save"),
           ),
         ],
       ),
@@ -178,7 +209,7 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Currency updated to ${currency.code}'),
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: kButtonPrimary,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -190,9 +221,9 @@ class _SettingsPageState extends State<SettingsPage> {
       showFlag: true,
       showSearchField: true,
       theme: CurrencyPickerThemeData(
-        backgroundColor: Colors.white,
-        titleTextStyle: TextStyle(color: Colors.orange.shade900, fontSize: 18),
-        subtitleTextStyle: const TextStyle(color: Colors.black54),
+        backgroundColor: kCardColor,
+        titleTextStyle: TextStyle(color: kButtonPrimary, fontSize: 18),
+        subtitleTextStyle: TextStyle(color: kSubtitleTextColor),
         bottomSheetHeight: 400,
       ),
       onSelect: (Currency currency) {
@@ -205,19 +236,22 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: kCardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text("Logout"),
         content: const Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.orange)),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: kButtonSecondaryText),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text("Logout"),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -239,7 +273,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: kCardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text("Delete Account"),
         content: const Text(
@@ -248,12 +282,12 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.green)),
+            child: Text("Cancel", style: TextStyle(color: Colors.green)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text("Delete"),
+            child: const Text("Delete", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -286,7 +320,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    Color iconColor = Colors.orange,
+    Color? iconColor,
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -294,11 +328,14 @@ class _SettingsPageState extends State<SettingsPage> {
       elevation: 4,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.1),
-          child: Icon(icon, color: iconColor),
+          backgroundColor: (iconColor ?? kButtonPrimary).withOpacity(0.1),
+          child: Icon(icon, color: iconColor ?? kButtonPrimary),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
+        title: Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.bold, color: kCardTextColor),
+        ),
+        subtitle: Text(subtitle, style: TextStyle(color: kBodyTextColor)),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
@@ -316,13 +353,16 @@ class _SettingsPageState extends State<SettingsPage> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 40),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF57A773), Color(0xFF2C7A4B)],
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      kAppBarColor,
+                      kBalanceCardColor,
+                    ], // Deep Blue to Gold
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(36),
                     bottomRight: Radius.circular(36),
                   ),
@@ -331,18 +371,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundColor: Colors.white,
+                      backgroundColor: kCardColor,
                       child: Icon(
                         Icons.person,
                         size: 50,
-                        color: Colors.green.shade700,
+                        color: kButtonPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       userName,
                       style: GoogleFonts.poppins(
-                        color: Colors.white,
+                        color: kAppBarTextColor,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -358,6 +398,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
               _buildCardTile(
                 icon: Icons.person,
@@ -400,7 +441,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _buildCardTile(
                 icon: Icons.attach_money,
-                iconColor: Colors.green.shade700,
+                iconColor: kButtonPrimary,
                 title: "Currency",
                 subtitle: '$currencyFlag $selectedCurrency',
                 onTap: _showCurrencyPicker,
@@ -429,8 +470,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: const Icon(Icons.delete_forever),
                       label: const Text("Delete Account"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade700,
-                        foregroundColor: Colors.white,
+                        backgroundColor: kBalanceCardColor,
+                        foregroundColor: kBalanceCardTextColor,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

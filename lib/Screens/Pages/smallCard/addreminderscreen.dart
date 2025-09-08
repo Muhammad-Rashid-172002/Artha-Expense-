@@ -5,6 +5,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+
 class AddReminderScreen extends StatefulWidget {
   final bool isEditing;
   final String? reminderId;
@@ -62,7 +71,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           'Reminder Notifications',
           importance: Importance.max,
           priority: Priority.high,
-          color: Colors.green,
+          color: kButtonPrimary,
           icon: '@mipmap/ic_launcher',
         );
 
@@ -81,7 +90,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   void _pickDateTime() async {
     final currentDate = DateTime.now();
 
-    // Date picker
     final pickedDate = await showDatePicker(
       context: context,
       initialDate:
@@ -90,13 +98,13 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
         data: ThemeData.light().copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Colors.greenAccent,
-            onPrimary: Colors.white,
-            surface: Color(0xFFFFF3E0),
-            onSurface: Colors.green,
+          colorScheme: ColorScheme.light(
+            primary: kButtonPrimary,
+            onPrimary: kButtonPrimaryText,
+            surface: kCardColor,
+            onSurface: kCardTextColor,
           ),
-          dialogBackgroundColor: const Color(0xFFFFF8E1),
+          dialogBackgroundColor: kCardColor,
         ),
         child: child!,
       ),
@@ -108,20 +116,20 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         initialTime: const TimeOfDay(hour: 9, minute: 0),
         builder: (context, child) => Theme(
           data: ThemeData.light().copyWith(
-            timePickerTheme: const TimePickerThemeData(
-              backgroundColor: Color(0xFFFFF8E1),
-              hourMinuteTextColor: Colors.deepOrange,
-              hourMinuteColor: Colors.orangeAccent,
-              dialHandColor: Colors.deepOrange,
-              dialBackgroundColor: Colors.orange,
-              entryModeIconColor: Colors.deepOrange,
-              dayPeriodTextColor: Colors.black,
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: kCardColor,
+              hourMinuteTextColor: Colors.white,
+              hourMinuteColor: kButtonPrimary,
+              dialHandColor: kButtonPrimary,
+              dialBackgroundColor: kCardColor,
+              entryModeIconColor: kButtonPrimary,
+              dayPeriodTextColor: kCardTextColor,
             ),
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepOrange,
-              onPrimary: Colors.white,
-              surface: Colors.orangeAccent,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: kButtonPrimary,
+              onPrimary: kButtonPrimaryText,
+              surface: kCardColor,
+              onSurface: kCardTextColor,
             ),
           ),
           child: child!,
@@ -201,7 +209,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.green,
+        backgroundColor: kButtonPrimary,
       ),
     );
   }
@@ -217,13 +225,13 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         title: Text(
           widget.isEditing ? "Edit Reminder" : "Add Reminder",
           style: const TextStyle(
-            color: Colors.white,
+            color: kAppBarTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.green,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: kAppBarColor,
+        iconTheme: const IconThemeData(color: kAppBarTextColor),
       ),
       body: Stack(
         children: [
@@ -236,21 +244,21 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                   // Title
                   Card(
                     elevation: 4,
-                    shadowColor: Colors.greenAccent,
+                    shadowColor: kButtonPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextFormField(
                       controller: _titleController,
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(color: kCardTextColor),
                       decoration: InputDecoration(
                         labelText: "Title",
                         hintText: "Enter your reminder title",
-                        hintStyle: const TextStyle(color: Colors.green),
-                        labelStyle: const TextStyle(color: Colors.green),
+                        hintStyle: const TextStyle(color: kButtonPrimary),
+                        labelStyle: const TextStyle(color: kButtonPrimary),
                         prefixIcon: const Icon(
                           Icons.title,
-                          color: Colors.green,
+                          color: kButtonPrimary,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.all(16),
@@ -264,22 +272,22 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                   // Description
                   Card(
                     elevation: 4,
-                    shadowColor: Colors.greenAccent,
+                    shadowColor: kButtonPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(color: kCardTextColor),
                       decoration: InputDecoration(
                         labelText: "Description",
                         hintText: "Enter details about your reminder",
-                        hintStyle: const TextStyle(color: Colors.green),
-                        labelStyle: const TextStyle(color: Colors.green),
+                        hintStyle: const TextStyle(color: kButtonPrimary),
+                        labelStyle: const TextStyle(color: kButtonPrimary),
                         prefixIcon: const Icon(
                           Icons.description,
-                          color: Colors.green,
+                          color: kButtonPrimary,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.all(16),
@@ -292,17 +300,17 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                   const SizedBox(height: 16),
                   // Date & Time
                   ListTile(
-                    tileColor: Colors.green.shade50,
+                    tileColor: kCardColor.withOpacity(0.2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     title: Text(
                       formattedDate,
-                      style: const TextStyle(color: Colors.green),
+                      style: const TextStyle(color: kButtonPrimary),
                     ),
                     trailing: const Icon(
                       Icons.calendar_today,
-                      color: Colors.green,
+                      color: kButtonPrimary,
                     ),
                     onTap: _pickDateTime,
                   ),
@@ -316,13 +324,13 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         gradient: const LinearGradient(
-                          colors: [Colors.green, Colors.lightGreen],
+                          colors: [kButtonPrimary, Color(0xFF42A5F5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: const [
                           BoxShadow(
-                            color: Colors.greenAccent,
+                            color: kButtonPrimary,
                             blurRadius: 6,
                             offset: Offset(0, 3),
                           ),
@@ -334,7 +342,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                               ? "Update Reminder"
                               : "Save Reminder",
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: kButtonPrimaryText,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -351,7 +359,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
             Container(
               color: Colors.black45,
               child: const Center(
-                child: SpinKitFadingCircle(color: Colors.greenAccent, size: 50),
+                child: SpinKitFadingCircle(color: kButtonPrimary, size: 50),
               ),
             ),
         ],

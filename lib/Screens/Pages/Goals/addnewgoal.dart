@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -89,7 +90,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("⚠️ Please enter all goal fields!"),
-          backgroundColor: Colors.green,
+          backgroundColor: kButtonSecondaryBorder, // gold
         ),
       );
       setState(() => isLoading = false);
@@ -114,7 +115,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Goal saved locally (Guest Mode)!"),
-            backgroundColor: Colors.green,
+            backgroundColor: kButtonSecondaryBorder,
           ),
         );
         return;
@@ -134,7 +135,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Goal updated successfully!"),
-            backgroundColor: Colors.green,
+            backgroundColor: kButtonSecondaryBorder,
           ),
         );
       } else {
@@ -163,7 +164,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Goal added successfully!"),
-            backgroundColor: Colors.green,
+            backgroundColor: kButtonSecondaryBorder,
           ),
         );
       }
@@ -188,15 +189,15 @@ class _AddnewgoalState extends State<Addnewgoal> {
         title: Text(
           isEditing ? "Edit Goal" : "Add New Goal",
           style: const TextStyle(
-            color: Colors.white,
+            color: kAppBarTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: kAppBarColor, // deep blue
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
         ),
       ),
       body: Center(
@@ -212,7 +213,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: kButtonPrimary, // deep blue
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -241,12 +242,12 @@ class _AddnewgoalState extends State<Addnewgoal> {
                   child: ElevatedButton(
                     onPressed: isLoading ? null : saveGoal,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
+                      backgroundColor: kButtonPrimary, // deep blue
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(
-                          color: Colors.green.shade900,
+                        side: const BorderSide(
+                          color: kButtonSecondaryBorder, // gold border
                           width: 1.5,
                         ),
                       ),
@@ -261,7 +262,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
                             children: [
                               Icon(
                                 isEditing ? Icons.update : Icons.save,
-                                color: Colors.white,
+                                color: kButtonPrimaryText,
                               ),
                               const SizedBox(width: 10),
                               Text(
@@ -269,7 +270,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: kButtonPrimaryText,
                                 ),
                               ),
                             ],
@@ -296,18 +297,18 @@ class _AddnewgoalState extends State<Addnewgoal> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.black54),
-        prefixIcon: Icon(icon, color: Colors.green),
+        prefixIcon: Icon(icon, color: kButtonSecondaryBorder), // gold icons
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.green),
+          borderSide: const BorderSide(color: kButtonSecondaryBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.green),
+          borderSide: const BorderSide(color: kButtonSecondaryBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.green, width: 2),
+          borderSide: const BorderSide(color: kButtonPrimary, width: 2),
         ),
       ),
       style: const TextStyle(color: Colors.black),

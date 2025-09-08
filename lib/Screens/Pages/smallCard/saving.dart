@@ -2,6 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// ==== COLORS ====
+const Color kAppBarColor = Color(0xFF1565C0); // Deep Blue
+const Color kAppBarTextColor = Colors.white; // White text
+
+const Color kBalanceCardColor = Color(0xFFFFD700); // Gold
+const Color kBalanceCardTextColor = Colors.black; // Black text on gold
+
+const Color kCardColor = Colors.white; // White background
+const Color kCardTextColor = Colors.black87; // Dark text
+
+const Color kHeadingTextColor = Color(0xFF0D47A1); // Dark Blue heading
+const Color kSubtitleTextColor = Colors.black87; // Subtitles
+const Color kBodyTextColor = Colors.black54; // Regular body text
+const Color kFadedTextColor = Colors.grey; // Faded/secondary
+
+const Color kButtonPrimary = Color(0xFF1565C0); // Deep Blue background
+const Color kButtonPrimaryText = Colors.white; // White text
+
+const Color kButtonSecondaryBorder = Color(0xFFFFD700); // Gold border
+const Color kButtonSecondaryText = Color(0xFF1565C0); // Blue text
+
+const Color kButtonDisabled = Color(0xFFBDBDBD); // Gray background
+const Color kButtonDisabledText = Color(0xFF757575); // Light gray text
+
 /// Temporary guest storage (shared with expenses & income screens)
 List<Map<String, dynamic>> guestIncome = [];
 List<Map<String, dynamic>> guestExpenses = [];
@@ -93,17 +117,20 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         title: const Text(
           'Your Savings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: kAppBarTextColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.green[600],
-        foregroundColor: Colors.white,
+        backgroundColor: kAppBarColor,
         elevation: 0,
         centerTitle: true,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.green))
+          ? const Center(child: CircularProgressIndicator(color: kAppBarColor))
           : (totalIncome == 0 && totalExpenses == 0)
           ? _buildEmptyState(userId == null)
           : _buildSavingsDashboard(savings),
@@ -130,13 +157,13 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF56AB2F), Color(0xFFA8E063)],
+                  colors: [kAppBarColor, kButtonPrimary], // Blue gradient
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.4),
+                    color: kAppBarColor.withOpacity(0.4),
                     offset: const Offset(0, 8),
                     blurRadius: 12,
                   ),
@@ -156,7 +183,7 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '\$${savings.toStringAsFixed(2)}',
+                    '${savings.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -191,8 +218,8 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _infoCard('Income', totalIncome, Colors.green),
-                _infoCard('Expenses', totalExpenses, Colors.red),
+                _infoCard('Income', totalIncome, kAppBarColor),
+                _infoCard('Expenses', totalExpenses, kButtonSecondaryBorder),
               ],
             ),
           ),
@@ -208,7 +235,7 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
         margin: const EdgeInsets.symmetric(horizontal: 8),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: kCardColor,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -230,7 +257,7 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${amount.toStringAsFixed(2)}',
+              '${amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -252,7 +279,7 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
           children: [
             const Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.grey,
+              color: kFadedTextColor,
               size: 100,
             ),
             const SizedBox(height: 24),
@@ -261,7 +288,7 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: kBodyTextColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -270,20 +297,20 @@ class _SavingsState extends State<Savings> with SingleTickerProviderStateMixin {
                   ? "Start adding your income & expenses in guest mode to track savings."
                   : "Add income and expenses to see your savings grow.",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              style: const TextStyle(fontSize: 16, color: kSubtitleTextColor),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.add, color: Colors.white),
+              icon: const Icon(Icons.add, color: kButtonPrimaryText),
               label: Text(
                 isGuest ? "Add Income/Expense" : "Add Data",
-                style: const TextStyle(fontSize: 16, color: Colors.white),
+                style: const TextStyle(fontSize: 16, color: kButtonPrimaryText),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600],
+                backgroundColor: kButtonPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 14,

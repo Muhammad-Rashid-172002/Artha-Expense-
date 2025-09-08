@@ -2,10 +2,25 @@ import 'package:expanse_tracker_app/Screens/Pages/Update_income/AddIncomescreen.
 import 'package:expanse_tracker_app/Screens/Pages/expanse/addexpanse.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:expanse_tracker_app/Screens/Pages/HomePage.dart';
+import 'package:expanse_tracker_app/Screens/Pages/HomePage.dart'
+    hide
+        kButtonPrimary,
+        kButtonPrimaryText,
+        kAppBarColor,
+        kButtonSecondaryBorder,
+        kHeadingTextColor,
+        kCardColor;
 import 'package:expanse_tracker_app/Screens/Pages/Notification.dart';
-import 'package:expanse_tracker_app/Screens/Pages/SettingsPage.dart';
+import 'package:expanse_tracker_app/Screens/Pages/SettingsPage.dart'
+    hide
+        kButtonPrimaryText,
+        kButtonPrimary,
+        kAppBarColor,
+        kButtonSecondaryBorder,
+        kHeadingTextColor,
+        kCardColor;
 import 'package:expanse_tracker_app/Screens/Pages/TaskPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -46,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Press again to exit'),
-          backgroundColor: Colors.green.shade700,
+          backgroundColor: kButtonPrimary, // Updated
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -56,13 +71,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openAddScreen() {
+    final bool isGuest = FirebaseAuth.instance.currentUser == null;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: kCardColor, // Updated
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -83,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: kHeadingTextColor, // Updated
                 ),
               ),
               const SizedBox(height: 20),
@@ -94,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _bottomSheetButton(
                     icon: Icons.arrow_upward,
                     label: "Expense",
-                    color: Colors.redAccent,
+                    color: kButtonSecondaryBorder, // Updated
                     onTap: () {
                       Navigator.push(
                         context,
@@ -102,19 +119,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (context) => AddExpenseScreen(),
                         ),
                       );
-                      // Your ExpensePage route
                     },
                   ),
                   // Income Button
                   _bottomSheetButton(
                     icon: Icons.arrow_downward,
                     label: "Income",
-                    color: Colors.green.shade700,
-                    onTap: () {
+                    color: kButtonPrimary, // Updated
+                    onTap: () async {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddIncomeScreen(),
+                          builder: (context) =>
+                              AddIncomeScreen(isGuest: isGuest),
                         ),
                       );
                     },
@@ -154,12 +171,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: Colors.white),
+            Icon(icon, size: 40, color: kButtonPrimaryText), // Updated
             const SizedBox(height: 10),
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: kButtonPrimaryText, // Updated
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -191,16 +208,16 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [Colors.green.shade400, Colors.green.shade800],
+              colors: [kButtonPrimary, kAppBarColor], // Updated
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.green.shade200.withOpacity(0.6),
+                color: kButtonPrimary.withOpacity(0.6), // Updated
                 spreadRadius: 4,
                 blurRadius: 10,
-                offset: Offset(0, 6),
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -208,15 +225,14 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: _openAddScreen,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            splashColor: Colors.greenAccent,
-            child: Icon(Icons.add, size: 36, color: Colors.white),
+            splashColor: kButtonPrimaryText.withOpacity(0.2),
+            child: const Icon(Icons.add, size: 36, color: Colors.white),
           ),
         ),
-
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.green.shade600, Colors.green.shade800],
+              colors: [kButtonPrimary, kAppBarColor], // Updated
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -224,11 +240,11 @@ class _HomeScreenState extends State<HomeScreen> {
               topLeft: Radius.circular(24),
               topRight: Radius.circular(24),
             ),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black26,
                 blurRadius: 10,
-                offset: const Offset(0, -4),
+                offset: Offset(0, -4),
               ),
             ],
           ),
@@ -275,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: BoxShape.circle,
         gradient: isActive
             ? LinearGradient(
-                colors: [Colors.green.shade400, Colors.green.shade700],
+                colors: [kButtonPrimary, kAppBarColor], // Updated
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
@@ -283,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: Colors.green.withOpacity(0.5),
+                  color: kButtonPrimary.withOpacity(0.5), // Updated
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -294,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icon(
           icon,
           size: isActive ? 30 : 26,
-          color: isActive ? Colors.white : Colors.white70,
+          color: isActive ? kButtonPrimaryText : Colors.white70, // Updated
         ),
         onPressed: () => _onTabTapped(index),
       ),

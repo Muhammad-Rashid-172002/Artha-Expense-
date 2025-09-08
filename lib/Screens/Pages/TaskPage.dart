@@ -7,6 +7,18 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+/// ==== COLORS ====
+const Color kWhite = Color(0xFFFFFFFF);
+const Color kLightGray = Color(0xFFF5F5F5);
+const Color kBorderGray = Color(0xFFE0E0E0);
+const Color kBlueAccent = Color(0xFF1565C0);
+
+// ==== TEXT COLORS ====
+const Color kTextHeading = Color(0xFF000000);
+const Color kTextSubtitle = Color(0xFF424242);
+const Color kTextBody = Color(0xFF212121);
+const Color kTextSecondary = Color(0xFF757575);
+
 /// Guest goals store
 class GuestGoalStore {
   static final List<Map<String, dynamic>> _goals = [];
@@ -193,14 +205,16 @@ class _TaskPageState extends State<TaskPage> {
               .snapshots();
 
     return Scaffold(
+      backgroundColor: kWhite,
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        automaticallyImplyLeading: false,
+        backgroundColor: kBlueAccent,
         title: Text(
           'My Saving Goal',
           style: GoogleFonts.playfairDisplay(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: kWhite,
             letterSpacing: 1.2,
           ),
         ),
@@ -226,7 +240,7 @@ class _TaskPageState extends State<TaskPage> {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                child: SpinKitCircle(color: Colors.green),
+                                child: SpinKitCircle(color: kBlueAccent),
                               );
                             }
 
@@ -239,7 +253,7 @@ class _TaskPageState extends State<TaskPage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.black87,
+                                    color: kTextBody,
                                   ),
                                 ),
                               );
@@ -284,11 +298,11 @@ class _TaskPageState extends State<TaskPage> {
               bottom: 16,
               right: 16,
               child: FloatingActionButton(
-                backgroundColor: Colors.green.shade300,
+                backgroundColor: kBlueAccent,
                 onPressed: _onAddGoalPressed,
                 child: isFabLoading
-                    ? const SpinKitFadingCircle(color: Colors.white, size: 25)
-                    : const Icon(Icons.add, color: Colors.white),
+                    ? const SpinKitFadingCircle(color: kWhite, size: 25)
+                    : const Icon(Icons.add, color: kWhite),
               ),
             ),
           ],
@@ -303,7 +317,7 @@ class _TaskPageState extends State<TaskPage> {
         child: Text(
           'No savings goals yet in Guest Mode.\nTap the + button to add one.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: Colors.black87),
+          style: TextStyle(fontSize: 16, color: kTextBody),
         ),
       );
     }
@@ -361,8 +375,8 @@ class _TaskPageState extends State<TaskPage> {
                   onUpdate();
                 }
               },
-              backgroundColor: Colors.orange.shade400,
-              foregroundColor: Colors.white,
+              backgroundColor: kBlueAccent,
+              foregroundColor: kWhite,
               icon: Icons.edit,
               label: 'Edit',
             ),
@@ -382,7 +396,7 @@ class _TaskPageState extends State<TaskPage> {
                 }
               },
               backgroundColor: Colors.red.shade400,
-              foregroundColor: Colors.white,
+              foregroundColor: kWhite,
               icon: Icons.delete,
               label: 'Delete',
             ),
@@ -390,16 +404,12 @@ class _TaskPageState extends State<TaskPage> {
         ),
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.greenAccent.shade100, Colors.green.shade700],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: kLightGray,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.green.shade700, width: 1.5),
+            border: Border.all(color: kBorderGray, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.orange.shade100.withOpacity(0.5),
+                color: kBlueAccent.withOpacity(0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -411,15 +421,15 @@ class _TaskPageState extends State<TaskPage> {
             children: [
               Row(
                 children: [
-                  Icon(getGoalIcon(title), color: Colors.black),
+                  Icon(getGoalIcon(title), color: kTextHeading),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: kTextHeading,
                       ),
                     ),
                   ),
@@ -428,19 +438,19 @@ class _TaskPageState extends State<TaskPage> {
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white,
-                color: Colors.black12,
+                backgroundColor: kWhite,
+                color: kBlueAccent,
                 minHeight: 8,
               ),
               const SizedBox(height: 8),
               Text(
                 " ${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}",
-                style: const TextStyle(color: Colors.black87),
+                style: TextStyle(color: kTextBody),
               ),
               const SizedBox(height: 4),
               Text(
                 "Saved on: ${formatDateTime(createdAt)}",
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: TextStyle(fontSize: 12, color: kTextSecondary),
               ),
             ],
           ),
@@ -454,25 +464,21 @@ class _TaskPageState extends State<TaskPage> {
       width: 150,
       height: 150,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.greenAccent.shade100, Colors.green.shade700],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: kBlueAccent,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.green, width: 1.5),
+        border: Border.all(color: kBlueAccent, width: 1.5),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.monetization_on, size: 40, color: Colors.white),
+          const Icon(Icons.monetization_on, size: 40, color: kWhite),
           const SizedBox(height: 8),
           Text(
             "${monthlySavings.toStringAsFixed(0)}",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
-              color: Colors.black87,
+              color: kWhite,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -486,28 +492,24 @@ class _TaskPageState extends State<TaskPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.greenAccent.shade100, Colors.green.shade700],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: kLightGray,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green, width: 1.5),
+          border: Border.all(color: kBorderGray, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange.shade100.withOpacity(0.5),
+              color: kBlueAccent.withOpacity(0.2),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         child: ListTile(
-          leading: const Icon(Icons.savings, color: Colors.black),
-          title: const Text(
+          leading: const Icon(Icons.savings, color: kTextHeading),
+          title: Text(
             "This Month Savings",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: kTextHeading,
               fontSize: 16,
             ),
           ),
@@ -515,13 +517,13 @@ class _TaskPageState extends State<TaskPage> {
             currentUser == null
                 ? "Using Guest Mode"
                 : "Based on all saved payments",
-            style: const TextStyle(color: Colors.black54, fontSize: 14),
+            style: TextStyle(color: kTextSubtitle, fontSize: 14),
           ),
           trailing: Text(
             "${totalSavings.toStringAsFixed(0)}",
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: kTextHeading,
               fontSize: 16,
             ),
           ),

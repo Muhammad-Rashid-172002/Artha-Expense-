@@ -1,3 +1,4 @@
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -54,7 +55,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       );
     } catch (e) {
       setState(() => _isLoading = false);
-      print("Password Reset Error: $e");
       showDialog(
         context: context,
         builder: (context) => const AlertDialog(
@@ -69,99 +69,102 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          'Reset Password',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-
+        iconTheme: const IconThemeData(color: Colors.blue),
         centerTitle: true,
+        title: Text(
+          'Reset Password',
+          style: TextStyle(
+            color: kAppBarColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Enter your email to receive a password reset link',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(1, 1),
-                        blurRadius: 3,
-                        color: Colors.black26,
-                      ),
-                    ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFF8E1), Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Enter your email to receive a password reset link',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: kCardTextColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
-                // Email TextField
-                customTextField(
-                  label: "Email",
-                  controller: emailController,
-                  icon: Icons.email,
-                  inputType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Enter your email";
-                    }
-                    if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                      return "Enter a valid email";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 50),
+                  // Email field
+                  customTextField(
+                    label: "Email",
+                    controller: emailController,
+                    icon: Icons.email,
+                    inputType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return "Enter your email";
+                      if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value))
+                        return "Enter a valid email";
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 50),
 
-                // Reset Button
-                GestureDetector(
-                  onTap: _isLoading ? null : passwordReset,
-                  child: Container(
-                    height: 55,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: const Offset(0, 4),
-                          blurRadius: 6,
+                  // Reset Button
+                  GestureDetector(
+                    onTap: _isLoading ? null : passwordReset,
+                    child: Container(
+                      height: 55,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        gradient: const LinearGradient(
+                          colors: [kButtonPrimary, kAppBarColor],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: _isLoading
-                          ? const SpinKitFadingCircle(
-                              color: Colors.white,
-                              size: 25.0,
-                            )
-                          : const Text(
-                              'Reset Password',
-                              style: TextStyle(
+                        boxShadow: [
+                          BoxShadow(
+                            color: kButtonPrimary.withOpacity(0.4),
+                            offset: const Offset(0, 4),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: _isLoading
+                            ? const SpinKitFadingCircle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                size: 25.0,
+                              )
+                            : Text(
+                                'Reset Password',
+                                style: TextStyle(
+                                  color: kButtonPrimaryText,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -184,17 +187,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         keyboardType: inputType,
         validator: validator,
         style: const TextStyle(
-          color: Colors.black87,
+          color: kCardTextColor,
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        cursorColor: Colors.green.shade700,
+        cursorColor: kButtonPrimary,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white.withOpacity(0.9),
+          fillColor: kCardColor,
           labelText: label,
-          labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-          prefixIcon: Icon(icon, color: Colors.green.shade700, size: 22),
+          labelStyle: const TextStyle(color: kCardTextColor, fontSize: 15),
+          prefixIcon: Icon(icon, color: kButtonPrimary, size: 22),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 18,
@@ -206,7 +209,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: Colors.green.shade700, width: 2),
+            borderSide: BorderSide(color: kButtonPrimary, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),

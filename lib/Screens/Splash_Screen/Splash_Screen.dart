@@ -1,5 +1,6 @@
 import 'package:expanse_tracker_app/Screens/HomeScreen/homescreen.dart';
 import 'package:expanse_tracker_app/Screens/OnboardingScreens/onboardingscreens.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -34,19 +35,19 @@ class _SplashscreenState extends State<Splashscreen> {
       await prefs.setBool('isFirstTime', false);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );
     } else if (user != null) {
       // User is signed in
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else {
-      // Not signed in - go to sign-in screen
+      // Not signed in - go to onboarding screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );
     }
   }
@@ -55,7 +56,6 @@ class _SplashscreenState extends State<Splashscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -69,7 +69,12 @@ class _SplashscreenState extends State<Splashscreen> {
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF37474F), // BlueGrey (luxury dark)
+                      color: const Color.fromARGB(
+                        255,
+                        3,
+                        66,
+                        117,
+                      ), // Updated color
                       letterSpacing: 1.5,
                     ),
                   )
@@ -84,7 +89,7 @@ class _SplashscreenState extends State<Splashscreen> {
                     "Track Today, Plan Tomorrow.",
                     style: GoogleFonts.roboto(
                       fontSize: 16,
-                      color: Colors.green, // Deep Orange accent
+                      color: kButtonPrimary, // Updated to primary button color
                       fontStyle: FontStyle.italic,
                       letterSpacing: 0.7,
                     ),
@@ -93,7 +98,7 @@ class _SplashscreenState extends State<Splashscreen> {
                   .fadeIn(delay: 1000.ms, duration: 800.ms)
                   .slideY(begin: 0.5, end: 0),
               const SizedBox(height: 40),
-              const SpinKitCircle(color: Colors.green, size: 50.0),
+              const SpinKitCircle(color: kButtonPrimary, size: 50.0), // Updated
             ],
           ),
         ),
