@@ -216,7 +216,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     const SizedBox(width: 8),
                     Text(
                       DateFormat('dd MMM yyyy').format(selectedDate),
-                      style: const TextStyle(color: kButtonPrimaryText),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ],
                 ),

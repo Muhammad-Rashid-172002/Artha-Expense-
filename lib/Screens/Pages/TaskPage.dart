@@ -193,6 +193,43 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
+  Future<void> _confirmAndDelete(String id, {bool isGuest = false}) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Goal'),
+        content: const Text('Are you sure you want to delete this goal?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    if (isGuest) {
+      GuestGoalStore.deleteGoal(id);
+      calculateGuestSavings();
+    } else {
+      if (currentUser != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser!.uid)
+            .collection('users_goals')
+            .doc(id)
+            .delete();
+        await calculateMonthlyAndTotalSavings();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final Stream<QuerySnapshot>? goalsStream = currentUser == null
@@ -286,6 +323,7 @@ class _TaskPageState extends State<TaskPage> {
                                   progress,
                                   createdAt,
                                   () => calculateMonthlyAndTotalSavings(),
+                                  firestoreDoc: goalDoc, // ✅ pass doc here
                                 );
                               },
                             );
@@ -358,6 +396,7 @@ class _TaskPageState extends State<TaskPage> {
     VoidCallback onUpdate, {
     bool isGuest = false,
     Map<String, dynamic>? guestGoalData,
+    DocumentSnapshot? firestoreDoc, // ✅ added
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -369,10 +408,21 @@ class _TaskPageState extends State<TaskPage> {
           children: [
             SlidableAction(
               onPressed: (_) async {
+                // Edit action
                 if (isGuest && guestGoalData != null) {
                   _editGuestGoal(guestGoalData);
-                } else {
-                  onUpdate();
+                } else if (firestoreDoc != null) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Addnewgoal(
+                        goalId: id,
+                        existingData: firestoreDoc, // ✅ use doc
+                        isGuest: false,
+                      ),
+                    ),
+                  );
+                  await calculateMonthlyAndTotalSavings();
                 }
               },
               backgroundColor: kBlueAccent,
@@ -382,18 +432,7 @@ class _TaskPageState extends State<TaskPage> {
             ),
             SlidableAction(
               onPressed: (_) async {
-                if (isGuest) {
-                  GuestGoalStore.deleteGoal(id);
-                  calculateGuestSavings();
-                } else {
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(currentUser!.uid)
-                      .collection('users_goals')
-                      .doc(id)
-                      .delete();
-                  onUpdate();
-                }
+                await _confirmAndDelete(id, isGuest: isGuest);
               },
               backgroundColor: Colors.red.shade400,
               foregroundColor: kWhite,
@@ -426,7 +465,7 @@ class _TaskPageState extends State<TaskPage> {
                   Expanded(
                     child: Text(
                       title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: kTextHeading,
@@ -445,12 +484,12 @@ class _TaskPageState extends State<TaskPage> {
               const SizedBox(height: 8),
               Text(
                 " ${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}",
-                style: TextStyle(color: kTextBody),
+                style: const TextStyle(color: kTextBody),
               ),
               const SizedBox(height: 4),
               Text(
                 "Saved on: ${formatDateTime(createdAt)}",
-                style: TextStyle(fontSize: 12, color: kTextSecondary),
+                style: const TextStyle(fontSize: 12, color: kTextSecondary),
               ),
             ],
           ),
@@ -476,7 +515,7 @@ class _TaskPageState extends State<TaskPage> {
           const SizedBox(height: 8),
           Text(
             "${monthlySavings.toStringAsFixed(0)}",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               color: kWhite,
               fontWeight: FontWeight.bold,
@@ -505,7 +544,7 @@ class _TaskPageState extends State<TaskPage> {
         ),
         child: ListTile(
           leading: const Icon(Icons.savings, color: kTextHeading),
-          title: Text(
+          title: const Text(
             "This Month Savings",
             style: TextStyle(
               fontWeight: FontWeight.bold,
@@ -517,11 +556,11 @@ class _TaskPageState extends State<TaskPage> {
             currentUser == null
                 ? "Using Guest Mode"
                 : "Based on all saved payments",
-            style: TextStyle(color: kTextSubtitle, fontSize: 14),
+            style: const TextStyle(color: kTextSubtitle, fontSize: 14),
           ),
           trailing: Text(
             "${totalSavings.toStringAsFixed(0)}",
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: kTextHeading,
               fontSize: 16,

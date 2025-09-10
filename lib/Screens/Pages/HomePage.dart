@@ -176,11 +176,18 @@ class _HomePageState extends State<HomePage> {
   /// Income/Expense Stream + Guest UI
   /// ================================
   Widget buildIncomeExpenseStream() {
+    double totalIncome = 0.0;
     double totalExpense = 0.0;
 
     if (currentUser == null) {
       // GUEST MODE
-      double totalIncome = GuestIncomeStore.incomes.fold(
+      totalExpense = GuestExpenseStore.expenses.fold(
+        0.0,
+        (first, second) => first + second['amount'] as double,
+      );
+
+      print("Total Expense: $totalExpense");
+      totalIncome = GuestIncomeStore.incomes.fold(
         0.0,
         (sum, item) => sum + (item['amount'] as double),
       );
@@ -230,7 +237,7 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        double totalIncome = incomeSnapshot.data!.docs.fold(0.0, (sum, doc) {
+        totalIncome = incomeSnapshot.data!.docs.fold(0.0, (sum, doc) {
           final amount = doc['amount'];
           return sum + (amount is num ? amount.toDouble() : 0.0);
         });

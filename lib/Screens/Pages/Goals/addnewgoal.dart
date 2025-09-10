@@ -1,25 +1,25 @@
-import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class Addnewgoal extends StatefulWidget {
-  final String? goalId;
-  final DocumentSnapshot? existingData;
-  final Map<String, dynamic>? guestGoal;
+  final String? goalId; // Firestore doc id
+  final DocumentSnapshot? existingData; // Firestore doc snapshot
+  final Map<String, dynamic>? guestGoal; // Guest mode local goal
   final Function(Map<String, dynamic>)? onSave; // Callback for guest mode
   final bool isGuest;
 
   const Addnewgoal({
+    Key? key,
     this.goalId,
     this.existingData,
-    super.key,
     this.guestGoal,
     this.onSave,
     this.isGuest = false,
-  });
+  }) : super(key: key);
 
   @override
   State<Addnewgoal> createState() => _AddnewgoalState();
@@ -40,10 +40,12 @@ class _AddnewgoalState extends State<Addnewgoal> {
     super.initState();
 
     if (widget.existingData != null) {
+      // Editing Firestore goal
       titleController.text = widget.existingData!['title'];
       currentController.text = widget.existingData!['current'].toString();
       targetController.text = widget.existingData!['target'].toString();
     } else if (widget.guestGoal != null) {
+      // Editing Guest goal
       titleController.text = widget.guestGoal!['title'];
       currentController.text = widget.guestGoal!['current'].toString();
       targetController.text = widget.guestGoal!['target'].toString();
@@ -90,7 +92,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("⚠️ Please enter all goal fields!"),
-          backgroundColor: kButtonSecondaryBorder, // gold
+          backgroundColor: kButtonSecondaryBorder,
         ),
       );
       setState(() => isLoading = false);
@@ -105,23 +107,19 @@ class _AddnewgoalState extends State<Addnewgoal> {
         'title': title,
         'current': current,
         'target': target,
-        'createdAt': DateTime.now(),
+        'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      // ✅ Guest mode: save locally and call onSave callback
+      // ✅ Guest Mode
       if (widget.isGuest || FirebaseAuth.instance.currentUser == null) {
-        if (widget.onSave != null) widget.onSave!(goalData);
-        Navigator.pop(context); // Close screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Goal saved locally (Guest Mode)!"),
-            backgroundColor: kButtonSecondaryBorder,
-          ),
-        );
+        if (widget.onSave != null) {
+          widget.onSave!(goalData);
+        }
+        Navigator.pop(context, true);
         return;
       }
 
-      // ✅ Logged-in user: save to Firestore
+      // ✅ Firestore Mode
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final goalRef = FirebaseFirestore.instance
           .collection('users')
@@ -129,20 +127,19 @@ class _AddnewgoalState extends State<Addnewgoal> {
           .collection('users_goals');
 
       if (widget.goalId != null) {
-        // Update existing goal
+        // 🔄 Update existing goal
         await goalRef.doc(widget.goalId).update(goalData);
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Goal updated successfully!"),
-            backgroundColor: kButtonSecondaryBorder,
-          ),
+        await _showLocalNotification(
+          "Goal Updated",
+          "Your goal '$title' was updated.",
         );
       } else {
-        // Add new goal
-        await goalRef.add(goalData);
+        // ➕ Add new goal
+        await goalRef.add({
+          ...goalData,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-        // Firestore notification
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -154,20 +151,13 @@ class _AddnewgoalState extends State<Addnewgoal> {
               'shown': false,
             });
 
-        // Local notification
         await _showLocalNotification(
-          'New Goal Added',
-          'You set a new goal: "$title".',
-        );
-
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Goal added successfully!"),
-            backgroundColor: kButtonSecondaryBorder,
-          ),
+          "New Goal Added",
+          "You set a new goal: $title",
         );
       }
+
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -180,9 +170,63 @@ class _AddnewgoalState extends State<Addnewgoal> {
     }
   }
 
+  Future<void> _confirmDelete() async {
+    final isEditing = widget.goalId != null || widget.guestGoal != null;
+
+    if (!isEditing) return;
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Delete Goal"),
+        content: const Text("Are you sure you want to delete this goal?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true) return;
+
+    try {
+      if (widget.isGuest && widget.guestGoal != null) {
+        // Delete guest goal
+        if (widget.onSave != null) {
+          widget.onSave!({'delete': true, 'id': widget.guestGoal!['id']});
+        }
+      } else if (widget.goalId != null &&
+          FirebaseAuth.instance.currentUser != null) {
+        // Delete Firestore goal
+        final userId = FirebaseAuth.instance.currentUser!.uid;
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('users_goals')
+            .doc(widget.goalId)
+            .delete();
+      }
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error deleting goal: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.goalId != null;
+    final isEditing = widget.goalId != null || widget.guestGoal != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -193,92 +237,79 @@ class _AddnewgoalState extends State<Addnewgoal> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: kAppBarColor, // deep blue
+        backgroundColor: kAppBarColor,
         centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: kAppBarTextColor),
-        ),
+        actions: [
+          if (isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: _confirmDelete,
+            ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isEditing ? "Edit Your Goal" : "Set a New Goal",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: kButtonPrimary, // deep blue
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildTextField(
-                  controller: titleController,
-                  label: "Goal Title",
-                  icon: Icons.flag,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: currentController,
-                  label: "Current Savings",
-                  icon: Icons.savings,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: targetController,
-                  label: "Target Amount",
-                  icon: Icons.track_changes,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : saveGoal,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kButtonPrimary, // deep blue
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(
-                          color: kButtonSecondaryBorder, // gold border
-                          width: 1.5,
-                        ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              _buildTextField(
+                controller: titleController,
+                label: "Goal Title",
+                icon: Icons.flag,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: currentController,
+                label: "Current Savings",
+                icon: Icons.savings,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: targetController,
+                label: "Target Amount",
+                icon: Icons.track_changes,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : saveGoal,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kButtonPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(
+                        color: kButtonSecondaryBorder,
+                        width: 1.5,
                       ),
                     ),
-                    child: isLoading
-                        ? const SpinKitThreeBounce(
-                            color: Colors.white,
-                            size: 20.0,
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isEditing ? Icons.update : Icons.save,
+                  ),
+                  child: isLoading
+                      ? const SpinKitThreeBounce(color: Colors.white, size: 20)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isEditing ? Icons.update : Icons.save,
+                              color: kButtonPrimaryText,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              isEditing ? "Update Goal" : "Save Goal",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                                 color: kButtonPrimaryText,
                               ),
-                              const SizedBox(width: 10),
-                              Text(
-                                isEditing ? "Update Goal" : "Save Goal",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: kButtonPrimaryText,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
+                            ),
+                          ],
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -296,22 +327,9 @@ class _AddnewgoalState extends State<Addnewgoal> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.black54),
-        prefixIcon: Icon(icon, color: kButtonSecondaryBorder), // gold icons
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kButtonSecondaryBorder),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kButtonSecondaryBorder),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kButtonPrimary, width: 2),
-        ),
+        prefixIcon: Icon(icon, color: kButtonSecondaryBorder),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      style: const TextStyle(color: Colors.black),
     );
   }
 }
