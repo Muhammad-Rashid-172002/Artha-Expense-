@@ -4,6 +4,7 @@
 build/
 
 # IDE
+.dart_tool/
 .idea/
 *.iml
 *.log

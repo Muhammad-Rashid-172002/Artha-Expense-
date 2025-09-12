@@ -2,151 +2,122 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- fireBASE  -->
-    <key>CLIENT_ID</key>
-	<string>155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>155227403448-b4gq1n9nct3rk5497h3tg70f88h2fn9a.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBOMIucnaTmDSQnlkINqMdxl_nADE_IhFk</string>
-	<key>GCM_SENDER_ID</key>
-	<string>155227403448</string>
-	<key>PLIST_VERSION</key>
-	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.kesava.artha</string>
-	<key>PROJECT_ID</key>
-	<string>artha-b88ab</string>
-	<key>STORAGE_BUCKET</key>
-	<string>artha-b88ab.firebasestorage.app</string>
-	<key>IS_ADS_ENABLED</key>
-	<false></false>
-	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
-	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
-	<key>IS_GCM_ENABLED</key>
-	<true></true>
-	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Artha</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Artha</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.kesava.artha</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>CLIENT_ID</key>
+	<string>155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>GCM_SENDER_ID</key>
+	<string>155227403448</string>
+	<key>GIDClientID</key>
+	<string>155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com</string>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:155227403448:ios:1f24ec87ac9597038ef04d</string>
-    <key>NSAppleIDUsageDescription</key>
-    <string>Sign in with Apple is used to authenticate your account securely.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>We need camera access to take receipt photos.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need photo library access to select receipts.</string>
-
-    <!-- Notifications -->
-    <key>NSPushNotificationUsageDescription</key>
-    <string>We use notifications to remind you of your expenses and updates.</string>
-
-    <!-- Google Sign-In -->
-    <key>GIDClientID</key>
-    <string>155227403448-001si24km8c9shqng6ms3amrubfqqi1b.apps.googleusercontent.com</string>
-
-    <key>CFBundleURLTypes</key>
-    <array>
-        <!-- Google -->
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
-            </array>
-        </dict>
-
-        <!-- Apple Sign-In -->
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.kesava.artha</string>
-            </array>
-        </dict>
-    </array>
-
-    <!-- Background Modes -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>remote-notification</string>
-    </array>
-
-    <!-- App Transport Security -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-
-    <!-- App Config -->
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true/>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
-    <key>CFBundleDisplayName</key>
-    <string>Artha</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>Artha</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>$(FLUTTER_BUILD_NAME)</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleVersion</key>
-    <string>$(FLUTTER_BUILD_NUMBER)</string>
-
-    <!-- Firebase -->
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-
-    <!-- Input Events -->
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true/>
-
-    <!-- Launch -->
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-    <key>UIMainStoryboardFile</key>
-    <string>Main</string>
-
-    <!-- Orientation -->
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-
-    <!-- Notifications delegate -->
-    <key>UNUserNotificationCenterDelegate</key>
-    <string>YES</string>
-
-    <!-- Permissions for FaceID -->
-    <key>NSFaceIDUsageDescription</key>
-    <string>We use Face ID to protect your password</string>
-
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleIDUsageDescription</key>
+	<string>Sign in with Apple is used to authenticate your account securely.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take receipt photos.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We use Face ID to protect your password</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select receipts.</string>
+	<key>NSPushNotificationUsageDescription</key>
+	<string>We use notifications to remind you of your expenses and updates.</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>PROJECT_ID</key>
+	<string>artha-b88ab</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.155227403448-001si24km8c9shqng6ms3amrubfqqi1b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>artha-b88ab.firebasestorage.app</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UNUserNotificationCenterDelegate</key>
+	<string>YES</string>
 </dict>
 </plist>

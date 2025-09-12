@@ -27,20 +27,21 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     setState(() => _isLoading = true);
 
     try {
-      final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(
-        emailController.text.trim(),
-      );
+      // final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(
+      //   emailController.text.trim(),
+      // );
+      // debugPrint('Sign-in methods: $methods');
 
-      if (methods.isEmpty) {
-        setState(() => _isLoading = false);
-        showDialog(
-          context: context,
-          builder: (context) => const AlertDialog(
-            content: Text("Email not found. Please check and try again."),
-          ),
-        );
-        return;
-      }
+      // if (methods.isNotEmpty) {
+      //   setState(() => _isLoading = false);
+      //   showDialog(
+      //     context: context,
+      //     builder: (context) => const AlertDialog(
+      //       content: Text("Email not found. Please check and try again."),
+      //     ),
+      //   );
+      //   return;
+      // }
 
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text.trim(),

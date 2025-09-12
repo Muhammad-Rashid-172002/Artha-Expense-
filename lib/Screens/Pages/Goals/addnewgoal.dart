@@ -230,6 +230,7 @@ class _AddnewgoalState extends State<Addnewgoal> {
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         title: Text(
           isEditing ? "Edit Goal" : "Add New Goal",
           style: const TextStyle(
