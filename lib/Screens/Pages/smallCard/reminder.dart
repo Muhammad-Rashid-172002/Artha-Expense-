@@ -69,7 +69,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
   final User? currentUser = FirebaseAuth.instance.currentUser;
   bool _isLoading = false;
 
-  // ---------- Firestore helpers ----------
+  // Firestore helpers
   Future<void> _deleteReminder(String id) async {
     final uid = currentUser?.uid;
     if (uid == null) return; // Guest: ignore
@@ -108,7 +108,7 @@ class _ReminderscreenState extends State<Reminderscreen> {
     );
   }
 
-  // ---------- Guest mode: add/edit dialog ----------
+  //  Guest mode: add/edit dialog
   Future<void> _openGuestReminderDialog({Map<String, dynamic>? initial}) async {
     final titleCtrl = TextEditingController(text: initial?['title'] ?? '');
     final descCtrl = TextEditingController(text: initial?['description'] ?? '');

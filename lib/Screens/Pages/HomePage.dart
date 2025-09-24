@@ -14,9 +14,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-/// ==========================
 /// Guest Income Store (Local)
-/// ==========================
+
 class GuestStore {
   static ValueNotifier<List<Map<String, dynamic>>> incomes = ValueNotifier([]);
   static ValueNotifier<List<Map<String, dynamic>>> expenses = ValueNotifier([]);
