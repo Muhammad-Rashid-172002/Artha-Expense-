@@ -1,0 +1,42 @@
+
+# Flutter / Dart / Pub
+
+build/
+
+# IDE
+.dart_tool/
+.idea/
+*.iml
+*.log
+*.DS_Store
+*.lock
+
+# ===========================
+# iOS
+# ===========================
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Pods/
+ios/Runner.xcworkspace/
+
+# 🔐 Sensitive (iOS)
+ios/Runner/GoogleService-Info.plist
+*.xcuserstate
+*.xcuserdatad
+
+# ===========================
+# Android
+# ===========================
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# 🔐 Sensitive (Android)
+android/app/google-services.json
+android/key.properties
+*.keystore
+*.jks
+.env
+*.env
