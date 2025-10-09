@@ -304,203 +304,193 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBalanceCard(double totalIncome, double totalExpense) {
     double balance = totalIncome - totalExpense;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
-  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  decoration: BoxDecoration(
-    gradient: const LinearGradient(
-      colors: [Color(0xFF141E30), Color(0xFF243B55)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(28),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.45),
-        blurRadius: 20,
-        offset: const Offset(0, 8),
-      ),
-    ],
-    border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.2),
-  ),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(28),
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 8, 20), // fixed overflow padding
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ===== Header =====
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    "This Month Balance",
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: const EdgeInsets.all(6),
-                    icon: Icon(
-                      _isHidden
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                      color: Colors.white70,
-                      size: 26,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isHidden = !_isHidden;
-                      });
-                    },
-                  ),
-                ),
-              ],
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1C1F26), Color(0xFF2C313C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.45),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-
-            const SizedBox(height: 14),
-
-            // ===== Balance Display =====
-            Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                child: Text(
-                  _isHidden
-                      ? "•••••"
-                      : "$currencySymbol${formatter.format(balance)}",
-                  key: ValueKey(_isHidden),
-                  style: GoogleFonts.robotoMono(
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                    color: balance >= 0
-                        ? Colors.greenAccent.shade400
-                        : Colors.redAccent.shade200,
-                    letterSpacing: 1.2,
-                    shadows: [
-                      Shadow(
-                        color: Colors.white.withOpacity(0.25),
-                        blurRadius: 10,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ===== Top Row (Title + Visibility Button) =====
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Available Balance",
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => _isHidden = !_isHidden);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isHidden
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                            color: Colors.white70,
+                            size: 24,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 25),
+                  const SizedBox(height: 18),
 
-            // ===== Income & Expense Boxes =====
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _showAddIncomeExpenseSheet("Income"),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: 90,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF00C853), Color(0xFF2E7D32)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  // ===== Balance =====
+                  Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      child: Text(
+                        _isHidden
+                            ? "•••••"
+                            : "$currencySymbol${formatter.format(balance)}",
+                        key: ValueKey(_isHidden),
+                        style: GoogleFonts.robotoMono(
+                          fontSize: 42,
+                          fontWeight: FontWeight.bold,
+                          color: balance >= 0
+                              ? Colors.greenAccent.shade400
+                              : Colors.redAccent.shade200,
+                          letterSpacing: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.white.withOpacity(0.25),
+                              blurRadius: 10,
+                            ),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.greenAccent.withOpacity(0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Income",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _isHidden
-                                ? "•••••"
-                                : "$currencySymbol${formatter.format(totalIncome)}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _showAddIncomeExpenseSheet("Expense"),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: 90,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFD32F2F), Color(0xFF880E4F)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+
+                  const SizedBox(height: 25),
+
+                  // ===== Income / Expense Summary =====
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatBox(
+                          title: "Income",
+                          amount: totalIncome,
+                          gradientColors: const [
+                            Color(0xFF00C853),
+                            Color(0xFF2E7D32),
+                          ],
+                          icon: Icons.arrow_downward_rounded,
+                          iconColor: Colors.greenAccent,
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.redAccent.withOpacity(0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Expense",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _isHidden
-                                ? "•••••"
-                                : "$currencySymbol${formatter.format(totalExpense)}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildStatBox(
+                          title: "Expense",
+                          amount: totalExpense,
+                          gradientColors: const [
+                            Color(0xFFD32F2F),
+                            Color(0xFF880E4F),
+                          ],
+                          icon: Icons.arrow_upward_rounded,
+                          iconColor: Colors.redAccent,
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Small reusable stat boxes (Income / Expense)
+  Widget _buildStatBox({
+    required String title,
+    required double amount,
+    required List<Color> gradientColors,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: 90,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: iconColor.withOpacity(0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _isHidden
+                      ? "•••••"
+                      : "$currencySymbol${formatter.format(amount)}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -508,10 +498,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    ),
-  ),
-)
-
     );
   }
 
@@ -598,16 +584,16 @@ class _HomePageState extends State<HomePage> {
       {"title": "Loan", "icon": Icons.credit_card},
     ];
 
-    String _getGreetingMessage() {
-      final hour = DateTime.now().hour;
-      if (hour < 12) {
-        return "Good Morning ☀️";
-      } else if (hour < 17) {
-        return "Good Afternoon 🌤️";
-      } else {
-        return "Good Evening 🌙";
-      }
-    }
+    // String _getGreetingMessage() {
+    //   final hour = DateTime.now().hour;
+    //   if (hour < 12) {
+    //     return "Good Morning ☀️";
+    //   } else if (hour < 17) {
+    //     return "Good Afternoon 🌤️";
+    //   } else {
+    //     return "Good Evening 🌙";
+    //   }
+    // }
 
     String _getFormattedDate() {
       final now = DateTime.now();
@@ -625,35 +611,57 @@ class _HomePageState extends State<HomePage> {
               expandedHeight: 120,
               collapsedHeight: kToolbarHeight,
               flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: kPrimaryGradient, // your gradient
+                decoration: const BoxDecoration(
+                  gradient: kPrimaryGradient, // matches your dark theme
                 ),
                 child: FlexibleSpaceBar(
                   titlePadding: const EdgeInsetsDirectional.only(
-                    start: 16,
-                    bottom: 12,
+                    start: 20,
+                    bottom: 14,
                   ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _getGreetingMessage(),
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _getFormattedDate(),
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+                  title: StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(FirebaseAuth.instance.currentUser?.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      String name = 'User';
+                      if (snapshot.hasData && snapshot.data!.exists) {
+                        final data =
+                            snapshot.data!.data() as Map<String, dynamic>;
+                        name = data['name'] ?? 'User';
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Hi, $name",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16, // smaller font
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "Welcome back",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14, // smaller subtitle font
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -729,12 +737,8 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(
-                                          0xFF2C5364,
-                                        ) // Dark blue for selected
-                                      : const Color(
-                                          0xFF203A43,
-                                        ), // Dark gray/blue for unselected
+                                      ? const Color(0xFF2C5364)
+                                      : const Color(0xFF203A43),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: const [
                                     BoxShadow(
@@ -749,14 +753,14 @@ class _HomePageState extends State<HomePage> {
                                     Icon(
                                       card['icon'],
                                       size: 30,
-                                      color: Colors.white, // White for contrast
+                                      color: Colors.white,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
                                       card['title'],
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white, // White text
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ],

@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expanse_tracker_app/Screens/Auth_moduls/SignInScreen.dart';
+import 'package:expanse_tracker_app/Screens/Pages/expanse/Category_breakdown_screen.dart' hide kButtonPrimaryText, kBodyTextColor;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -91,39 +93,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _confirmDelete(DocumentReference docRef) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: kPrimaryDark2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: kAccent, width: 1.5),
-        ),
-        title: Text(
-          "Delete Notification",
-          style: GoogleFonts.poppins(
-            color: kWhite,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          "Are you sure you want to delete this notification?",
-          style: GoogleFonts.poppins(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            child: Text("Cancel",
-                style: GoogleFonts.poppins(color: kAccent, fontWeight: FontWeight.w500)),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          TextButton(
-            child: Text("Delete",
-                style: GoogleFonts.poppins(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+   final confirmed = await showDialog<bool>(
+  context: context,
+  builder: (_) => AlertDialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    backgroundColor: kPrimaryDark2,
+    title: Text(
+      'Delete Notification',
+      style: GoogleFonts.poppins(
+        fontWeight: FontWeight.bold,
+        color: kButtonPrimaryText,
+        fontSize: 20,
       ),
-    );
+    ),
+    content: Text(
+      'Are you sure you want to delete this notification?',
+      style: GoogleFonts.roboto(
+        color: kBodyTextColor,
+        fontSize: 16,
+      ),
+    ),
+    actions: [
+      TextButton(
+        style: TextButton.styleFrom(foregroundColor: kFadedTextColor),
+        onPressed: () => Navigator.pop(context, false),
+        child: Text('Cancel', style: GoogleFonts.roboto()),
+      ),
+      TextButton(
+        style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+        onPressed: () => Navigator.pop(context, true),
+        child: Text(
+          'Delete',
+          style: GoogleFonts.roboto(fontWeight: FontWeight.bold),
+        ),
+      ),
+    ],
+  ),
+);
+
 
     if (confirmed == true) {
       await docRef.delete();

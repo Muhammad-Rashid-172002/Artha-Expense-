@@ -2,214 +2,182 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ==== COLORS ====
-const Color kAppBarColor = Color(0xFF1565C0);
-const Color kAppBarTextColor = Colors.white;
-const Color kCardShadowColor = Colors.black26;
-const Color kHeadingTextColor = Color(0xFF0D47A1);
-const Color kSubtitleTextColor = Colors.black54;
-const Color kButtonPrimary = Color(0xFF1565C0);
+const Color kPrimaryDark1 = Color(0xFF1C1F26);
+const Color kPrimaryDark2 = Color(0xFF2A2F3A);
+const Color kPrimaryDark3 = Color(0xFF383C4C);
 
-const LinearGradient kPrimaryGradient = LinearGradient(
-  colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
+final LinearGradient kPrimaryGradient = const LinearGradient(
+  colors: [kPrimaryDark2, kPrimaryDark3],
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
 );
 
 class AiInsightsPage extends StatefulWidget {
-  const AiInsightsPage({super.key});
+  final double totalIncome;
+  final double totalExpense;
+
+  const AiInsightsPage({
+    super.key,
+    required this.totalIncome,
+    required this.totalExpense,
+  });
 
   @override
   State<AiInsightsPage> createState() => _AiInsightsPageState();
 }
 
 class _AiInsightsPageState extends State<AiInsightsPage> {
-  final List<Map<String, String>> insights = [
-    {
-      'title': 'Daily Spending Analysis',
-      'subtitle': 'AI predicts your spending habits and provides insights.',
-      'details': 'Get a complete breakdown of your daily spending. AI will analyze your transactions, categorize them, and provide actionable insights to improve your financial habits.'
-    },
-    {
-      'title': 'Income Trend',
-      'subtitle': 'Track your income growth and get smart suggestions.',
-      'details': 'Monitor your income over weeks, months, and years. AI suggests ways to optimize your income and detect irregular patterns.'
-    },
-    {
-      'title': 'Budget Recommendations',
-      'subtitle': 'AI suggests budget plans based on your expenses.',
-      'details': 'AI calculates optimal budgets for each category based on your spending patterns, helping you save more efficiently.'
-    },
-    {
-      'title': 'Savings Forecast',
-      'subtitle': 'See how your savings will grow over time.',
-      'details': 'Predict your future savings based on your current income and expenses. AI provides tips to maximize growth and achieve financial goals.'
-    },
-  ];
+  String _insight =
+      "Tap the button below to get insights about your spending habits.";
+  bool _loading = false;
 
-  void _navigateToDetail(Map<String, String> insight) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => InsightDetailPage(insight: insight),
-      ),
+  // 🔹 Local AI-like logic (no API)
+  String getLocalFinancialAdvice(double income, double expense) {
+    // Safety conversion
+    income = income.isNaN ? 0 : income;
+    expense = expense.isNaN ? 0 : expense;
+
+    // Prevent division by zero and handle negative values
+    if (income <= 0) {
+      return "⚠️ Please add your income to get financial insights.";
+    }
+
+    if (expense < 0) expense = 0;
+
+    double balance = income - expense;
+    double ratio = (expense / income) * 100;
+
+    // Generate advice
+    if (ratio < 40) {
+      return "💰 Great job! You’re spending wisely — only ${ratio.toStringAsFixed(1)}% of your income is used.\n\n✅ Tip: Consider investing your extra savings for long-term growth.";
+    } else if (ratio < 70) {
+      return "📊 You’re doing okay — spending about ${ratio.toStringAsFixed(1)}% of your income.\n\n💡 Tip: Try saving at least 10–15% each month for emergencies.";
+    } else if (ratio < 90) {
+      return "⚠️ Your expenses are quite high (${ratio.toStringAsFixed(1)}% of your income).\n\n💰 Tip: Review your monthly subscriptions and cut unnecessary costs.";
+    } else {
+      return "🚨 Be careful! You’re spending ${ratio.toStringAsFixed(1)}% of your income.\n\n🔻 Tip: Try to lower expenses immediately or find ways to boost income.";
+    }
+  }
+
+  void fetchInsight() async {
+    setState(() => _loading = true);
+    await Future.delayed(const Duration(seconds: 1)); // simulate processing
+    final aiText = getLocalFinancialAdvice(
+      widget.totalIncome,
+      widget.totalExpense,
     );
+    setState(() {
+      _insight = aiText;
+      _loading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: kPrimaryGradient),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // AppBar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Row(
+      backgroundColor: kPrimaryDark1,
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(gradient: kPrimaryGradient),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.white, size: 26),
+            const SizedBox(width: 8),
+            Text(
+              "AI Insights",
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 30),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2C3E50), Color(0xFF4CA1AF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black45,
+                    blurRadius: 10,
+                    offset: Offset(2, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
                   children: [
-                    const SizedBox(width: 10),
                     Text(
-                      'AI Insights',
+                      "AI Financial Advice",
                       style: GoogleFonts.poppins(
-                        color: kAppBarTextColor,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                         fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      child: _loading
+                          ? const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              _insight,
+                              key: ValueKey(_insight),
+                              style: GoogleFonts.poppins(
+                                color: Colors.white70,
+                                fontSize: 16,
+                                height: 1.5,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 40),
+                    ElevatedButton.icon(
+                      onPressed: _loading ? null : fetchInsight,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.9),
+                        foregroundColor: kPrimaryDark2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        minimumSize: const Size(double.infinity, 55),
+                        elevation: 6,
+                      ),
+                      icon: const Icon(Icons.auto_awesome),
+                      label: Text(
+                        "Get AI Insights",
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-
-              // Insights List
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                  ),
-                  child: ListView.separated(
-                    itemCount: insights.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final insight = insights[index];
-                      return InkWell(
-                        onTap: () => _navigateToDetail(insight),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.blue.shade50, Colors.blue.shade100],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: kCardShadowColor,
-                                blurRadius: 6,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                insight['title']!,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: kHeadingTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                insight['subtitle']!,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 14,
-                                  color: kSubtitleTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: ElevatedButton(
-                                  onPressed: () => _navigateToDetail(insight),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: kButtonPrimary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  ),
-                                  child: Text(
-                                    'View',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class InsightDetailPage extends StatelessWidget {
-  final Map<String, String> insight;
-
-  const InsightDetailPage({super.key, required this.insight});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(insight['title']!, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        backgroundColor: kAppBarColor,
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                insight['title']!,
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: kHeadingTextColor),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                insight['details']!,
-                style: GoogleFonts.roboto(fontSize: 16, color: kSubtitleTextColor, height: 1.5),
-              ),
-              const SizedBox(height: 25),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text("Back"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kButtonPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              )
-            ],
+            ),
           ),
         ),
       ),

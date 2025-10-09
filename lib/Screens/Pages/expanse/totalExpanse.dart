@@ -117,47 +117,59 @@ class _ExpenseScreenState extends State<ExpenseScreen>
     setState(() {});
   }
 
-  Future<void> _deleteExpense(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.grey[850],
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Colors.white),
-          borderRadius: BorderRadius.circular(12),
+ Future<void> _deleteExpense(String id) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: kPrimaryDark2,
+      title: Text(
+        'Delete Expense',
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.bold,
+          color: kButtonPrimaryText,
+          fontSize: 20,
         ),
-        title: const Text("Confirm", style: TextStyle(color: Colors.white)),
-        content: const Text(
-          "Delete this expense?",
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("No", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Yes", style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
-    );
-    if (confirmed != true) return;
+      content: Text(
+        'Are you sure you want to delete this expense?',
+        style: GoogleFonts.roboto(
+          color: kBodyTextColor,
+          fontSize: 16,
+        ),
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: kFadedTextColor),
+          onPressed: () => Navigator.pop(context, false),
+          child: Text('Cancel', style: GoogleFonts.roboto()),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(
+            'Delete',
+            style: GoogleFonts.roboto(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
 
-    if (userId == null) {
-      setState(() => GuestExpenseStore.deleteExpense(id));
-    } else {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('users_expenses')
-          .doc(id)
-          .delete();
-    }
+  if (confirmed != true) return;
+
+  if (userId == null) {
+    setState(() => GuestExpenseStore.deleteExpense(id));
+  } else {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('users_expenses')
+        .doc(id)
+        .delete();
   }
-
-  final Map<String, IconData> categoryIcons = {
+}
+final Map<String, IconData> categoryIcons = {
     'Rent': Icons.home,
     'Shopping': Icons.shopping_bag,
     'Food': Icons.fastfood,

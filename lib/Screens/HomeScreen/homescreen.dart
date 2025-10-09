@@ -21,10 +21,18 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   DateTime? _lastBackPressed;
 
-  final List<Widget> _pages = const [
+  // Define a dummy total value or fetch it from your data source
+  final double total = 0.0;
+  
+
+  final List<Widget> _pages = [
     HomePage(),
     TaskPage(),
-    AiInsightsPage(),
+    AiInsightsPage(
+  totalIncome: 110.0 ,
+  totalExpense: 45.0,
+),
+
     Aichatbotpage(),
     NotificationsPage(),
     SettingsPage(),
